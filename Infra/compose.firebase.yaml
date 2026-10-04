@@ -1,0 +1,12 @@
+# Opt-in only after supplying a Firebase project and a private credential file.
+services:
+  backend:
+    environment:
+      FCM_ENABLED: "true"
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?Set FIREBASE_PROJECT_ID}
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase-service-account.json
+    volumes:
+      - type: bind
+        source: ${FIREBASE_CREDENTIALS_FILE:?Set the absolute path to your Firebase service-account file}
+        target: /run/secrets/firebase-service-account.json
+        read_only: true
