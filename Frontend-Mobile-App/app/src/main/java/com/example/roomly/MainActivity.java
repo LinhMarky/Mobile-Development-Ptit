@@ -1,29 +1,31 @@
 package com.example.roomly;
 
+import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 
 import com.example.roomly.databinding.ActivityMainBinding;
-import com.example.roomly.ui.explore.ExploreFragment;
-
-import android.view.View;
 import com.example.roomly.ui.detail.RoomDetailFragment;
-
+import com.example.roomly.ui.explore.ExploreFragment;
 import com.example.roomly.ui.saved.SavedFragment;
+import com.example.roomly.ui.schedule.ScheduleFragment;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Binding giúp truy cập các thành phần trong activity_main.xml.
+    // Binding liên kết với giao diện activity_main.xml.
     private ActivityMainBinding binding;
 
     /**
-     * Khởi tạo giao diện chính, xử lý khoảng cách với thanh hệ thống
-     * và mở màn hình Khám phá khi app được tạo lần đầu.
+     * Khởi tạo giao diện chính, thiết lập thanh điều hướng
+     * và mở màn hình Khám phá khi ứng dụng được tạo lần đầu.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,36 +37,25 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setupWindowInsets();
+        setupBottomNavAppearance();
 
-        // Đổi nền của tab đang chọn sang màu xanh nhạt ROOMLY.
-        binding.bottomNav.setItemActiveIndicatorColor(
-                android.content.res.ColorStateList.valueOf(
-                        androidx.core.content.ContextCompat.getColor(
-                                this,
-                                R.color.roomly_primary_light
-                        )
-                )
-        );
-
-        // Khi xoay màn hình, Android tự khôi phục Fragment hiện tại.
+        // Android tự khôi phục Fragment khi Activity được tạo lại.
         if (savedInstanceState == null) {
             showExploreScreen();
         }
 
         setupBottomNavigation();
 
-        // Cập nhật menu dưới khi mở chi tiết hoặc quay về màn hình trước.
+        // Cập nhật menu khi mở chi tiết hoặc quay lại.
         getSupportFragmentManager().addOnBackStackChangedListener(
                 this::updateBottomNavVisibility
         );
 
-// Cập nhật cả khi Android khôi phục màn hình sau khi xoay máy.
         updateBottomNavVisibility();
     }
 
     /**
-     * Thêm khoảng trống để giao diện không bị thanh trạng thái
-     * và thanh điều hướng hệ thống che khuất.
+     * Thêm khoảng trống để thanh hệ thống không che giao diện.
      */
     private void setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(
@@ -84,17 +75,34 @@ public class MainActivity extends AppCompatActivity {
                     return insets;
                 }
         );
+
+        ViewCompat.requestApplyInsets(binding.getRoot());
     }
 
     /**
-     * Đưa màn hình Khám phá vào vùng nội dung phía trên menu dưới
-     * và đánh dấu tab Khám phá đang được chọn.
+     * Đặt nền xanh nhạt ROOMLY cho tab đang được chọn.
+     */
+    private void setupBottomNavAppearance() {
+        binding.bottomNav.setItemActiveIndicatorColor(
+                ColorStateList.valueOf(
+                        ContextCompat.getColor(
+                                this,
+                                R.color.roomly_primary_light
+                        )
+                )
+        );
+    }
+
+    /**
+     * Hiển thị màn hình Khám phá khi ứng dụng mở lần đầu.
+     * Hàm được gọi trước khi đăng ký sự kiện chọn tab.
      */
     private void showExploreScreen() {
         binding.bottomNav.setSelectedItemId(R.id.nav_explore);
 
         getSupportFragmentManager()
                 .beginTransaction()
+                .setReorderingAllowed(true)
                 .replace(
                         R.id.fragment_container,
                         new ExploreFragment()
@@ -103,19 +111,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Chuyển màn hình khi người dùng chọn tab Khám phá hoặc Đã lưu.
+     * Chuyển giữa Khám phá, Đã lưu và Lịch trình.
      * Các tab chưa có giao diện sẽ chưa được chuyển sang.
      */
     private void setupBottomNavigation() {
         binding.bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
-            androidx.fragment.app.Fragment nextFragment;
+            Fragment nextFragment;
 
             if (itemId == R.id.nav_explore) {
                 nextFragment = new ExploreFragment();
             } else if (itemId == R.id.nav_saved) {
                 nextFragment = new SavedFragment();
+            } else if (itemId == R.id.nav_schedule) {
+                nextFragment = new ScheduleFragment();
             } else {
                 return false;
             }
@@ -132,18 +142,18 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        // Không tạo lại màn hình khi bấm vào tab đang được chọn.
+        // Giữ nguyên màn hình nếu bấm lại tab đang chọn.
         binding.bottomNav.setOnItemReselectedListener(item -> {
-            // Giữ nguyên màn hình hiện tại.
+            // Không cần tạo lại Fragment.
         });
     }
 
     /**
-     * Ẩn menu dưới ở màn hình chi tiết phòng.
-     * Hiện lại menu khi người dùng trở về màn hình chính.
+     * Ẩn menu dưới khi đang xem chi tiết phòng.
+     * Hiện lại menu khi quay về màn hình có thanh điều hướng.
      */
     private void updateBottomNavVisibility() {
-        androidx.fragment.app.Fragment currentFragment =
+        Fragment currentFragment =
                 getSupportFragmentManager().findFragmentById(
                         R.id.fragment_container
                 );

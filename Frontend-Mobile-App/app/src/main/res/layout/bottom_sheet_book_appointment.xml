@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bảng đặt lịch có thể cuộn khi bàn phím mở hoặc màn hình nhỏ. -->
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/roomly_surface"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Tiêu đề bảng đặt lịch. -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đặt lịch xem phòng"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Chọn thời gian bạn muốn đến xem phòng."
+            android:textColor="@color/roomly_text_secondary"
+            android:textSize="14sp" />
+
+        <!-- Tên phòng được cập nhật khi mở bảng đặt lịch. -->
+        <TextView
+            android:id="@+id/tv_booking_room_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/roomly_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Bấm nút để mở bảng chọn ngày. -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Ngày xem phòng"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_choose_date"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:minHeight="48dp"
+            android:text="Chọn ngày"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_primary"
+            android:textSize="14sp"
+            app:backgroundTint="@color/roomly_surface"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/roomly_border"
+            app:strokeWidth="1dp" />
+
+        <!-- Bấm nút để mở bảng chọn giờ. -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Giờ xem phòng"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_choose_time"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:minHeight="48dp"
+            android:text="Chọn giờ"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_primary"
+            android:textSize="14sp"
+            app:backgroundTint="@color/roomly_surface"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/roomly_border"
+            app:strokeWidth="1dp" />
+
+        <!-- Lời nhắn là tùy chọn, người dùng có thể để trống. -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layout_booking_note"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:hint="Lời nhắn cho chủ phòng (không bắt buộc)"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp"
+            app:counterEnabled="true"
+            app:counterMaxLength="300">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edt_booking_note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top|start"
+                android:inputType="textCapSentences|textMultiLine"
+                android:imeOptions="actionDone"
+                android:maxLength="300"
+                android:maxLines="5"
+                android:minLines="3"
+                android:textColor="@color/roomly_text_primary"
+                android:textSize="14sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Hiện lỗi nếu thiếu ngày, giờ hoặc chọn thời gian đã qua. -->
+        <TextView
+            android:id="@+id/tv_booking_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:accessibilityLiveRegion="polite"
+            android:textColor="#B3261E"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <!-- Thông báo rõ đây là dữ liệu mẫu trong giai đoạn làm giao diện. -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Lịch hẹn hiện được lưu thử trong ứng dụng, chưa gửi đến chủ phòng."
+            android:textColor="@color/roomly_text_secondary"
+            android:textSize="12sp" />
+
+        <!-- Xác nhận tạo lịch hẹn sau khi chọn thời gian hợp lệ. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_confirm_booking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:minHeight="48dp"
+            android:text="Xác nhận đặt lịch"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_surface"
+            android:textSize="15sp"
+            app:backgroundTint="@color/roomly_primary"
+            app:cornerRadius="12dp" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

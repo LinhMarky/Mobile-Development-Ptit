@@ -26,7 +26,8 @@ public class DemoRoomRepository {
                 "Mộ Lao, Hà Đông, Hà Nội",
                 "28 m²  •  Có nội thất  •  Wi-Fi",
                 R.drawable.room_demo_01,
-                false
+                false,
+                RoomCard.RoomType.STUDIO
         ));
 
         rooms.add(new RoomCard(
@@ -35,7 +36,8 @@ public class DemoRoomRepository {
                 "Trần Phú, Hà Đông, Hà Nội",
                 "22 m²  •  Điều hòa  •  Chỗ để xe",
                 R.drawable.room_demo_01,
-                false
+                false,
+                RoomCard.RoomType.ROOM
         ));
 
         rooms.add(new RoomCard(
@@ -44,8 +46,21 @@ public class DemoRoomRepository {
                 "Thanh Xuân, Hà Nội",
                 "35 m²  •  Bếp riêng  •  Có nội thất",
                 R.drawable.room_demo_01,
-                false
+                false,
+                RoomCard.RoomType.APARTMENT
         ));
+
+        // Phòng studio: 3.500.000 đồng/tháng, diện tích 28 m².
+        rooms.get(0).setMonthlyRent(3_500_000L);
+        rooms.get(0).setAreaSquareMeters(28);
+
+// Phòng trọ: 2.800.000 đồng/tháng, diện tích 22 m².
+        rooms.get(1).setMonthlyRent(2_800_000L);
+        rooms.get(1).setAreaSquareMeters(22);
+
+// Căn hộ mini: 4.200.000 đồng/tháng, diện tích 35 m².
+        rooms.get(2).setMonthlyRent(4_200_000L);
+        rooms.get(2).setAreaSquareMeters(35);
     }
 
     /**
