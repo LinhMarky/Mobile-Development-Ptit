@@ -6,49 +6,66 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.roomly.R;
 import com.example.roomly.data.model.RoomCard;
 import com.example.roomly.databinding.ItemRoomBinding;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.roomly.R;
-
 /**
- * Hiển thị danh sách phòng bằng mẫu giao diện item_room.xml.
+ * Hiển thị các thẻ phòng và xử lý thao tác mở chi tiết,
+ * lưu phòng hoặc bỏ lưu phòng.
  */
 public class RoomAdapter
         extends RecyclerView.Adapter<RoomAdapter.RoomViewHolder> {
 
+    // Danh sách đang hiển thị, dùng chung các đối tượng phòng.
     private final List<RoomCard> rooms = new ArrayList<>();
 
-    // Nơi nhận sự kiện khi người dùng bấm một thẻ phòng.
     private OnRoomClickListener onRoomClickListener;
+    private OnSaveChangedListener onSaveChangedListener;
 
     public interface OnRoomClickListener {
 
         /**
-         * Báo cho màn hình Khám phá biết phòng nào vừa được bấm.
+         * Thông báo phòng được chọn để mở màn hình chi tiết.
          */
         void onRoomClick(RoomCard room);
     }
 
-    /**
-     * Cho phép màn hình Khám phá đăng ký xử lý sự kiện bấm phòng.
-     */
-    public void setOnRoomClickListener(OnRoomClickListener listener) {
-        this.onRoomClickListener = listener;
+    public interface OnSaveChangedListener {
+
+        /**
+         * Thông báo phòng vừa được lưu hoặc bỏ lưu.
+         */
+        void onSaveChanged(RoomCard room);
     }
 
     /**
-     * Nhận danh sách phòng ban đầu và sao chép vào Adapter.
+     * Sao chép danh sách ban đầu vào Adapter.
+     * Các đối tượng phòng vẫn được dùng chung với repository.
      */
     public RoomAdapter(List<RoomCard> initialRooms) {
         rooms.addAll(initialRooms);
     }
 
     /**
-     * Tạo giao diện cho một thẻ phòng bằng ViewBinding.
+     * Đăng ký xử lý khi người dùng bấm thẻ phòng.
+     */
+    public void setOnRoomClickListener(OnRoomClickListener listener) {
+        this.onRoomClickListener = listener;
+    }
+
+    /**
+     * Đăng ký xử lý khi trạng thái lưu phòng thay đổi.
+     */
+    public void setOnSaveChangedListener(OnSaveChangedListener listener) {
+        this.onSaveChangedListener = listener;
+    }
+
+    /**
+     * Tạo giao diện một thẻ phòng từ item_room.xml.
      */
     @NonNull
     @Override
@@ -66,7 +83,7 @@ public class RoomAdapter
     }
 
     /**
-     * Hiển thị dữ liệu phòng trên thẻ và xử lý thao tác bấm thẻ.
+     * Hiển thị dữ liệu phòng và đăng ký thao tác bấm thẻ.
      */
     @Override
     public void onBindViewHolder(
@@ -75,7 +92,7 @@ public class RoomAdapter
     ) {
         RoomCard room = rooms.get(position);
 
-        holder.bind(room);
+        holder.bind(room, onSaveChangedListener);
 
         holder.itemView.setOnClickListener(view -> {
             if (onRoomClickListener != null) {
@@ -85,7 +102,7 @@ public class RoomAdapter
     }
 
     /**
-     * Trả về tổng số phòng cần hiển thị.
+     * Trả về số phòng trong danh sách đang hiển thị.
      */
     @Override
     public int getItemCount() {
@@ -93,14 +110,29 @@ public class RoomAdapter
     }
 
     /**
+     * Cập nhật danh sách hiển thị bằng kết quả tìm kiếm.
+     * Giữ nguyên các đối tượng phòng để bảo toàn trạng thái lưu.
+     */
+    public void updateRooms(List<RoomCard> newRooms) {
+        // Sao chép trước khi xóa danh sách hiện tại.
+        List<RoomCard> updatedRooms = new ArrayList<>(newRooms);
+
+        rooms.clear();
+        rooms.addAll(updatedRooms);
+
+        // Hiển thị lại danh sách dữ liệu mẫu sau khi cập nhật.
+        notifyDataSetChanged();
+    }
+
+    /**
      * Giữ các thành phần giao diện của một thẻ phòng.
      */
     static class RoomViewHolder extends RecyclerView.ViewHolder {
 
-        private final com.example.roomly.databinding.ItemRoomBinding binding;
+        private final ItemRoomBinding binding;
 
         /**
-         * Khởi tạo ViewHolder với giao diện thẻ đã tạo.
+         * Khởi tạo ViewHolder bằng binding của thẻ phòng.
          */
         RoomViewHolder(ItemRoomBinding binding) {
             super(binding.getRoot());
@@ -108,31 +140,37 @@ public class RoomAdapter
         }
 
         /**
-         * Gán tên, giá, địa chỉ, tiện ích và ảnh vào thẻ phòng.
-         */
-        /**
          * Hiển thị thông tin phòng và trạng thái trái tim.
-         * Khi bấm trái tim, đổi trạng thái lưu của dữ liệu mẫu.
+         * Khi bấm trái tim, cập nhật dữ liệu và thông báo cho màn hình.
          */
-        void bind(RoomCard room) {
+        void bind(
+                RoomCard room,
+                OnSaveChangedListener saveListener
+        ) {
             binding.tvRoomTitle.setText(room.getTitle());
             binding.tvRoomPrice.setText(room.getPrice());
             binding.tvRoomAddress.setText(room.getAddress());
             binding.tvRoomAmenities.setText(room.getAmenities());
             binding.imgRoom.setImageResource(room.getImageResId());
 
-            // Luôn cập nhật icon khi tái sử dụng thẻ trong RecyclerView.
+            // Cập nhật icon khi RecyclerView tái sử dụng thẻ phòng.
             updateSaveButton(room);
 
             binding.btnSaveRoom.setOnClickListener(view -> {
+                // Đảo trạng thái lưu của phòng.
                 room.setSaved(!room.isSaved());
 
                 updateSaveButton(room);
+
+                // Báo cho màn hình cập nhật danh sách nếu cần.
+                if (saveListener != null) {
+                    saveListener.onSaveChanged(room);
+                }
             });
         }
 
         /**
-         * Chọn icon và mô tả phù hợp với trạng thái lưu của phòng.
+         * Cập nhật icon và mô tả trái tim theo trạng thái lưu phòng.
          */
         private void updateSaveButton(RoomCard room) {
             binding.btnSaveRoom.setImageResource(

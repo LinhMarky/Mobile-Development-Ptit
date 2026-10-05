@@ -90,6 +90,13 @@ public class SavedFragment extends Fragment {
         RoomAdapter adapter = new RoomAdapter(savedRooms);
         adapter.setOnRoomClickListener(this::openRoomDetail);
 
+        // Cập nhật danh sách ngay khi người dùng bỏ lưu một phòng.
+        adapter.setOnSaveChangedListener(room -> {
+            if (binding != null) {
+                displaySavedRooms();
+            }
+        });
+
         binding.rvSavedRooms.setAdapter(adapter);
     }
 

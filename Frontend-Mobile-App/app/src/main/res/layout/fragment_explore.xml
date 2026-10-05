@@ -244,16 +244,61 @@
         android:textSize="20sp"
         android:textStyle="bold" />
 
-    <!-- Danh sách phòng chiếm phần chiều cao còn lại và cuộn dọc -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_rooms"
+    <!-- Vùng hiển thị danh sách hoặc thông báo không có kết quả -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="12dp"
-        android:paddingBottom="16dp"
-        android:clipToPadding="false"
-        android:scrollbars="vertical" />
+        android:layout_marginTop="12dp">
+
+        <!-- Danh sách phòng cuộn dọc -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_rooms"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="16dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical" />
+
+        <!-- Chỉ hiện khi không có phòng phù hợp -->
+        <LinearLayout
+            android:id="@+id/layout_search_empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="20dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_search"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="Không tìm thấy phòng phù hợp"
+                android:textColor="@color/roomly_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="Bạn thử tìm bằng tên phòng hoặc khu vực khác nhé."
+                android:textColor="@color/roomly_text_secondary"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp" />
+
+        </LinearLayout>
+
+    </FrameLayout>
 
 </LinearLayout>
 
