@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Khung thẻ phòng: nền trắng, bo góc và viền nhẹ -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardBackgroundColor="@color/roomly_surface"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/roomly_border"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Vùng ảnh: sẽ thêm ảnh phòng ở bước tiếp theo -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp">
+
+            <ImageView
+                android:id="@+id/img_room"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/roomly_primary_light"
+                android:src="@drawable/room_demo_01"
+                android:scaleType="centerCrop"
+                android:contentDescription="Ảnh phòng trọ" />
+
+            <!-- Nút lưu phòng nằm trên góc phải của ảnh -->
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/btn_save_room"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="12dp"
+                android:background="@drawable/bg_favorite_button"
+                android:src="@drawable/ic_favorite"
+                android:padding="12dp"
+                android:contentDescription="Lưu phòng"
+                app:backgroundTint="@null"
+                app:tint="@color/roomly_primary" />
+
+        </FrameLayout>
+
+        <!-- Thông tin phòng nằm dưới ảnh -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Tên phòng, tối đa hai dòng -->
+            <TextView
+                android:id="@+id/tv_room_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Phòng studio sáng thoáng, có ban công"
+                android:textColor="@color/roomly_text_primary"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <!-- Giá thuê theo tháng -->
+            <TextView
+                android:id="@+id/tv_room_price"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="3.500.000 ₫/tháng"
+                android:textColor="@color/roomly_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- Địa chỉ phòng kèm icon vị trí -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_location"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/tv_room_address"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="Mộ Lao, Hà Đông, Hà Nội"
+                    android:textColor="@color/roomly_text_secondary"
+                    android:textSize="13sp"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
+
+            </LinearLayout>
+
+            <!-- Thông tin nhanh về diện tích và tiện ích phòng -->
+            <TextView
+                android:id="@+id/tv_room_amenities"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="28 m²  •  Có nội thất  •  Wi-Fi"
+                android:textColor="@color/roomly_text_secondary"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

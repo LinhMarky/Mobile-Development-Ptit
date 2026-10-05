@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/roomly_background">
+
+    <!-- Nội dung chi tiết có thể cuộn khi dài hơn màn hình -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_room_detail"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/layout_detail_actions"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Vùng ảnh phòng và nút quay lại đặt phía trên ảnh -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="280dp">
+
+                <ImageView
+                    android:id="@+id/img_room_detail"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/room_demo_01"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Ảnh chi tiết phòng" />
+
+                <!-- Nút quay lại; sẽ gắn xử lý bấm trong Java -->
+                <!-- Nút quay lại dùng icon mũi tên, nền trắng hình tròn -->
+                <androidx.appcompat.widget.AppCompatImageButton
+                    android:id="@+id/btn_back"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="top|start"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/bg_favorite_button"
+                    android:src="@drawable/ic_arrow_back"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    android:contentDescription="Quay lại"
+                    app:backgroundTint="@null" />
+
+            </FrameLayout>
+
+            <!-- Thông tin chính của phòng, nằm bên dưới ảnh -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Tên phòng; Java sẽ cập nhật theo thẻ được chọn -->
+                <TextView
+                    android:id="@+id/tv_detail_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Phòng studio sáng thoáng, có ban công"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <!-- Giá thuê theo tháng -->
+                <TextView
+                    android:id="@+id/tv_detail_price"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="3.500.000 ₫/tháng"
+                    android:textColor="@color/roomly_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <!-- Địa chỉ kèm icon vị trí -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_location"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/tv_detail_address"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:text="Mộ Lao, Hà Đông, Hà Nội"
+                        android:textColor="@color/roomly_text_secondary"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+                <!-- Thông tin nhanh về diện tích và tiện ích -->
+                <TextView
+                    android:id="@+id/tv_detail_amenities"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="28 m²  •  Có nội thất  •  Wi-Fi"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="14sp" />
+
+                <!-- Tiêu đề phần mô tả phòng -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:text="Giới thiệu phòng"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- Nội dung mẫu; sẽ thay bằng mô tả của từng phòng khi có dữ liệu -->
+                <TextView
+                    android:id="@+id/tv_detail_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Phòng sáng thoáng, có cửa sổ lớn và ban công. Không gian phù hợp cho sinh viên hoặc người đi làm.\n\nTrang bị sẵn giường, tủ quần áo và điều hòa. Khu vực thuận tiện di chuyển, gần cửa hàng và điểm xe buýt."
+                    android:textColor="@color/roomly_text_secondary"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="6dp" />
+
+                <!-- Tiêu đề phần chi phí ngoài tiền thuê phòng -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:text="Chi phí khác"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- Tiền điện: nhãn bên trái, giá bên phải -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tiền điện"
+                        android:textColor="@color/roomly_text_secondary"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tv_detail_electricity"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3.500 ₫/kWh"
+                        android:textColor="@color/roomly_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <!-- Tiền nước -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tiền nước"
+                        android:textColor="@color/roomly_text_secondary"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tv_detail_water"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100.000 ₫/người/tháng"
+                        android:textColor="@color/roomly_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <!-- Phí Internet -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Internet"
+                        android:textColor="@color/roomly_text_secondary"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tv_detail_internet"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Miễn phí"
+                        android:textColor="@color/roomly_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <!-- Tiêu đề phần người cho thuê -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:text="Người cho thuê"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- Icon đại diện và thông tin mẫu của người cho thuê -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_favorite_button"
+                        android:padding="12dp"
+                        android:src="@drawable/ic_person"
+                        android:importantForAccessibility="no" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_detail_landlord_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Nguyễn Minh Anh"
+                            android:textColor="@color/roomly_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Người đăng tin"
+                            android:textColor="@color/roomly_text_secondary"
+                            android:textSize="13sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Vùng nút cố định; nội dung cuộn nằm phía trên vùng này -->
+    <LinearLayout
+        android:id="@+id/layout_detail_actions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/roomly_surface"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Nút mở hội thoại với người cho thuê -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_detail_message"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="12dp"
+            android:minHeight="48dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:text="Nhắn tin"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_primary"
+            android:textSize="14sp"
+            app:backgroundTint="@color/roomly_surface"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/roomly_primary"
+            app:strokeWidth="1dp" />
+
+        <!-- Nút mở giao diện chọn lịch xem phòng -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_detail_schedule"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.5"
+            android:minHeight="48dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:text="Đặt lịch xem phòng"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_surface"
+            android:textSize="14sp"
+            app:backgroundTint="@color/roomly_primary"
+            app:cornerRadius="12dp" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

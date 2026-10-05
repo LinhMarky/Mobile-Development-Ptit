@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/roomly_background"
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp">
+
+    <!-- Tiêu đề màn hình -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Phòng đã lưu"
+        android:textColor="@color/roomly_text_primary"
+        android:textSize="26sp"
+        android:textStyle="bold" />
+
+    <!-- Hướng dẫn ngắn dưới tiêu đề -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Những căn phòng bạn yêu thích"
+        android:textColor="@color/roomly_text_secondary"
+        android:textSize="14sp" />
+
+    <!-- Vùng chứa danh sách hoặc thông báo chưa có phòng -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="20dp">
+
+        <!-- Danh sách phòng đã lưu; dùng lại item_room.xml -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_saved_rooms"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="16dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical"
+            android:visibility="gone" />
+
+        <!-- Hiện khi người dùng chưa lưu phòng nào -->
+        <LinearLayout
+            android:id="@+id/layout_saved_empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_favorite"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:text="Chưa có phòng đã lưu"
+                android:textColor="@color/roomly_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="Bấm biểu tượng trái tim ở trang Khám phá để lưu phòng bạn quan tâm."
+                android:textColor="@color/roomly_text_secondary"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</LinearLayout>

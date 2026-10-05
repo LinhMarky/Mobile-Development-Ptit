@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/roomly_background"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp">
+
+    <!-- Header: thương hiệu ROOMLY và nút tài khoản -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <TextView
+            android:id="@+id/tv_brand"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="ROOMLY"
+            android:textColor="@color/roomly_primary"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.04" />
+
+        <ImageButton
+            android:id="@+id/btn_profile"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_person"
+            android:contentDescription="Mở tài khoản"
+            android:padding="12dp" />
+
+    </LinearLayout>
+
+    <!-- Lời chào kèm bàn tay vẫy -->
+    <TextView
+        android:id="@+id/tv_greeting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Chào bạn! 👋"
+        android:textColor="@color/roomly_text_secondary"
+        android:textSize="14sp" />
+
+    <!-- Tiêu đề: dòng đầu có chữ "phù hợp" màu xanh ngọc -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tìm nơi ở"
+                android:textColor="@color/roomly_text_primary"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_title_highlight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="7dp"
+                android:text="phù hợp"
+                android:textColor="@color/roomly_primary"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Dòng thứ hai của tiêu đề -->
+        <TextView
+            android:id="@+id/tv_home_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="cho hành trình mới"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- Ô nhập tìm kiếm phòng theo khu vực hoặc tên phòng -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_search"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <!-- Kính lúp mang tính trang trí -->
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_search"
+            android:importantForAccessibility="no" />
+
+        <EditText
+            android:id="@+id/edt_search"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="56dp"
+            android:layout_marginStart="12dp"
+            android:background="@null"
+            android:hint="Tìm phòng, khu vực..."
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="@color/roomly_text_primary"
+            android:textColorHint="@color/roomly_text_secondary"
+            android:textSize="14sp" />
+
+        <!-- Nút mở bảng lọc phòng -->
+        <ImageButton
+            android:id="@+id/btn_filter"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_filter"
+            android:padding="12dp"
+            android:contentDescription="Lọc phòng" />
+
+    </LinearLayout>
+
+    <!-- Hàng bộ lọc nhỏ gọn, có thể cuộn ngang -->
+    <HorizontalScrollView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- Bộ lọc được chọn: nền xanh ngọc, chữ trắng -->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_filter_all"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:background="@drawable/bg_filter_selected"
+                app:backgroundTint="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:text="Tất cả"
+                android:textAllCaps="false"
+                android:textColor="@color/roomly_surface"
+                android:textSize="13sp" />
+
+            <!-- Các bộ lọc chưa chọn: nền trắng, chữ xám -->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_filter_room"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:background="@drawable/bg_filter_unselected"
+                app:backgroundTint="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:text="Phòng trọ"
+                android:textAllCaps="false"
+                android:textColor="@color/roomly_text_secondary"
+                android:textSize="13sp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_filter_apartment"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:background="@drawable/bg_filter_unselected"
+                app:backgroundTint="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:text="Căn hộ"
+                android:textAllCaps="false"
+                android:textColor="@color/roomly_text_secondary"
+                android:textSize="13sp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_filter_studio"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:background="@drawable/bg_filter_unselected"
+                app:backgroundTint="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:text="Studio"
+                android:textAllCaps="false"
+                android:textColor="@color/roomly_text_secondary"
+                android:textSize="13sp" />
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+    <!-- Tiêu đề cho danh sách phòng bên dưới -->
+    <TextView
+        android:id="@+id/tv_room_list_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Phòng dành cho bạn"
+        android:textColor="@color/roomly_text_primary"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <!-- Danh sách phòng chiếm phần chiều cao còn lại và cuộn dọc -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_rooms"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="12dp"
+        android:paddingBottom="16dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
+
+</LinearLayout>
+
