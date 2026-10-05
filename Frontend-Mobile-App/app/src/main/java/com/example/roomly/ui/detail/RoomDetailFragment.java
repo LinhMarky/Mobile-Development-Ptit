@@ -27,6 +27,11 @@ import java.util.Locale;
 
 import android.view.inputmethod.EditorInfo;
 
+import com.example.roomly.R;
+import com.example.roomly.data.model.Conversation;
+import com.example.roomly.data.repository.DemoChatRepository;
+import com.example.roomly.ui.messages.ChatFragment;
+
 public class RoomDetailFragment extends Fragment {
 
     // Các khóa truyền thông tin phòng qua Bundle.
@@ -95,6 +100,7 @@ public class RoomDetailFragment extends Fragment {
         displayRoomDetails();
         setupBackButton();
         setupBookingButton();
+        setupMessageButton();
     }
 
     /**
@@ -514,6 +520,42 @@ public class RoomDetailFragment extends Fragment {
             timePickerDialog.dismiss();
             timePickerDialog = null;
         }
+    }
+
+    /**
+     * Mở hội thoại mẫu của phòng khi người dùng bấm Nhắn tin.
+     * Giữ màn hình chi tiết trong back stack để quay lại được.
+     */
+    private void setupMessageButton() {
+        binding.btnDetailMessage.setOnClickListener(view -> {
+            RoomCard room = getCurrentRoom();
+
+            if (room == null) {
+                Toast.makeText(
+                        requireContext(),
+                        "Không tìm thấy thông tin phòng.",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            Conversation conversation =
+                    DemoChatRepository.getInstance()
+                            .getOrCreateConversation(room);
+
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .setReorderingAllowed(true)
+                    .replace(
+                            R.id.fragment_container,
+                            ChatFragment.newInstance(
+                                    conversation.getId()
+                            )
+                    )
+                    .addToBackStack(null)
+                    .commit();
+        });
     }
 
     /**

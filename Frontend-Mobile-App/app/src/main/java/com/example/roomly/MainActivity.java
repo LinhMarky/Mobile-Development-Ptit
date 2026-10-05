@@ -18,6 +18,8 @@ import com.example.roomly.ui.explore.ExploreFragment;
 import com.example.roomly.ui.profile.ProfileFragment;
 import com.example.roomly.ui.saved.SavedFragment;
 import com.example.roomly.ui.schedule.ScheduleFragment;
+import com.example.roomly.ui.messages.MessagesFragment;
+import com.example.roomly.ui.messages.ChatFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -113,8 +115,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Chuyển giữa các màn hình Khám phá, Đã lưu, Lịch trình và Cá nhân.
-     * Tab Tin nhắn chưa được mở vì chưa có giao diện tương ứng.
+     * Chuyển giữa các màn hình Khám phá, Đã lưu,
+     * Lịch trình, Cá nhân và Tin nhắn.
      */
     private void setupBottomNavigation() {
         binding.bottomNav.setOnItemSelectedListener(item -> {
@@ -133,6 +135,9 @@ public class MainActivity extends AppCompatActivity {
 
             } else if (itemId == R.id.nav_profile) {
                 nextFragment = new ProfileFragment();
+
+            } else if (itemId == R.id.nav_messages) {
+                nextFragment = new MessagesFragment();
 
             } else {
                 return false;
@@ -155,10 +160,9 @@ public class MainActivity extends AppCompatActivity {
             // Giữ nguyên màn hình hiện tại.
         });
     }
-
     /**
-     * Ẩn menu dưới khi người dùng xem chi tiết phòng.
-     * Hiện lại menu khi quay về màn hình chính.
+     * Ẩn menu dưới khi xem chi tiết phòng hoặc trò chuyện.
+     * Hiện lại menu khi quay về các màn hình chính.
      */
     private void updateBottomNavVisibility() {
         Fragment currentFragment =
@@ -166,11 +170,11 @@ public class MainActivity extends AppCompatActivity {
                         R.id.fragment_container
                 );
 
-        boolean isRoomDetail =
-                currentFragment instanceof RoomDetailFragment;
+        boolean shouldHideBottomNav =
+                currentFragment instanceof RoomDetailFragment
+                        || currentFragment instanceof ChatFragment;
 
         binding.bottomNav.setVisibility(
-                isRoomDetail ? View.GONE : View.VISIBLE
+                shouldHideBottomNav ? View.GONE : View.VISIBLE
         );
-    }
-}
+    }}
