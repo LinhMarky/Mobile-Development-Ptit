@@ -1,0 +1,5 @@
+target
+apache-maven-*
+.env
+*.log
+*.json
