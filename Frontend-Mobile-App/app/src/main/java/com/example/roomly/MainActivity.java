@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import com.example.roomly.databinding.ActivityMainBinding;
 import com.example.roomly.ui.detail.RoomDetailFragment;
 import com.example.roomly.ui.explore.ExploreFragment;
+import com.example.roomly.ui.profile.ProfileFragment;
 import com.example.roomly.ui.saved.SavedFragment;
 import com.example.roomly.ui.schedule.ScheduleFragment;
 
@@ -24,8 +25,8 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
 
     /**
-     * Khởi tạo giao diện chính, thiết lập thanh điều hướng
-     * và mở màn hình Khám phá khi ứng dụng được tạo lần đầu.
+     * Khởi tạo giao diện chính và thiết lập thanh điều hướng.
+     * Mở màn hình Khám phá khi ứng dụng được tạo lần đầu.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
         setupBottomNavigation();
 
-        // Cập nhật menu khi mở chi tiết hoặc quay lại.
+        // Cập nhật menu khi mở chi tiết phòng hoặc quay lại.
         getSupportFragmentManager().addOnBackStackChangedListener(
                 this::updateBottomNavVisibility
         );
@@ -55,7 +56,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Thêm khoảng trống để thanh hệ thống không che giao diện.
+     * Thêm khoảng trống để thanh trạng thái và thanh điều hướng
+     * hệ thống không che giao diện ứng dụng.
      */
     private void setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(
@@ -111,8 +113,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Chuyển giữa Khám phá, Đã lưu và Lịch trình.
-     * Các tab chưa có giao diện sẽ chưa được chuyển sang.
+     * Chuyển giữa các màn hình Khám phá, Đã lưu, Lịch trình và Cá nhân.
+     * Tab Tin nhắn chưa được mở vì chưa có giao diện tương ứng.
      */
     private void setupBottomNavigation() {
         binding.bottomNav.setOnItemSelectedListener(item -> {
@@ -122,10 +124,16 @@ public class MainActivity extends AppCompatActivity {
 
             if (itemId == R.id.nav_explore) {
                 nextFragment = new ExploreFragment();
+
             } else if (itemId == R.id.nav_saved) {
                 nextFragment = new SavedFragment();
+
             } else if (itemId == R.id.nav_schedule) {
                 nextFragment = new ScheduleFragment();
+
+            } else if (itemId == R.id.nav_profile) {
+                nextFragment = new ProfileFragment();
+
             } else {
                 return false;
             }
@@ -142,15 +150,15 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        // Giữ nguyên màn hình nếu bấm lại tab đang chọn.
+        // Không tạo lại Fragment khi bấm vào tab đang được chọn.
         binding.bottomNav.setOnItemReselectedListener(item -> {
-            // Không cần tạo lại Fragment.
+            // Giữ nguyên màn hình hiện tại.
         });
     }
 
     /**
-     * Ẩn menu dưới khi đang xem chi tiết phòng.
-     * Hiện lại menu khi quay về màn hình có thanh điều hướng.
+     * Ẩn menu dưới khi người dùng xem chi tiết phòng.
+     * Hiện lại menu khi quay về màn hình chính.
      */
     private void updateBottomNavVisibility() {
         Fragment currentFragment =
