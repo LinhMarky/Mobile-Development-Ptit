@@ -2,7 +2,7 @@ package com.homely.rental.admin.controller;
 
 import com.homely.rental.admin.service.AdminService;
 import com.homely.rental.booking.entity.BookingCaseDecision;
-import com.homely.rental.common.annotation.ApiMessage;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.exception.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.constraints.NotBlank;
@@ -35,7 +35,7 @@ public class AdminController {
 
     // ADMIN01: Approve listing
     @PostMapping("/listings/{id}/approve")
-    @ApiMessage("Listing approved")
+    @Operation(summary = "Listing approved")
     public ResponseEntity<Void> approveListing(@PathVariable @Positive Long id) throws IdInvalidException {
         adminService.approveListing(id);
         return ResponseEntity.ok().build();
@@ -43,7 +43,7 @@ public class AdminController {
 
     // ADMIN02: Reject listing
     @PostMapping("/listings/{id}/reject")
-    @ApiMessage("Listing rejected")
+    @Operation(summary = "Listing rejected")
     public ResponseEntity<Void> rejectListing(
             @PathVariable @Positive Long id,
             @RequestParam @NotBlank @Size(max = 500) String reason) throws IdInvalidException {
@@ -60,7 +60,7 @@ public class AdminController {
 
     // ADMIN03: Resolve booking case
     @PostMapping("/cases/{id}/resolve")
-    @ApiMessage("Booking case resolved")
+    @Operation(summary = "Booking case resolved")
     public ResponseEntity<Void> resolveBookingCase(
             @PathVariable @Positive Long id,
             @RequestParam BookingCaseDecision decision,
@@ -72,7 +72,7 @@ public class AdminController {
 
     // ADMIN04: Suspend user
     @PostMapping("/users/{id}/suspend")
-    @ApiMessage("User suspended")
+    @Operation(summary = "User suspended")
     public ResponseEntity<Void> suspendUser(
             @PathVariable @Positive Long id,
             @RequestParam @NotBlank @Size(max = 500) String reason) throws IdInvalidException {
@@ -82,7 +82,7 @@ public class AdminController {
 
     // ADMIN: Unsuspend user
     @PostMapping("/users/{id}/unsuspend")
-    @ApiMessage("User unsuspended")
+    @Operation(summary = "User unsuspended")
     public ResponseEntity<Void> unsuspendUser(@PathVariable @Positive Long id) throws IdInvalidException {
         adminService.unsuspendUser(id);
         return ResponseEntity.ok().build();
@@ -90,7 +90,7 @@ public class AdminController {
 
     // ADMIN: Resolve report
     @PostMapping("/reports/{id}/resolve")
-    @ApiMessage("Report resolved")
+    @Operation(summary = "Report resolved")
     public ResponseEntity<Void> resolveReport(
             @PathVariable @Positive Long id,
             @RequestParam @NotBlank @Size(max = 1000) String note) throws IdInvalidException {
@@ -100,7 +100,7 @@ public class AdminController {
 
     // ADMIN: Hide review
     @PostMapping("/reviews/{id}/hide")
-    @ApiMessage("Review hidden")
+    @Operation(summary = "Review hidden")
     public ResponseEntity<Void> hideReview(
             @PathVariable @Positive Long id,
             @RequestParam @NotBlank @Size(max = 500) String reason) throws IdInvalidException {

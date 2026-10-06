@@ -17,4 +17,11 @@ public interface IdempotencyKeyRepository extends JpaRepository<IdempotencyKeyEn
     @Modifying
     @Query("DELETE FROM IdempotencyKeyEntity e WHERE e.idempotencyKey = ?1 AND e.status = ?2 AND e.expiresAt <= ?3")
     int deleteExpiredKey(String key, IdempotencyKeyEntity.IdempotencyStatus status, Instant now);
+
+    @Query("select k.id from IdempotencyKeyEntity k where k.status = 'COMPLETED' and k.expiresAt < :now order by k.expiresAt, k.id")
+    java.util.List<Long> findExpiredCompletedIds(Instant now, org.springframework.data.domain.Pageable pageable);
+
+    @Modifying
+    @Query("delete from IdempotencyKeyEntity k where k.id in :ids and k.status = 'COMPLETED' and k.expiresAt < :now")
+    int deleteExpiredCompletedIds(java.util.List<Long> ids, Instant now);
 }

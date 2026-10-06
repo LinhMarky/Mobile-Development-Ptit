@@ -35,6 +35,9 @@ public class MediaService {
     private final com.homely.rental.catalog.repository.RoomRepository rooms;
     private final com.homely.rental.catalog.repository.ListingRepository listings;
 
+    @org.springframework.beans.factory.annotation.Value("${apiPrefix:api/v1}")
+    private String apiPrefix = "api/v1";
+
     private static final int MAX_ROOM_PHOTOS = 15;
     private static final int MAX_ROOM_VIDEOS = 1;
 
@@ -211,7 +214,7 @@ public class MediaService {
                 .contentType(media.getContentType())
                 .fileSizeBytes(media.getFileSizeBytes())
                 .originalFilename(media.getOriginalFilename())
-                .url("/api/v1/media/" + media.getId() + "/content")
+                .url("/" + apiPrefix.replaceAll("^/+|/+$", "") + "/media/" + media.getId() + "/content")
                 .width(media.getWidth())
                 .height(media.getHeight())
                 .durationSecs(media.getDurationSecs())

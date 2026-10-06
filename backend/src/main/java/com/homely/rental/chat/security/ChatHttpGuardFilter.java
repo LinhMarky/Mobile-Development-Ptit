@@ -3,22 +3,17 @@ package com.homely.rental.chat.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.homely.rental.chat.service.ChatException;
 import com.homely.rental.chat.service.ChatService;
-import com.homely.rental.common.dto.ProblemDTO;
+import com.homely.rental.common.response.ApiProblems;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,15 +66,8 @@ public final class ChatHttpGuardFilter extends OncePerRequestFilter {
             }
             chain.doFilter(request, response);
         } catch (ChatException failure) {
-            response.setStatus(failure.getStatus());
-            response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
             if (failure.getStatus() == 429) response.setHeader("Retry-After", "60");
-            HttpStatus status = HttpStatus.valueOf(failure.getStatus());
-            mapper.writeValue(response.getOutputStream(), ProblemDTO.builder()
-                    .type("urn:problem:" + failure.getCode().toLowerCase(Locale.ROOT).replace('_', '-'))
-                    .title(status.getReasonPhrase()).status(status.value()).code(failure.getCode())
-                    .detail(failure.getMessage()).instance(request.getRequestURI()).traceId(UUID.randomUUID().toString())
-                    .timestamp(Instant.now()).build());
+            ApiProblems.write(mapper, request, response, failure.getStatus(), failure.getCode(), failure.getMessage());
         }
     }
 

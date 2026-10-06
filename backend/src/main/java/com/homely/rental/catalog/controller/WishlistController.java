@@ -1,7 +1,7 @@
 package com.homely.rental.catalog.controller;
 
 import com.homely.rental.catalog.service.WishlistService;
-import com.homely.rental.common.annotation.ApiMessage;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.dto.PageResponse;
 import com.homely.rental.common.exception.IdInvalidException;
 import lombok.RequiredArgsConstructor;
@@ -26,21 +26,21 @@ public class WishlistController {
 
     // CAT11: Save room
     @PostMapping("/{roomId}")
-    @ApiMessage("Save room to wishlist")
+    @Operation(summary = "Save room to wishlist")
     public ResponseEntity<Map<String, String>> saveRoom(@PathVariable Long roomId) throws IdInvalidException {
         return ResponseEntity.ok(wishlistService.saveRoom(roomId));
     }
 
     // CAT12: Unsave room
     @DeleteMapping("/{roomId}")
-    @ApiMessage("Remove room from wishlist")
+    @Operation(summary = "Remove room from wishlist")
     public ResponseEntity<Map<String, String>> unsaveRoom(@PathVariable Long roomId) throws IdInvalidException {
         return ResponseEntity.ok(wishlistService.unsaveRoom(roomId));
     }
 
     // CAT13: List saved rooms
     @GetMapping
-    @ApiMessage("List saved rooms")
+    @Operation(summary = "List saved rooms")
     public ResponseEntity<PageResponse<Map<String, Object>>> getSavedRooms(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable)
             throws IdInvalidException {
@@ -49,7 +49,7 @@ public class WishlistController {
 
     // Check if room is saved
     @GetMapping("/{roomId}/check")
-    @ApiMessage("Check if room is saved")
+    @Operation(summary = "Check if room is saved")
     public ResponseEntity<Map<String, Boolean>> checkSaved(@PathVariable Long roomId) throws IdInvalidException {
         return ResponseEntity.ok(Map.of("saved", wishlistService.isSaved(roomId)));
     }

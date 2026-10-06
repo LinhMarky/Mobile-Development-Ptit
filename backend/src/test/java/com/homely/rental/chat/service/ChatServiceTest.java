@@ -40,7 +40,8 @@ class ChatServiceTest {
     @Configuration
     @EntityScan(basePackageClasses = {User.class, Room.class, Conversation.class})
     @EnableJpaRepositories(basePackageClasses = {UserRepository.class, RoomRepository.class, ConversationRepository.class})
-    @Import({ChatService.class, CommittedEvents.class})
+    @Import({ChatService.class, CommittedEvents.class, com.homely.rental.auth.security.AccountAccessService.class,
+            com.homely.rental.auth.service.AccountLifecycleGuard.class})
     static class Config { }
 
     static class CommittedEvents {

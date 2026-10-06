@@ -1,6 +1,6 @@
 package com.homely.rental.notification.controller;
 
-import com.homely.rental.common.annotation.ApiMessage;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.dto.PageResponse;
 import com.homely.rental.common.exception.IdInvalidException;
 import com.homely.rental.notification.dto.NotificationDTO;
@@ -27,7 +27,7 @@ public class NotificationController {
 
     // NOTIF01: Get my notifications
     @GetMapping
-    @ApiMessage("Get my notifications")
+    @Operation(summary = "Get my notifications")
     public ResponseEntity<PageResponse<NotificationDTO>> getMyNotifications(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size) throws IdInvalidException {
@@ -36,7 +36,7 @@ public class NotificationController {
 
     // NOTIF02: Get unread count
     @GetMapping("/unread-count")
-    @ApiMessage("Get unread notification count")
+    @Operation(summary = "Get unread notification count")
     public ResponseEntity<Map<String, Long>> getUnreadCount() throws IdInvalidException {
         long count = notificationService.getUnreadCount();
         return ResponseEntity.ok(Map.of("unread_count", count));
@@ -44,7 +44,7 @@ public class NotificationController {
 
     // NOTIF03: Mark all as read
     @PostMapping({"/read-all", "/mark-all-read"})
-    @ApiMessage("Mark all notifications as read")
+    @Operation(summary = "Mark all notifications as read")
     public ResponseEntity<Map<String, Integer>> markAllAsRead() throws IdInvalidException {
         int updated = notificationService.markAllAsRead();
         return ResponseEntity.ok(Map.of("updated", updated));
@@ -52,7 +52,7 @@ public class NotificationController {
 
     // Mark single as read
     @PostMapping("/{id}/read")
-    @ApiMessage("Mark notification as read")
+    @Operation(summary = "Mark notification as read")
     public ResponseEntity<NotificationDTO> markAsRead(@PathVariable @Positive Long id) throws IdInvalidException {
         return ResponseEntity.ok(notificationService.markAsRead(id));
     }

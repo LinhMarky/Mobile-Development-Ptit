@@ -16,4 +16,13 @@ public interface OneTimeTokenRepository extends JpaRepository<OneTimeToken, Long
     @Modifying
     @Query("DELETE FROM OneTimeToken t WHERE t.expiresAt < ?1")
     int deleteExpiredTokens(Instant now);
+
+    void deleteByUserId(Long userId);
+
+    @Query("select t.id from OneTimeToken t where t.expiresAt < :now order by t.expiresAt, t.id")
+    java.util.List<Long> findExpiredIds(Instant now, org.springframework.data.domain.Pageable pageable);
+
+    @Modifying
+    @Query("delete from OneTimeToken t where t.id in :ids and t.expiresAt < :now")
+    int deleteExpiredIds(java.util.List<Long> ids, Instant now);
 }

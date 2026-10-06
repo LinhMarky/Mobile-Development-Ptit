@@ -4,11 +4,11 @@ import com.homely.rental.chat.service.ChatException;
 import com.homely.rental.auth.security.AccountAccessException;
 import com.homely.rental.common.dto.FieldErrorDTO;
 import com.homely.rental.common.dto.ProblemDTO;
+import com.homely.rental.common.response.ApiProblems;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,6 +18,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -25,10 +28,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
 
 @Slf4j
 @RestControllerAdvice
@@ -46,6 +46,22 @@ public class GlobalException {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ProblemDTO> unreadable(HttpMessageNotReadableException ex, HttpServletRequest request) {
         return problem(400, "INVALID_JSON", "Request body is missing or invalid", request, List.of());
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ProblemDTO> methodNotAllowed(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        var response = problem(405, "METHOD_NOT_ALLOWED", "This HTTP method is not supported for this resource", request, List.of());
+        return ResponseEntity.status(405).headers(ex.getHeaders()).headers(response.getHeaders()).body(response.getBody());
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ProblemDTO> unsupportedMediaType(HttpMediaTypeNotSupportedException ex, HttpServletRequest request) {
+        return problem(415, "UNSUPPORTED_MEDIA_TYPE", "The request Content-Type is not supported", request, List.of());
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ProblemDTO> notAcceptable(HttpMediaTypeNotAcceptableException ex, HttpServletRequest request) {
+        return problem(406, "NOT_ACCEPTABLE", "The requested response media type is not supported", request, List.of());
     }
 
     // MethodArgumentNotValidException extends BindException. Never reflect rejected binding values.
@@ -120,6 +136,12 @@ public class GlobalException {
         return problem(ex.getStatus(), ex.getCode(), ex.getMessage(), request, List.of());
     }
 
+    @ExceptionHandler(org.springframework.mail.MailException.class)
+    public ResponseEntity<ProblemDTO> mailUnavailable(org.springframework.mail.MailException ex, HttpServletRequest request) {
+        log.warn("Verification email delivery failed ({})", ex.getClass().getSimpleName());
+        return problem(503, "EMAIL_UNAVAILABLE", "Email service is unavailable. Please retry later.", request, List.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDTO> unexpected(Exception ex, HttpServletRequest request) {
         var response = problem(500, "INTERNAL_ERROR", "An unexpected error occurred", request, List.of());
@@ -133,10 +155,8 @@ public class GlobalException {
 
     private ResponseEntity<ProblemDTO> problem(int status, String code, String detail,
                                               HttpServletRequest request, List<FieldErrorDTO> fields) {
-        return ResponseEntity.status(status).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(ProblemDTO.builder()
-                .type("urn:problem:" + code.toLowerCase(Locale.ROOT).replace('_', '-'))
-                .title(HttpStatus.valueOf(status).getReasonPhrase()).status(status).code(code).detail(detail)
-                .instance(request.getRequestURI()).fieldErrors(fields).traceId(UUID.randomUUID().toString())
-                .timestamp(Instant.now()).build());
+        return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON)
+                .header("Cache-Control", "no-store")
+                .body(ApiProblems.create(status, code, detail, request.getRequestURI(), fields));
     }
 }

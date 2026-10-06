@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({SecurityConfig.class, GlobalException.class})
 @TestPropertySource(properties = {
         "apiPrefix=api/v1",
-        "homely.jwt.base64-secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+        "homely.jwt.base64-secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
 })
 class ChatControllerTest {
     @Autowired private MockMvc mvc;
@@ -50,31 +50,32 @@ class ChatControllerTest {
         user.setEmail("tenant@example.test");
         user.setEmailVerified(true);
         when(service.requireActiveUser("tenant@example.test")).thenReturn(user);
+        when(accounts.requireActive("tenant@example.test")).thenReturn(user);
     }
 
     @Test void unauthenticatedCannotListOrHandshake() throws Exception {
         mvc.perform(get("/api/v1/conversations")).andExpect(status().isUnauthorized())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.data.code").value("AUTHENTICATION_REQUIRED"));
         mvc.perform(get("/ws")).andExpect(status().isUnauthorized());
         verifyNoInteractions(service, idempotency);
     }
 
     @Test void refreshTokenCannotReadChatOrAuthenticateWebSocket() throws Exception {
         mvc.perform(get("/api/v1/conversations").header("Authorization", "Bearer refresh"))
-                .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.code").value("INVALID_ACCESS_TOKEN"));
+                .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.data.code").value("INVALID_ACCESS_TOKEN"));
         mvc.perform(get("/ws").header("Authorization", "Bearer refresh")).andExpect(status().isUnauthorized());
         verifyNoInteractions(service, idempotency);
     }
 
-    @Test void createUsesAuthenticatedIdentityAndReturnsDirectDto() throws Exception {
+    @Test void createUsesAuthenticatedIdentityAndReturnsWrappedDto() throws Exception {
         when(service.createConversation(7L, "tenant@example.test"))
                 .thenReturn(ConversationDTO.builder().id(10L).roomId(7L).tenantId(5L).build());
         mvc.perform(post("/api/v1/conversations").header("Authorization", "Bearer access")
                         .header("Idempotency-Key", "conversation-create").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"room_id\":7,\"tenant_id\":999}"))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.id").value(10))
-                .andExpect(jsonPath("$.tenant_id").value(5)).andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.statusCode").value(201)).andExpect(jsonPath("$.data.id").value(10))
+                .andExpect(jsonPath("$.data.tenant_id").value(5)).andExpect(jsonPath("$.data.data").doesNotExist());
         verify(service).createConversation(7L, "tenant@example.test");
         verify(idempotency, times(2)).saveAndFlush(any());
     }
@@ -82,7 +83,7 @@ class ChatControllerTest {
     @Test void postRequiresIdempotencyKey() throws Exception {
         mvc.perform(post("/api/v1/conversations").header("Authorization", "Bearer access")
                         .contentType(MediaType.APPLICATION_JSON).content("{\"room_id\":7}"))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("IDEMPOTENCY_KEY_REQUIRED"));
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.data.code").value("IDEMPOTENCY_KEY_REQUIRED"));
         verify(service, never()).createConversation(anyLong(), anyString());
     }
 
@@ -92,7 +93,7 @@ class ChatControllerTest {
         mvc.perform(post("/api/v1/conversations/10/read-marker").header("Authorization", "Bearer access")
                         .header("Idempotency-Key", "read-key").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"last_read_sequence\":3}"))
-                .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
+                .andExpect(status().isNotFound()).andExpect(jsonPath("$.data.code").value("RESOURCE_NOT_FOUND"));
         verifyNoInteractions(idempotency);
         verify(service, never()).markRead(anyLong(), anyString(), anyLong());
     }
@@ -103,7 +104,7 @@ class ChatControllerTest {
         mvc.perform(post("/api/v1/conversations").header("Authorization", "Bearer access")
                         .header("Idempotency-Key", "old-key").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"room_id\":7}"))
-                .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("ACCOUNT_INACTIVE"));
+                .andExpect(status().isForbidden()).andExpect(jsonPath("$.data.code").value("ACCOUNT_INACTIVE"));
         verifyNoInteractions(idempotency);
     }
 
@@ -114,9 +115,9 @@ class ChatControllerTest {
         mvc.perform(post("/api/v1/conversations").header("Authorization", "Bearer access")
                         .header("Idempotency-Key", "new-key").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"room_id\":7}"))
-                .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("EMAIL_NOT_VERIFIED"));
+                .andExpect(status().isForbidden()).andExpect(jsonPath("$.data.code").value("EMAIL_NOT_VERIFIED"));
         mvc.perform(get("/api/v1/conversations/10").header("Authorization", "Bearer access"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(10));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.id").value(10));
     }
 
     @Test void historyMapsExplicitCursorsAndUsesAuthenticatedEmail() throws Exception {
@@ -124,19 +125,19 @@ class ChatControllerTest {
                 .thenReturn(MessagePageDTO.builder().data(List.of()).hasMore(false).build());
         mvc.perform(get("/api/v1/conversations/10/messages").header("Authorization", "Bearer access")
                         .param("limit", "3").param("after_sequence", "12"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.has_more").value(false));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.data").isArray())
+                .andExpect(jsonPath("$.data.has_more").value(false));
         verify(service).getMessages(10L, "tenant@example.test", 3, null, 12L);
     }
 
     @Test void rejectsInvalidPageSizeAndReadMarkerBody() throws Exception {
         mvc.perform(get("/api/v1/conversations/10/messages").header("Authorization", "Bearer access")
                         .param("limit", "51"))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.data.code").value("VALIDATION_FAILED"));
         mvc.perform(post("/api/v1/conversations/10/read-marker").header("Authorization", "Bearer access")
                         .header("Idempotency-Key", "bad-marker").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"last_read_sequence\":-1}"))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.data.code").value("VALIDATION_FAILED"));
         verify(service, never()).getMessages(anyLong(), anyString(), anyInt(), any(), any());
         verify(service, never()).markRead(anyLong(), anyString(), anyLong());
     }

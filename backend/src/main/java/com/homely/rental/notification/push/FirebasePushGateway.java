@@ -11,6 +11,9 @@ import java.util.Map;
 public class FirebasePushGateway implements PushGateway {
     private final FirebaseApp app;
     public FirebasePushGateway(@Value("${homely.fcm.project-id}") String projectId) throws java.io.IOException {
+        if (projectId == null || projectId.isBlank()) {
+            throw new IllegalStateException("FIREBASE_PROJECT_ID is required when FCM_ENABLED=true");
+        }
         app=FirebaseApp.initializeApp(FirebaseOptions.builder().setProjectId(projectId)
                 .setCredentials(GoogleCredentials.getApplicationDefault())
                 .setConnectTimeout(10000).setReadTimeout(20000).build(),"homely-push");

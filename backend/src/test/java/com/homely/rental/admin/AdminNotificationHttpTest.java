@@ -43,9 +43,13 @@ class AdminNotificationHttpTest {
         when(decoder.decode(anyString())).thenAnswer(call -> {
             String token = call.getArgument(0);
             return Jwt.withTokenValue(token).header("alg", "HS256").subject(token + "@example.test")
-                    .claim("token_type", "access").claim("roles", List.of(token.equals("admin") ? "ROLE_ADMIN" : "ROLE_TENANT"))
+                    .claim("token_type", "access").claim("user_id", 1L)
+                    .claim("roles", List.of(token.equals("admin") ? "ROLE_ADMIN" : "ROLE_TENANT"))
                     .issuedAt(Instant.now()).expiresAt(Instant.now().plusSeconds(300)).build();
         });
+        var account = new com.homely.rental.auth.entity.User(); account.setId(1L);
+        when(accounts.requireActive(anyString())).thenReturn(account);
+        when(accounts.requireAdmin(anyString())).thenReturn(account);
     }
 
     @Test void roleAndLiveAccountChecksRunBeforeReplayOrMutation() throws Exception {
@@ -53,14 +57,14 @@ class AdminNotificationHttpTest {
                 .andExpect(status().isForbidden());
         when(accounts.requireAdmin("admin@example.test")).thenThrow(new AccountAccessException(403, "FORBIDDEN", "Admin role is required"));
         mvc.perform(post("/api/v1/admin/listings/1/approve").header("Authorization", "Bearer admin").header("Idempotency-Key", "old"))
-                .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("FORBIDDEN"));
+                .andExpect(status().isForbidden()).andExpect(jsonPath("$.data.code").value("FORBIDDEN"));
         verifyNoInteractions(keys, admin);
     }
 
     @Test void suspendedJwtIsDeniedOnOtherProtectedApis() throws Exception {
         when(accounts.requireActive("tenant@example.test")).thenThrow(new AccountAccessException(403, "ACCOUNT_INACTIVE", "Account inactive"));
         mvc.perform(get("/api/v1/notifications").header("Authorization", "Bearer tenant"))
-                .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("ACCOUNT_INACTIVE"));
+                .andExpect(status().isForbidden()).andExpect(jsonPath("$.data.code").value("ACCOUNT_INACTIVE"));
         mvc.perform(get("/api/v1/bookings").header("Authorization", "Bearer tenant"))
                 .andExpect(status().isForbidden());
         verifyNoInteractions(inbox, keys);
@@ -68,25 +72,25 @@ class AdminNotificationHttpTest {
 
     @Test void adminMutationsRequireIdempotencyAndValidatedReason() throws Exception {
         mvc.perform(post("/api/v1/admin/listings/1/approve").header("Authorization", "Bearer admin"))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("IDEMPOTENCY_KEY_REQUIRED"));
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.data.code").value("IDEMPOTENCY_KEY_REQUIRED"));
         mvc.perform(post("/api/v1/admin/listings/1/reject").header("Authorization", "Bearer admin")
                         .header("Idempotency-Key", "reject").param("reason", " "))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.data.code").value("VALIDATION_FAILED"));
         verifyNoInteractions(admin);
     }
 
     @Test void suspendRouteIsAvailableForAdminWithReason() throws Exception {
         mvc.perform(post("/api/v1/admin/listings/1/suspend").header("Authorization", "Bearer admin")
                         .header("Idempotency-Key", "suspend").param("reason", "Policy violation"))
-                .andExpect(status().isOk()).andExpect(content().string(""));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.statusCode").value(200)).andExpect(jsonPath("$.data").value(org.hamcrest.Matchers.nullValue()));
         verify(admin).suspendListing(1L, "Policy violation");
     }
 
-    @Test void notificationPaginationIsBoundedAndReturnsDirectDto() throws Exception {
+    @Test void notificationPaginationIsBoundedInsideEnvelope() throws Exception {
         when(inbox.getMyNotifications(any())).thenReturn(PageResponse.<NotificationDTO>builder()
                 .data(List.of()).totalElements(0).totalPages(0).currentPage(0).pageSize(20).build());
         mvc.perform(get("/api/v1/notifications").header("Authorization", "Bearer tenant"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.data").isArray()).andExpect(jsonPath("$.page_size").value(20));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.data").isArray()).andExpect(jsonPath("$.data.page_size").value(20));
         mvc.perform(get("/api/v1/notifications").header("Authorization", "Bearer tenant").param("size", "51"))
                 .andExpect(status().isBadRequest());
     }
@@ -98,7 +102,7 @@ class AdminNotificationHttpTest {
         for (String route : List.of("read-all", "mark-all-read")) {
             mvc.perform(post("/api/v1/notifications/" + route).header("Authorization", "Bearer tenant")
                             .header("Idempotency-Key", route)).andExpect(status().isOk())
-                    .andExpect(jsonPath("$.updated").value(2)).andExpect(jsonPath("$.data").doesNotExist());
+                    .andExpect(jsonPath("$.data.updated").value(2)).andExpect(jsonPath("$.data.data").doesNotExist());
         }
         verify(inbox, times(2)).markAllAsRead();
     }

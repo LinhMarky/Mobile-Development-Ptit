@@ -12,7 +12,8 @@ import com.homely.rental.auth.service.AccountDeletionService;
 import com.homely.rental.auth.service.EmailService;
 import com.homely.rental.auth.service.TokenService;
 import com.homely.rental.auth.service.UserService;
-import com.homely.rental.common.annotation.ApiMessage;
+import com.homely.rental.auth.service.RegistrationService;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.exception.IdInvalidException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,28 +39,21 @@ public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final TokenService tokenService;
     private final UserService userService;
+    private final RegistrationService registrationService;
     private final EmailService emailService;
     private final AccountDeletionService accountDeletionService;
     private final com.homely.rental.auth.repository.DeviceTokenRepository devices;
 
     // AUTH01: Register
     @PostMapping("/register")
-    @ApiMessage("Register a new user")
+    @Operation(summary = "Register a new user")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest dto) throws Exception {
-        UserResponse newUser = this.userService.registerUser(dto);
-
-        // Generate email verification token
-        User user = this.userService.handleGetUserByUsername(dto.getEmail());
-        if (user != null) {
-            emailService.generateVerificationToken(user);
-        }
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(registrationService.register(dto));
     }
 
     // AUTH02: Login
     @PostMapping("/login")
-    @ApiMessage("Login by credential")
+    @Operation(summary = "Login by credential")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginDTO) {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword());
@@ -94,14 +88,14 @@ public class AuthController {
 
     // AUTH03: Refresh token — now validates via refresh_tokens table
     @PostMapping("/refresh")
-    @ApiMessage("Refresh access token")
+    @Operation(summary = "Refresh access token")
     public ResponseEntity<LoginResponse> refreshToken(@Valid @RequestBody RefreshRequest request) throws IdInvalidException {
         return ResponseEntity.ok(tokenService.rotate(request));
     }
 
     // AUTH04: Logout — revoke the refresh token for this session
     @PostMapping("/logout")
-    @ApiMessage("Logout user")
+    @Operation(summary = "Logout user")
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public ResponseEntity<Void> logout(@RequestBody(required = false) RefreshRequest request) throws IdInvalidException {
         String email = SecurityUtils.getCurrentUserLogin().orElse("");
@@ -122,7 +116,7 @@ public class AuthController {
 
     // AUTH05: Request email verification (resend)
     @PostMapping("/verify-email/resend")
-    @ApiMessage("Resend email verification")
+    @Operation(summary = "Resend email verification")
     public ResponseEntity<Map<String, String>> resendVerification() throws IdInvalidException {
         String email = SecurityUtils.getCurrentUserLogin().orElse("");
         if (email.isEmpty()) {
@@ -143,7 +137,7 @@ public class AuthController {
 
     // AUTH06: Verify email
     @PostMapping("/verify-email")
-    @ApiMessage("Verify email address")
+    @Operation(summary = "Verify email address")
     public ResponseEntity<Map<String, String>> verifyEmail(@Valid @RequestBody OneTimeTokenRequest request) throws IdInvalidException {
         Optional<OneTimeToken> tokenOpt = emailService.verifyToken(request.getToken());
 
@@ -163,7 +157,7 @@ public class AuthController {
 
     // Get current account info
     @GetMapping("/account")
-    @ApiMessage("Get user information")
+    @Operation(summary = "Get user information")
     public ResponseEntity<LoginResponse.UserLogin> getAccount() throws IdInvalidException {
         String email = SecurityUtils.getCurrentUserLogin().orElse("");
         User currentUserDB = this.userService.handleGetUserByUsername(email);
@@ -177,14 +171,21 @@ public class AuthController {
 
     // AUTH09: Enable host role
     @PostMapping("/enable-host")
-    @ApiMessage("Enable host role for current user")
+    @Operation(summary = "Enable host role for current user")
     public ResponseEntity<UserResponse> enableHost() throws IdInvalidException {
         return ResponseEntity.ok(this.userService.enableHostRole());
     }
 
     // AUTH12: Request account deletion
+    @GetMapping("/delete-account")
+    @Operation(summary = "Get current account deletion request")
+    public ResponseEntity<com.homely.rental.auth.dto.response.AccountDeletionResponse> deletionStatus() {
+        return ResponseEntity.ok(accountDeletionService.currentRequest());
+    }
+
+    // AUTH12: Request account deletion
     @PostMapping("/delete-account")
-    @ApiMessage("Request account deletion")
+    @Operation(summary = "Request account deletion")
     public ResponseEntity<Map<String, String>> requestDeletion(@Valid @RequestBody DeletionRequest dto) throws IdInvalidException {
         AccountDeletionRequest deletionRequest = accountDeletionService.requestDeletion(dto);
         return ResponseEntity.ok(Map.of(

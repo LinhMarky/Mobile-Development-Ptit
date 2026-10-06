@@ -1,7 +1,6 @@
 package com.homely.rental.auth.security;
 
 import com.homely.rental.auth.entity.User;
-import com.homely.rental.common.exception.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,8 +9,8 @@ import java.util.Optional;
 
 /**
  * Central component for resolving the signed-in user.
- * Replaces all duplicated getCurrentUser/getVerifiedUser/getVerifiedHost
- * private methods scattered across services.
+ * Resolves the database account through the common active-account guard.
+ * Services may add their own verification and role requirements.
  */
 @Component
 @RequiredArgsConstructor
@@ -53,4 +52,3 @@ public class UserResolver {
                 ? Optional.empty() : Optional.of(requireCurrent());
     }
 }
-

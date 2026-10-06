@@ -1,6 +1,6 @@
 package com.homely.rental.interaction.controller;
 
-import com.homely.rental.common.annotation.ApiMessage;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.dto.PageResponse;
 import com.homely.rental.common.exception.IdInvalidException;
 import com.homely.rental.interaction.dto.ReportCreateRequest;
@@ -25,7 +25,7 @@ public class ReportController {
 
     // RPT01: Create report
     @PostMapping
-    @ApiMessage("Create report")
+    @Operation(summary = "Create report")
     public ResponseEntity<ReportDTO> createReport(
             @Valid @RequestBody ReportCreateRequest request) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.CREATED).body(reportService.createReport(request));
@@ -33,7 +33,7 @@ public class ReportController {
 
     // RPT02: My reports
     @GetMapping("/my")
-    @ApiMessage("Get my reports")
+    @Operation(summary = "Get my reports")
     public ResponseEntity<PageResponse<ReportDTO>> getMyReports(Pageable pageable) throws IdInvalidException {
         return ResponseEntity.ok(reportService.getMyReports(pageable));
     }

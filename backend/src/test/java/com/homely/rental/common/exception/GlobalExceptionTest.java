@@ -50,7 +50,7 @@ class GlobalExceptionTest {
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
         mvc = MockMvcBuilders.standaloneSetup(new InputController())
-                .setControllerAdvice(new GlobalException())
+                .setControllerAdvice(new GlobalException(), new com.homely.rental.common.response.FormatRestResponse(mapper))
                 .setMessageConverters(new MappingJackson2HttpMessageConverter(mapper))
                 .build();
     }
@@ -151,9 +151,13 @@ class GlobalExceptionTest {
 
     private JsonNode problem(ResultActions result, int status, String code, String path) throws Exception {
         String body = result.andExpect(status().is(status))
-                .andExpect(content().contentTypeCompatibleWith("application/problem+json"))
+                .andExpect(content().contentTypeCompatibleWith("application/json"))
                 .andReturn().getResponse().getContentAsString();
-        JsonNode problem = mapper.readTree(body);
+        JsonNode envelope = mapper.readTree(body);
+        assertThat(envelope.size()).isEqualTo(3);
+        assertThat(envelope.path("statusCode").asInt()).isEqualTo(status);
+        JsonNode problem = envelope.get("data");
+        assertThat(envelope.path("message").asText()).isEqualTo(problem.path("detail").asText());
         assertThat(problem.size()).isEqualTo(9);
         assertThat(problem.get("status").asInt()).isEqualTo(status);
         assertThat(problem.get("type").asText()).isEqualTo("urn:problem:" + code.toLowerCase().replace('_', '-'));

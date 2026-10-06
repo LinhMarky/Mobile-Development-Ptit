@@ -1,7 +1,8 @@
 package com.homely.rental.common.idempotency;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.homely.rental.common.dto.ProblemDTO;
+import com.homely.rental.common.dto.RestResponse;
+import com.homely.rental.common.response.ApiProblems;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,7 +27,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /** Catalog/chat JSON mutations, registered after HTTP authorization; never cache authentication responses. */
 @Slf4j
@@ -153,19 +153,27 @@ public class IdempotencyFilter extends OncePerRequestFilter {
                 if (declared != null) charset = declared;
             }
             if (claim.getResponseLocation() != null) response.setHeader("Location", claim.getResponseLocation());
-            if (claim.getResponseBody() != null) response.getOutputStream().write(claim.getResponseBody().getBytes(charset));
+            String cachedBody = claim.getResponseBody();
+            if (claim.getResponseStatusCode() != 204 && claim.getResponseStatusCode() != 205) {
+                // Existing 24h snapshots may predate the envelope. Adapt them without repeating the mutation.
+                if (cachedBody == null || cachedBody.isBlank()) {
+                    cachedBody = objectMapper.writeValueAsString(RestResponse.of(claim.getResponseStatusCode(), null));
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                } else if (claim.getResponseContentType() != null
+                        && (claim.getResponseContentType().contains("json"))) {
+                    var payload = objectMapper.readTree(cachedBody);
+                    boolean wrapped = payload.isObject() && payload.has("statusCode") && payload.has("message")
+                            && payload.has("data") && payload.path("statusCode").asInt() == claim.getResponseStatusCode();
+                    if (!wrapped) cachedBody = objectMapper.writeValueAsString(RestResponse.of(claim.getResponseStatusCode(), payload));
+                }
+            }
+            if (cachedBody != null) response.getOutputStream().write(cachedBody.getBytes(charset));
         }
     }
 
     private void problem(HttpServletResponse response, HttpServletRequest request, HttpStatus status,
                          String code, String detail) throws IOException {
-        response.setStatus(status.value());
-        response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
-        objectMapper.writeValue(response.getOutputStream(), ProblemDTO.builder()
-                .type("urn:problem:" + code.toLowerCase(java.util.Locale.ROOT).replace('_', '-'))
-                .title(status.getReasonPhrase()).status(status.value()).detail(detail)
-                .instance(request.getRequestURI()).code(code).traceId(UUID.randomUUID().toString())
-                .timestamp(Instant.now()).build());
+        ApiProblems.write(objectMapper, request, response, status.value(), code, detail);
     }
 
     private static String hash(byte[] bytes) {

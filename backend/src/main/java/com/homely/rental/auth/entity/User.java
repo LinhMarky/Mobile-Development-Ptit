@@ -85,4 +85,13 @@ public class User extends AbstractAuditingEntity<Long> {
 
     @Version
     private int version;
+
+    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private AccountLifecycleLock lifecycleLock;
+
+    @PrePersist
+    void createLifecycleLock() {
+        if (lifecycleLock == null) lifecycleLock = new AccountLifecycleLock(this);
+    }
 }

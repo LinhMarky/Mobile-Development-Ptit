@@ -1,6 +1,6 @@
 package com.homely.rental.media.controller;
 
-import com.homely.rental.common.annotation.ApiMessage;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.exception.IdInvalidException;
 import com.homely.rental.media.dto.AttachMediaRequest;
 import com.homely.rental.media.dto.MediaDTO;
@@ -28,6 +28,12 @@ public class MediaController {
     private final MediaService mediaService;
 
     @GetMapping("/{id}/content")
+    @Operation(summary = "Read authorized media content")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Raw file bytes; content type matches the stored file", content = {
+            @io.swagger.v3.oas.annotations.media.Content(mediaType = "image/jpeg", schema = @io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")),
+            @io.swagger.v3.oas.annotations.media.Content(mediaType = "image/png", schema = @io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")),
+            @io.swagger.v3.oas.annotations.media.Content(mediaType = "image/webp", schema = @io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")),
+            @io.swagger.v3.oas.annotations.media.Content(mediaType = "video/mp4", schema = @io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary"))})
     public ResponseEntity<org.springframework.core.io.InputStreamResource> content(@PathVariable Long id) {
         var content = mediaService.content(id);
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(content.contentType()))
@@ -41,7 +47,7 @@ public class MediaController {
      * Returns MediaDTO with READY status. File is not yet attached to any resource.
      */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @ApiMessage("Upload media file")
+    @Operation(summary = "Upload media file")
     public ResponseEntity<MediaDTO> upload(
             @RequestParam("file") MultipartFile file,
             @RequestParam("purpose") MediaPurpose purpose) throws IdInvalidException {
@@ -52,7 +58,7 @@ public class MediaController {
      * Attach uploaded media to a room.
      */
     @PostMapping("/attach/room/{roomId}")
-    @ApiMessage("Attach media to room")
+    @Operation(summary = "Attach media to room")
     public ResponseEntity<List<MediaDTO>> attachToRoom(
             @PathVariable Long roomId,
             @Valid @RequestBody AttachMediaRequest request,
@@ -66,7 +72,7 @@ public class MediaController {
      * Get all media for a room.
      */
     @GetMapping("/room/{roomId}")
-    @ApiMessage("Get room media")
+    @Operation(summary = "Get room media")
     public ResponseEntity<List<MediaDTO>> getRoomMedia(@PathVariable Long roomId) {
         return ResponseEntity.ok(mediaService.getResourceMedia("room", roomId));
     }
@@ -75,7 +81,7 @@ public class MediaController {
      * Delete a media file.
      */
     @DeleteMapping("/{mediaId}")
-    @ApiMessage("Delete media")
+    @Operation(summary = "Delete media")
     public ResponseEntity<Void> deleteMedia(@PathVariable Long mediaId) throws IdInvalidException {
         mediaService.deleteMedia(mediaId);
         return ResponseEntity.noContent().build();
@@ -85,7 +91,7 @@ public class MediaController {
      * Get my unattached (READY) media for a given purpose.
      */
     @GetMapping("/my")
-    @ApiMessage("Get my ready media")
+    @Operation(summary = "Get my ready media")
     public ResponseEntity<List<MediaDTO>> getMyReadyMedia(
             @RequestParam("purpose") MediaPurpose purpose) throws IdInvalidException {
         return ResponseEntity.ok(mediaService.getMyReadyMedia(purpose));

@@ -1,70 +1,49 @@
 package com.homely.rental.common.response;
 
-import jakarta.servlet.http.HttpServletResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.homely.rental.common.dto.RestResponse;
-import com.homely.rental.common.annotation.ApiMessage;
-
 import org.springframework.core.MethodParameter;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-@RestControllerAdvice
+/** Wrap application HTTP JSON once; leave file/stream responses and framework endpoints alone. */
+@RestControllerAdvice(basePackages = "com.homely.rental")
 public class FormatRestResponse implements ResponseBodyAdvice<Object> {
-    @Override
-    public boolean supports(MethodParameter returnType, Class converterType) {
-        // Contract v1.4: all controllers return DTOs directly, including empty 204 bodies.
-        return false;
+    private final ObjectMapper mapper;
+
+    public FormatRestResponse(ObjectMapper mapper) {
+        this.mapper = mapper;
     }
 
     @Override
-    public Object beforeBodyWrite(
-            Object body,
-            MethodParameter returnType,
-            MediaType selectedContentType,
-            Class selectedConverterType,
-            ServerHttpRequest request,
-            ServerHttpResponse response) {
-        HttpServletResponse servletResponse = ((ServletServerHttpResponse) response).getServletResponse();
-        int status = servletResponse.getStatus();
+    public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+        return MappingJackson2HttpMessageConverter.class.isAssignableFrom(converterType)
+                || StringHttpMessageConverter.class.isAssignableFrom(converterType);
+    }
 
-        // 1. Không bọc String và Resource (file download)
-        if (body instanceof String || body instanceof Resource) {
-            return body;
+    @Override
+    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType contentType,
+                                  Class<? extends HttpMessageConverter<?>> converterType,
+                                  ServerHttpRequest request, ServerHttpResponse response) {
+        int status = response instanceof ServletServerHttpResponse servlet ? servlet.getServletResponse().getStatus() : 200;
+        if (status < 200 || status == 204 || status == 205 || status == 304) return body;
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        Object envelope = body instanceof RestResponse<?> ? body : RestResponse.of(status, body);
+        if (StringHttpMessageConverter.class.isAssignableFrom(converterType)) {
+            try {
+                return mapper.writeValueAsString(envelope);
+            } catch (JsonProcessingException ex) {
+                throw new IllegalStateException("Unable to serialize the API response", ex);
+            }
         }
-
-        // 2. Không bọc nếu body đã là RestResponse (chống double-wrap)
-        if (body instanceof RestResponse) {
-            return body;
-        }
-
-        // 3. Không bọc Swagger/OpenAPI endpoints
-        String path = request.getURI().getPath();
-        if (path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui")) {
-            return body;
-        }
-
-        // 4. Không bọc Webhook endpoints (payment gateways expect raw JSON)
-        if (path.startsWith("/webhooks")) {
-            return body;
-        }
-
-        // 5. Không bọc error responses (status >= 400)
-        //    → GlobalException đã tự tạo RestResponse rồi, để nó pass qua
-        if (status >= 400) {
-            return body;
-        }
-
-        // 6. Chỉ bọc success responses
-        RestResponse<Object> res = new RestResponse<Object>();
-        res.setStatusCode(status);
-        res.setData(body);
-        ApiMessage message = returnType.getMethodAnnotation(ApiMessage.class);
-        res.setMessage(message != null ? message.value() : "Call api success");
-        return res;
+        return envelope;
     }
 }

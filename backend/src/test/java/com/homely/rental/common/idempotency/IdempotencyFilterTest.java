@@ -84,6 +84,33 @@ class IdempotencyFilterTest {
         assertThat(mutations).hasValue(1);
     }
 
+    @Test void legacySnapshotIsWrappedWithoutRepeatingMutation() throws Exception {
+        perform("{}", this::create);
+        records.values().iterator().next().setResponseBody("{\"id\":7,\"title\":\"Legacy room\"}");
+        MockHttpServletResponse replay = perform("{}", this::create);
+        var envelope = new ObjectMapper().readTree(replay.getContentAsString());
+        assertThat(envelope.path("statusCode").asInt()).isEqualTo(201);
+        assertThat(envelope.path("data").path("id").asLong()).isEqualTo(7);
+        assertThat(envelope.path("data").path("title").asText()).isEqualTo("Legacy room");
+        assertThat(envelope.size()).isEqualTo(3);
+        assertThat(mutations).hasValue(1);
+    }
+
+    @Test void legacyPageAndEmptySuccessKeepTheirMeaningInsideEnvelope() throws Exception {
+        perform("{}", this::create);
+        var stored = records.values().iterator().next();
+        stored.setResponseStatusCode(200);
+        stored.setResponseBody("{\"data\":[],\"total_elements\":0,\"page_size\":20}");
+        var page = new ObjectMapper().readTree(perform("{}", this::create).getContentAsString());
+        assertThat(page.path("data").path("data").isArray()).isTrue();
+        assertThat(page.path("data").path("page_size").asInt()).isEqualTo(20);
+        stored.setResponseBody("");
+        var empty = new ObjectMapper().readTree(perform("{}", this::create).getContentAsString());
+        assertThat(empty.get("data").isNull()).isTrue();
+        assertThat(empty.path("statusCode").asInt()).isEqualTo(200);
+        assertThat(mutations).hasValue(1);
+    }
+
     @Test void scopeSeparatesUsersEvenWithSameKeyAndBody() throws Exception {
         perform("{}", this::create);
         authenticate(2L);
@@ -214,7 +241,7 @@ class IdempotencyFilterTest {
         result.setStatus(201);
         result.setContentType("application/json;charset=UTF-8");
         result.setHeader("Location", "/api/v1/rooms/7");
-        result.getWriter().write("{\"id\":7,\"title\":\"Phòng đẹp\"}");
+        result.getWriter().write("{\"statusCode\":201,\"message\":\"Created\",\"data\":{\"id\":7,\"title\":\"Phòng đẹp\"}}");
     }
 
     private void authenticate(long id) {

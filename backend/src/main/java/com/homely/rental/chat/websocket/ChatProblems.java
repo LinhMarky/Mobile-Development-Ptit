@@ -2,14 +2,10 @@ package com.homely.rental.chat.websocket;
 
 import com.homely.rental.chat.service.ChatException;
 import com.homely.rental.common.dto.ProblemDTO;
-import org.springframework.http.HttpStatus;
+import com.homely.rental.common.response.ApiProblems;
 import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
 
 final class ChatProblems {
     private ChatProblems() { }
@@ -35,12 +31,6 @@ final class ChatProblems {
     }
 
     static ProblemDTO create(int status, String code, String detail) {
-        HttpStatus httpStatus = HttpStatus.resolve(status);
-        return ProblemDTO.builder()
-                .type("urn:problem:" + code.toLowerCase(Locale.ROOT).replace('_', '-'))
-                .title(httpStatus == null ? "Chat Error" : httpStatus.getReasonPhrase())
-                .status(status).detail(detail).instance("/ws").code(code)
-                .fieldErrors(List.of()).traceId(UUID.randomUUID().toString()).timestamp(Instant.now())
-                .build();
+        return ApiProblems.create(status, code, detail, "/ws");
     }
 }

@@ -1,113 +1,85 @@
 # 🏢 Homely Rental System — Infrastructure & Deployment
 
-![Java 17](https://img.shields.io/badge/Java-17-orange)
-![Spring Boot 3.3.x](https://img.shields.io/badge/Spring_Boot-3.3.x-green)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 ![MySQL 8.4](https://img.shields.io/badge/MySQL-8.4-blue)
 ![MinIO](https://img.shields.io/badge/MinIO-Storage-red)
+![Mailpit](https://img.shields.io/badge/Mailpit-SMTP-yellow)
 
-Tài liệu này cung cấp hướng dẫn cài đặt và vận hành hệ thống **Homely** (Room Rental System) trên môi trường Local/Demo bằng Docker Compose. Hệ thống bao gồm Backend (Spring Boot), Database (MySQL 8.4), Storage (MinIO) và Mock Email (Mailpit).
+Tài liệu này cung cấp hướng dẫn cài đặt và vận hành toàn bộ hạ tầng của hệ thống **Homely** (Room Rental System) trên môi trường Local/Demo thông qua Docker Compose.
 
 ---
 
 ## 🛠 Yêu cầu hệ thống (Prerequisites)
 
-- **Docker Desktop** / **Docker Engine** (đang chạy với Linux containers).
-- **PowerShell** (nếu chạy trên Windows).
-- **Java 17+ & Maven** (nếu muốn build thủ công không qua Docker).
+- **Docker Desktop** (trên Windows/Mac) hoặc **Docker Engine** (trên Linux) phải đang ở trạng thái Running.
+- **Git** để quản lý source code.
+- **PowerShell** (nếu chạy trên Windows) để thực thi các script tự động.
+- Trống các port: `8080` (hoặc `8082` tuỳ cấu hình API), `3306` (cho MySQL), `9000/9001` (cho MinIO), `8025/1025` (cho Mailpit).
 
 ---
 
 ## 🚀 Khởi động nhanh (Quick Start)
 
-Mở Terminal (PowerShell) tại thư mục `Infra` và chạy lần lượt các lệnh sau:
+Mở Terminal (khuyến nghị PowerShell) tại thư mục `Infra` và chạy lần lượt các bước sau:
 
-1. **Khởi tạo môi trường:**
-   ```powershell
-   # Sinh file .env với các biến bảo mật tự động
-   .\New-DemoEnv.ps1
-   ```
+### Bước 1: Khởi tạo biến môi trường
+Script sau sẽ tự động sinh file `.env` chứa các mật khẩu ngẫu nhiên và thông tin bảo mật cần thiết cho toàn bộ Docker Compose.
+```powershell
+.\New-DemoEnv.ps1
+```
+*(Nếu báo lỗi port 8080 bị trùng, bạn có thể mở file `.env` sinh ra và đổi `API_PORT=8082`)*
 
-2. **Kiểm tra file cấu hình (Tùy chọn):**
-   ```powershell
-   docker compose config --quiet
-   ```
+### Bước 2: Build & Start các services
+Chạy lệnh sau để khởi động hạ tầng ngầm (MySQL, MinIO, Mailpit) và build image cho Backend.
+```powershell
+docker compose up --build -d
+```
 
-3. **Khởi động toàn bộ hệ thống:**
-   ```powershell
-   docker compose up --build -d
-   ```
-
-4. **Theo dõi log Backend:**
-   ```powershell
-   docker compose logs -f backend
-   ```
-> **Lưu ý:** Backend sẽ tự động chờ MySQL và MinIO `healthy` rồi mới bắt đầu chạy. Thời gian tải ban đầu có thể mất 1-2 phút.
+### Bước 3: Theo dõi Log
+Backend sẽ tự động chờ cho đến khi MySQL và MinIO chuyển sang trạng thái `healthy` rồi mới khởi động Spring Boot. Quá trình này mất khoảng 1-2 phút.
+```powershell
+docker compose logs -f backend
+```
 
 ---
 
-## 🌍 Các dịch vụ và Cổng (Services & Ports)
+## 🧪 Kịch bản Kiểm thử (Testing)
 
-Sau khi hệ thống khởi động thành công, bạn có thể truy cập các dịch vụ qua các địa chỉ sau:
+Dự án cung cấp sẵn các script PowerShell để tự động hoá việc kiểm tra hệ thống. Vẫn đứng tại thư mục `Infra`, chạy:
 
-| Dịch vụ | Địa chỉ truy cập | Ghi chú |
-|---------|-----------------|---------|
-| **Backend API Health** | [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health) | Trạng thái server |
-| **Swagger UI (API Docs)** | [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) | Tài liệu API |
-| **Mailpit (Mock Email)** | [http://localhost:8025](http://localhost:8025) | Hộp thư test (Mã OTP, email xác nhận) |
-| **MinIO Console** | [http://localhost:9001](http://localhost:9001) | Quản lý File/Ảnh (User/Pass trong `.env`) |
-
-*Lưu ý: Nếu cổng `8080` bị trùng, bạn có thể đổi cổng bằng cách cấu hình `$env:API_PORT='18082'` trước khi chạy Docker Compose.*
-
----
-
-## 👥 Tài khoản Demo (Sandbox Data)
-
-Khi khởi chạy, hệ thống sẽ tự động tạo dữ liệu mẫu (Seed Data) nếu biến `DEMO_SEED=true` được bật. Mật khẩu chung cho tất cả các tài khoản nằm trong biến `DEMO_PASSWORD` ở file `.env`.
-
-Danh sách tài khoản test:
-- 👑 **Admin**: `admin@homely.test` (Quản trị, duyệt tin)
-- 🏠 **Host**: `host@homely.test` (Chủ nhà, quản lý phòng, booking)
-- 🧑‍💼 **Tenant**: `tenant@homely.test` (Khách thuê phòng)
-
-> Dữ liệu seed bao gồm: 3 phòng, 2 tin công khai, 1 tin chờ duyệt và 1 lịch hẹn xem phòng. Seed an toàn và sẽ tự bỏ qua nếu phát hiện email đã tồn tại. Muốn test luồng tạo mới, bạn cứ dùng email tùy ý và check hộp thư Mailpit để lấy mã OTP nhé.
-
----
-
-## 🧪 Chạy Script Kiểm thử (Testing)
-
-Dự án cung cấp sẵn các công cụ tự động (Dev Tooling) để kiểm thử luồng nghiệp vụ. Chạy các lệnh sau trong PowerShell:
-
-1. **Kiểm tra luồng Hạ tầng (Tạo user, upload ảnh, gửi mail, rate limit):**
+1. **Kiểm tra Hạ tầng (`Test-Infrastructure.ps1`)**:
+   Kiểm tra kết nối Database, upload/đọc file từ MinIO, hệ thống gửi email (SMTP Mailpit) và rate limit.
    ```powershell
-   .\Test-Infrastructure.ps1 -BaseUrl 'http://localhost:8080/api/v1'
+   .\Test-Infrastructure.ps1 -BaseUrl http://localhost:8080/api/v1
    ```
 
-2. **Kiểm tra tải trọng Backend (Load Testing):**
+2. **Kiểm tra Nghiệp vụ (`Test-Demo.ps1`)**:
+   Chạy luồng End-to-End thực tế: Đăng ký, đăng nhập, verify email, tạo phòng, duyệt yêu cầu thuê, thanh toán mô phỏng (sandbox) và chat.
    ```powershell
-   .\Test-BackendLoad.ps1 -BaseUrl 'http://localhost:8080/api/v1'
+   $env:DEMO_PASSWORD = (Get-Content .env | Select-String "DEMO_PASSWORD=").Line.Split("=")[1]
+   .\Test-Demo.ps1 -BaseUrl http://localhost:8080/api/v1
    ```
-
-3. **Kiểm thử luồng Đặt phòng (Booking/Payment/Handover):**
-   ```powershell
-   .\Test-Demo.ps1 -BaseUrl 'http://localhost:8080/api/v1'
-   ```
-   *(Yêu cầu thiết lập `$env:DEMO_PASSWORD` trong Terminal trùng với `.env`)*
 
 ---
 
-## 📱 Kết nối với App Android
+## 🔧 Cấu trúc dịch vụ (Services Architecture)
 
-Xem chi tiết tại: [Hướng dẫn Android](../Homely-android/README.md).
-- **Emulator mặc định:** `http://10.0.2.2:8080/api/v1`
-- **Thiết bị thật (cắm cáp USB):** Chạy lệnh `adb reverse tcp:8080 tcp:8080` và gọi API qua `http://127.0.0.1:8080/api/v1`
+- **MySQL (`mysql:8.4`)**: Database chính. Dữ liệu được lưu tại volume `mysql_data`.
+- **MinIO (`homely-minio-source`)**: Dịch vụ Object Storage tương thích S3, dùng để lưu trữ ảnh phòng và avatar. Web UI quản lý tại `http://localhost:9001`. Dữ liệu lưu tại `minio_data`.
+- **Mailpit (`axllent/mailpit`)**: Server chặn email (Catch-all SMTP) dành cho môi trường dev. Giúp bạn xem email OTP đăng ký tài khoản mà không cần gửi email thật. Web UI tại `http://localhost:8025`.
+- **Backend (`homely-demo-backend`)**: Ứng dụng Spring Boot cốt lõi. Giao tiếp nội bộ với các dịch vụ trên thông qua Docker network.
 
 ---
 
-## ⚙️ Hướng dẫn Deploy lên Production (Môi trường thật)
+## ⚠️ Khắc phục sự cố thường gặp (Troubleshooting)
 
-Nếu muốn đưa dự án ra thực tế, cần lưu ý:
-1. Tắt chế độ Demo (`DEMO_ENABLED=false`, `DEMO_SEED=false`).
-2. Tự cấu hình biến môi trường thật (`MYSQL_*`, `JWT_SECRET`, `MINIO_*`, `SMTP_*`).
-3. Dùng giao thức HTTPS và thay Mailpit bằng SMTP Provider thật (như SendGrid, Gmail).
-4. Tích hợp Firebase Cloud Messaging để Push Notification (xem chi tiết [FIREBASE_SETUP.md](../Docs%20-%20contract/FIREBASE_SETUP.md)).
-5. Kết nối ví điện tử hoặc cổng thanh toán thật (VNPay/Momo) thay vì dùng Sandbox Payment.
+1. **Lỗi `unable to prepare context: path ".../infra/minio" not found`**
+   - **Nguyên nhân**: Quên không commit thư mục `minio` do bị vướng `.gitignore`.
+   - **Cách sửa**: Đã được xử lý, bạn chỉ cần `git pull` bản mới nhất.
+
+2. **Lỗi `ports are not available: exposing port TCP 127.0.0.1:8080`**
+   - **Nguyên nhân**: Port 8080 đã bị ứng dụng khác trên máy (VD: Tomcat, Jenkins, Skype) chiếm dụng.
+   - **Cách sửa**: Mở file `Infra/.env`, thêm/sửa dòng `API_PORT=8082` và chạy lại `docker compose up -d`. Khi test, nhớ đổi `-BaseUrl` sang `8082`.
+
+3. **Backend bị tắt ngay lập tức (Exit 1)**
+   - Hãy dùng `docker compose logs backend` để xem chi tiết. Thường do `JWT_SECRET` trong file `.env` bị thiếu hoặc sai định dạng. Hãy xóa `.env` và chạy lại `New-DemoEnv.ps1`.

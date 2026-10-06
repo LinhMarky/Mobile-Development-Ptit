@@ -73,11 +73,11 @@ $session = Login-Account $email $password
 $null = Call-Api 'POST' '/auth/enable-host' $null $session.access_token
 $session = Login-Account $email $password
 $room = Call-Api 'POST' '/rooms' @{
-    unit_code='INFRA_' + [guid]::NewGuid().ToString('N').Substring(0,12)
+    unit_code='INFRA_' + [guid]::NewGuid().ToString('N').Substring(0,12).ToUpperInvariant()
     room_type='SINGLE_ROOM'; area_m2=25; max_occupants=2; amenity_ids=@()
     address=@{line='Infrastructure acceptance'; province_code='HN'; province_name='Ha Noi'}
     location=@{latitude=21.0285; longitude=105.8542}
-} $session.access_token
+} $session.access_token 201
 $png = [Convert]::FromBase64String('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=')
 $media = Upload-Png $png $session.access_token
 $null = Call-Api 'POST' ('/media/attach/room/' + $room.id) @{media_ids=@($media.id)} $session.access_token
@@ -93,13 +93,14 @@ $null = Call-Api 'GET' ('/media/' + $media.id + '/content') $null '' 404
 
 # Exhaust only this new account's login bucket; do not interfere with demo users.
 $limited = $false
+$probe = @{email=$email; password='wrong-password'; installation_id=[guid]::NewGuid().ToString(); device_name='Rate limit acceptance'}
 for ($attempt = 0; $attempt -lt 12; $attempt++) {
     try {
-        $null = Call-Api 'POST' '/auth/login' @{email=$email; password='wrong-password'} '' 401
+        $null = Call-Api 'POST' '/auth/login' $probe '' 401
     } catch {
         # Use a direct request to verify the rate-limit status and Retry-After header.
         try {
-            $null = Invoke-WebRequest -UseBasicParsing -Method POST -Uri ($BaseUrl + '/auth/login') -ContentType 'application/json' -Body (@{email=$email;password='wrong-password'} | ConvertTo-Json -Compress)
+            $null = Invoke-WebRequest -UseBasicParsing -Method POST -Uri ($BaseUrl + '/auth/login') -ContentType 'application/json' -Body ($probe | ConvertTo-Json -Compress)
         } catch {
             if ($_.Exception.Response -and [int]$_.Exception.Response.StatusCode -eq 429 -and $_.Exception.Response.Headers['Retry-After']) { $limited = $true; break }
             throw

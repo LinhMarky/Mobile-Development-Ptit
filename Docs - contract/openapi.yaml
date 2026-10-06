@@ -1,0 +1,5926 @@
+openapi: 3.0.1
+info:
+  title: Homely API
+  description: HTTP JSON dùng {statusCode,message,data}; DTO trong data dùng snake_case, VND là chuỗi số nguyên. Thanh toán và hoàn tiền là sandbox.
+  version: 1.6.0
+servers:
+- description: Local backend; paths include /api/v1
+  url: http://localhost:8080
+paths:
+  /api/v1/profile/device-token:
+    put:
+      tags:
+      - profile-controller
+      summary: Register or update device token
+      operationId: registerDeviceToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceTokenRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: string
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/listings/{id}/fees:
+    get:
+      tags:
+      - listing-controller
+      summary: Get listing fees
+      operationId: getFees
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FeeDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+    put:
+      tags:
+      - listing-controller
+      summary: Set listing fees
+      operationId: setFees
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/FeeInput'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FeeDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/wishlist/{roomId}:
+    post:
+      tags:
+      - wishlist-controller
+      summary: Save room to wishlist
+      operationId: saveRoom
+      parameters:
+      - name: roomId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: string
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+    delete:
+      tags:
+      - wishlist-controller
+      summary: Remove room from wishlist
+      operationId: unsaveRoom
+      parameters:
+      - name: roomId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: string
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/viewings:
+    post:
+      tags:
+      - viewing-controller
+      summary: Book a viewing
+      operationId: createViewing
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewingCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ViewingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/viewings/{id}/confirm:
+    post:
+      tags:
+      - viewing-controller
+      summary: Confirm viewing
+      operationId: confirmViewing
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ViewingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/viewings/{id}/complete:
+    post:
+      tags:
+      - viewing-controller
+      summary: Complete viewing
+      operationId: completeViewing
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ViewingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/viewings/{id}/cancel:
+    post:
+      tags:
+      - viewing-controller
+      summary: Cancel viewing
+      operationId: cancelViewing
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: reason
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ViewingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/viewing-slots:
+    post:
+      tags:
+      - viewing-controller
+      summary: Create viewing slot
+      operationId: createSlot
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewingSlotCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ViewingSlotDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/rooms:
+    get:
+      tags:
+      - room-controller
+      summary: List host rooms
+      operationId: getHostRooms
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseRoomDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+    post:
+      tags:
+      - room-controller
+      summary: Create a new room
+      operationId: createRoom
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/RoomDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/reviews:
+    post:
+      tags:
+      - review-controller
+      summary: Create review
+      operationId: createReview
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ReviewDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/reports:
+    post:
+      tags:
+      - report-controller
+      summary: Create report
+      operationId: createReport
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ReportDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/payments:
+    post:
+      tags:
+      - payment-controller
+      summary: Create payment for booking
+      operationId: createPayment
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PaymentDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/payments/{id}/simulate:
+    post:
+      tags:
+      - demo-payment-controller
+      operationId: simulate
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          default: SUCCEEDED
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PaymentDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/notifications/{id}/read:
+    post:
+      tags:
+      - notification-controller
+      summary: Mark notification as read
+      operationId: markAsRead
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/NotificationDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/notifications/read-all:
+    post:
+      tags:
+      - notification-controller
+      summary: Mark all notifications as read
+      operationId: markAllAsRead
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                      format: int32
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/notifications/mark-all-read:
+    post:
+      tags:
+      - notification-controller
+      summary: Mark all notifications as read
+      operationId: markAllAsRead_1
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                      format: int32
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/media/upload:
+    post:
+      tags:
+      - media-controller
+      summary: Upload media file
+      operationId: upload
+      parameters:
+      - name: purpose
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - ROOM_PHOTO
+          - ROOM_VIDEO
+          - AVATAR
+          - CHAT_IMAGE
+          - REPORT_EVIDENCE
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/MediaDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/media/attach/room/{roomId}:
+    post:
+      tags:
+      - media-controller
+      summary: Attach media to room
+      operationId: attachToRoom
+      parameters:
+      - name: roomId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: purpose
+        in: query
+        required: false
+        schema:
+          type: string
+          default: ROOM_PHOTO
+          enum:
+          - ROOM_PHOTO
+          - ROOM_VIDEO
+          - AVATAR
+          - CHAT_IMAGE
+          - REPORT_EVIDENCE
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachMediaRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MediaDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/listings/{id}/submit:
+    post:
+      tags:
+      - listing-controller
+      summary: Submit listing for review
+      operationId: submitForReview
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ListingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/listings/{id}/hide:
+    post:
+      tags:
+      - listing-controller
+      summary: Hide listing
+      operationId: hideListing
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ListingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/listings/room/{roomId}:
+    post:
+      tags:
+      - listing-controller
+      summary: Create listing
+      operationId: createListing
+      parameters:
+      - name: roomId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListingWriteRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ListingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/conversations:
+    get:
+      tags:
+      - chat-controller
+      operationId: list
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          maximum: 50
+          minimum: 1
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseConversationDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+    post:
+      tags:
+      - chat-controller
+      operationId: create
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ConversationDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/conversations/{id}/read-marker:
+    post:
+      tags:
+      - chat-controller
+      operationId: markRead
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReadMarkerRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ReadMarkerDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/bookings:
+    post:
+      tags:
+      - booking-controller
+      summary: Create booking request
+      operationId: createBooking
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/BookingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/bookings/{id}/reject:
+    post:
+      tags:
+      - booking-controller
+      summary: Reject booking
+      operationId: rejectBooking
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingActionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/BookingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/bookings/{id}/handover-tenant:
+    post:
+      tags:
+      - booking-controller
+      summary: Tenant confirms handover
+      operationId: tenantHandover
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/BookingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/bookings/{id}/handover-host:
+    post:
+      tags:
+      - booking-controller
+      summary: Host confirms handover
+      operationId: hostHandover
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/BookingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/bookings/{id}/confirm-deposit:
+    post:
+      tags:
+      - booking-controller
+      summary: Confirm deposit payment
+      operationId: confirmDeposit
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/BookingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/bookings/{id}/cases:
+    get:
+      tags:
+      - booking-controller
+      operationId: cases
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BookingCaseDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+    post:
+      tags:
+      - booking-controller
+      operationId: openCase
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/BookingCaseDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/bookings/{id}/cancel:
+    post:
+      tags:
+      - booking-controller
+      summary: Cancel booking
+      operationId: cancelBooking
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingActionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/BookingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/bookings/{id}/approve:
+    post:
+      tags:
+      - booking-controller
+      summary: Approve booking
+      operationId: approveBooking
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/BookingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/auth/verify-email:
+    post:
+      tags:
+      - auth-controller
+      summary: Verify email address
+      operationId: verifyEmail
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OneTimeTokenRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: string
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/auth/verify-email/resend:
+    post:
+      tags:
+      - auth-controller
+      summary: Resend email verification
+      operationId: resendVerification
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: string
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/auth/register:
+    post:
+      tags:
+      - auth-controller
+      summary: Register a new user
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/UserResponse'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/auth/refresh:
+    post:
+      tags:
+      - auth-controller
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/LoginResponse'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/auth/logout:
+    post:
+      tags:
+      - auth-controller
+      summary: Logout user
+      operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/auth/login:
+    post:
+      tags:
+      - auth-controller
+      summary: Login by credential
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/LoginResponse'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/auth/enable-host:
+    post:
+      tags:
+      - auth-controller
+      summary: Enable host role for current user
+      operationId: enableHost
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/UserResponse'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/auth/delete-account:
+    get:
+      tags:
+      - auth-controller
+      summary: Get current account deletion request
+      operationId: deletionStatus
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/AccountDeletionResponse'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+    post:
+      tags:
+      - auth-controller
+      summary: Request account deletion
+      operationId: requestDeletion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeletionRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: string
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/admin/users/{id}/unsuspend:
+    post:
+      tags:
+      - admin-controller
+      summary: User unsuspended
+      operationId: unsuspendUser
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/admin/users/{id}/suspend:
+    post:
+      tags:
+      - admin-controller
+      summary: User suspended
+      operationId: suspendUser
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: reason
+        in: query
+        required: true
+        schema:
+          maxLength: 500
+          minLength: 0
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/admin/reviews/{id}/hide:
+    post:
+      tags:
+      - admin-controller
+      summary: Review hidden
+      operationId: hideReview
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: reason
+        in: query
+        required: true
+        schema:
+          maxLength: 500
+          minLength: 0
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/admin/reports/{id}/resolve:
+    post:
+      tags:
+      - admin-controller
+      summary: Report resolved
+      operationId: resolveReport
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: note
+        in: query
+        required: true
+        schema:
+          maxLength: 1000
+          minLength: 0
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/admin/listings/{id}/suspend:
+    post:
+      tags:
+      - admin-controller
+      operationId: suspendListing
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: reason
+        in: query
+        required: true
+        schema:
+          maxLength: 500
+          minLength: 0
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/admin/listings/{id}/reject:
+    post:
+      tags:
+      - admin-controller
+      summary: Listing rejected
+      operationId: rejectListing
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: reason
+        in: query
+        required: true
+        schema:
+          maxLength: 500
+          minLength: 0
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/admin/listings/{id}/approve:
+    post:
+      tags:
+      - admin-controller
+      summary: Listing approved
+      operationId: approveListing
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/admin/cases/{id}/resolve:
+    post:
+      tags:
+      - admin-controller
+      summary: Booking case resolved
+      operationId: resolveBookingCase
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: decision
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - REFUND_TENANT
+          - FORFEIT_DEPOSIT
+          - SPLIT
+          - NO_ACTION
+      - name: note
+        in: query
+        required: true
+        schema:
+          maxLength: 2000
+          minLength: 0
+          type: string
+      - name: tenant_refund_vnd
+        in: query
+        required: false
+        schema:
+          type: number
+      - name: Idempotency-Key
+        in: header
+        description: Giữ nguyên khi retry cùng thao tác; cùng khóa nhưng payload khác trả 409.
+        required: true
+        schema:
+          maxLength: 128
+          minLength: 1
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/rooms/{id}:
+    get:
+      tags:
+      - room-controller
+      summary: Get room detail
+      operationId: getRoomDetail
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/RoomDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+    patch:
+      tags:
+      - room-controller
+      summary: Update room
+      operationId: updateRoom
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomPatchRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/RoomDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/reviews/{id}:
+    delete:
+      tags:
+      - review-controller
+      summary: Delete review
+      operationId: deleteReview
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+    patch:
+      tags:
+      - review-controller
+      summary: Update review
+      operationId: updateReview
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ReviewDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/profile:
+    get:
+      tags:
+      - profile-controller
+      summary: Get full user profile
+      operationId: getProfile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/UserResponse'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+    patch:
+      tags:
+      - profile-controller
+      summary: Update user profile
+      operationId: updateProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/UserResponse'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/profile/notification-preferences:
+    get:
+      tags:
+      - profile-controller
+      summary: Get notification preferences
+      operationId: getNotificationPreferences
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/NotificationPreference'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+    patch:
+      tags:
+      - profile-controller
+      summary: Update notification preferences
+      operationId: updateNotificationPreferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPreferencesRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/NotificationPreference'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/listings/{id}:
+    get:
+      tags:
+      - listing-controller
+      summary: Get listing detail
+      operationId: getListingDetail
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ListingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+    patch:
+      tags:
+      - listing-controller
+      summary: Update listing
+      operationId: updateListing
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListingWriteRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ListingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/wishlist:
+    get:
+      tags:
+      - wishlist-controller
+      summary: List saved rooms
+      operationId: getSavedRooms
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseMapStringObject'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/wishlist/{roomId}/check:
+    get:
+      tags:
+      - wishlist-controller
+      summary: Check if room is saved
+      operationId: checkSaved
+      parameters:
+      - name: roomId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: boolean
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/viewings/{id}:
+    get:
+      tags:
+      - viewing-controller
+      operationId: getViewing
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ViewingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/viewings/my:
+    get:
+      tags:
+      - viewing-controller
+      summary: Get my viewings
+      operationId: getMyViewings
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseViewingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/viewings/host:
+    get:
+      tags:
+      - viewing-controller
+      summary: Get host viewings
+      operationId: getHostViewings
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseViewingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/viewing-slots/{roomId}:
+    get:
+      tags:
+      - viewing-controller
+      summary: Get available viewing slots
+      operationId: getSlots
+      parameters:
+      - name: roomId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ViewingSlotDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/reviews/room/{roomId}:
+    get:
+      tags:
+      - review-controller
+      summary: Get room reviews
+      operationId: getRoomReviews
+      parameters:
+      - name: roomId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseReviewDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/reviews/room/{roomId}/stats:
+    get:
+      tags:
+      - review-controller
+      summary: Get room review stats
+      operationId: getRoomReviewStats
+      parameters:
+      - name: roomId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ReviewStatsDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/reports/my:
+    get:
+      tags:
+      - report-controller
+      summary: Get my reports
+      operationId: getMyReports
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseReportDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/payments/booking/{bookingId}:
+    get:
+      tags:
+      - payment-controller
+      summary: Get payment info for booking
+      operationId: getPaymentInfo
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PaymentDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/notifications:
+    get:
+      tags:
+      - notification-controller
+      summary: Get my notifications
+      operationId: getMyNotifications
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          maximum: 50
+          minimum: 1
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseNotificationDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/notifications/unread-count:
+    get:
+      tags:
+      - notification-controller
+      summary: Get unread notification count
+      operationId: getUnreadCount
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                      format: int64
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/media/{id}/content:
+    get:
+      tags:
+      - media-controller
+      summary: Read authorized media content
+      operationId: content
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Raw file bytes; content type matches the stored file
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+            video/mp4:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/media/room/{roomId}:
+    get:
+      tags:
+      - media-controller
+      summary: Get room media
+      operationId: getRoomMedia
+      parameters:
+      - name: roomId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MediaDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/media/my:
+    get:
+      tags:
+      - media-controller
+      summary: Get my ready media
+      operationId: getMyReadyMedia
+      parameters:
+      - name: purpose
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - ROOM_PHOTO
+          - ROOM_VIDEO
+          - AVATAR
+          - CHAT_IMAGE
+          - REPORT_EVIDENCE
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MediaDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/listings:
+    get:
+      tags:
+      - listing-controller
+      summary: Search listings
+      operationId: searchListings
+      parameters:
+      - name: query
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/ListingSearchQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseListingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/listings/my:
+    get:
+      tags:
+      - listing-controller
+      summary: List host listings
+      operationId: getHostListings
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseListingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/conversations/{id}:
+    get:
+      tags:
+      - chat-controller
+      operationId: detail
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/ConversationDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/conversations/{id}/messages:
+    get:
+      tags:
+      - chat-controller
+      operationId: messages
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: limit
+        in: query
+        required: false
+        schema:
+          maximum: 50
+          minimum: 1
+          type: integer
+          format: int32
+          default: 20
+      - name: before_sequence
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: after_sequence
+        in: query
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/MessagePageDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/bookings/{id}:
+    get:
+      tags:
+      - booking-controller
+      operationId: detail_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/BookingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/bookings/my:
+    get:
+      tags:
+      - booking-controller
+      summary: Get my bookings
+      operationId: getMyBookings
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseBookingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/bookings/host:
+    get:
+      tags:
+      - booking-controller
+      summary: Get host bookings
+      operationId: getHostBookings
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseBookingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/auth/account:
+    get:
+      tags:
+      - auth-controller
+      summary: Get user information
+      operationId: getAccount
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/UserLogin'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/amenities:
+    get:
+      tags:
+      - amenity-controller
+      summary: List all amenities
+      operationId: getAllAmenities
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Amenity'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/amenities/{id}:
+    get:
+      tags:
+      - amenity-controller
+      summary: Get amenity detail
+      operationId: getAmenity
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Amenity'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+  /api/v1/admin/listings:
+    get:
+      tags:
+      - admin-controller
+      operationId: pendingListings
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseListingDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/admin/cases:
+    get:
+      tags:
+      - admin-controller
+      operationId: openCases
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/PageResponseBookingCaseDTO'
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/viewing-slots/{id}:
+    delete:
+      tags:
+      - viewing-controller
+      summary: Delete viewing slot
+      operationId: deleteSlot
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/profile/device-token/{installationId}:
+    delete:
+      tags:
+      - profile-controller
+      operationId: unregisterDevice
+      parameters:
+      - name: installationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /api/v1/media/{mediaId}:
+    delete:
+      tags:
+      - media-controller
+      summary: Delete media
+      operationId: deleteMedia
+      parameters:
+      - name: mediaId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                required:
+                - statusCode
+                - message
+                - data
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        default:
+          description: HTTP status giữ nguyên; data chứa ProblemDTO với code, field_errors và trace_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+      security:
+      - bearerAuth: [
+          ]
+  /webhooks/payments/mock:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookPayload'
+        required: true
+      operationId: handleMockWebhook
+      summary: Signed sandbox webhook (only when MOCK_PAYMENT_ENABLED=true)
+      responses:
+        default:
+          description: Wrapped error; data contains ProblemDTO
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseProblemDTO'
+        '200':
+          description: Processed or exact duplicate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponseVoid'
+      parameters:
+      - description: Hex HMAC-SHA256 over the exact request bytes, using MOCK_WEBHOOK_SECRET
+        schema:
+          type: string
+        required: true
+        in: header
+        name: X-Mock-Signature
+components:
+  schemas:
+    DeviceTokenRequest:
+      required:
+      - deviceName
+      - installationId
+      - platform
+      - token
+      type: object
+      properties:
+        token:
+          maxLength: 4096
+          minLength: 1
+          type: string
+        platform:
+          type: string
+        deviceName:
+          maxLength: 100
+          minLength: 1
+          type: string
+        installationId:
+          type: string
+    FeeInput:
+      required:
+      - amountVnd
+      - feeCode
+      - feeMode
+      type: object
+      properties:
+        feeCode:
+          maxLength: 50
+          minLength: 0
+          type: string
+        feeMode:
+          maxLength: 20
+          minLength: 0
+          type: string
+        amountVnd:
+          minimum: 0
+          exclusiveMinimum: false
+          type: number
+        unitName:
+          maxLength: 50
+          minLength: 0
+          type: string
+        note:
+          maxLength: 500
+          minLength: 0
+          type: string
+        sortOrder:
+          type: integer
+          format: int32
+    FeeDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        note:
+          type: string
+        fee_code:
+          type: string
+        fee_mode:
+          type: string
+        amount_vnd:
+          pattern: ^[0-9]+$
+          type: string
+        unit_name:
+          type: string
+        sort_order:
+          type: integer
+          format: int32
+    ViewingCreateRequest:
+      required:
+      - viewingSlotId
+      type: object
+      properties:
+        viewingSlotId:
+          type: integer
+          format: int64
+        note:
+          maxLength: 1000
+          minLength: 0
+          type: string
+    ViewingDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          type: string
+        note:
+          type: string
+        viewing_slot_id:
+          type: integer
+          format: int64
+        tenant_id:
+          type: integer
+          format: int64
+        room_id:
+          type: integer
+          format: int64
+        host_id:
+          type: integer
+          format: int64
+        cancelled_reason:
+          type: string
+        slot_start_at:
+          type: string
+          format: date-time
+        slot_end_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    ViewingSlotCreateRequest:
+      required:
+      - endAt
+      - roomId
+      - startAt
+      type: object
+      properties:
+        roomId:
+          type: integer
+          format: int64
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+    ViewingSlotDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          type: string
+        room_id:
+          type: integer
+          format: int64
+        host_id:
+          type: integer
+          format: int64
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+    AddressInput:
+      required:
+      - line
+      - provinceCode
+      - provinceName
+      type: object
+      properties:
+        line:
+          maxLength: 300
+          minLength: 5
+          type: string
+        provinceCode:
+          maxLength: 20
+          minLength: 1
+          type: string
+        provinceName:
+          maxLength: 100
+          minLength: 1
+          type: string
+        wardCode:
+          maxLength: 20
+          minLength: 1
+          type: string
+        wardName:
+          maxLength: 100
+          minLength: 1
+          type: string
+    GeoPointInput:
+      required:
+      - latitude
+      - longitude
+      type: object
+      properties:
+        latitude:
+          maximum: 90
+          exclusiveMaximum: false
+          minimum: -90
+          exclusiveMinimum: false
+          type: number
+          format: double
+        longitude:
+          maximum: 180
+          exclusiveMaximum: false
+          minimum: -180
+          exclusiveMinimum: false
+          type: number
+          format: double
+    RoomCreateRequest:
+      required:
+      - address
+      - amenityIds
+      - areaM2
+      - location
+      - maxOccupants
+      - roomType
+      - unitCode
+      type: object
+      properties:
+        unitCode:
+          maxLength: 30
+          minLength: 1
+          pattern: ^[A-Z0-9_-]+$
+          type: string
+        roomType:
+          pattern: SINGLE_ROOM|STUDIO|MINI_APARTMENT
+          type: string
+        areaM2:
+          maximum: 1000
+          exclusiveMaximum: false
+          minimum: 2
+          exclusiveMinimum: false
+          type: number
+        maxOccupants:
+          maximum: 10
+          minimum: 1
+          type: integer
+          format: int32
+        address:
+          $ref: '#/components/schemas/AddressInput'
+        location:
+          $ref: '#/components/schemas/GeoPointInput'
+        amenityIds:
+          maxItems: 30
+          minItems: 0
+          uniqueItems: true
+          type: array
+          items:
+            type: integer
+            format: int64
+    AddressDTO:
+      type: object
+      properties:
+        line:
+          type: string
+        province_code:
+          type: string
+        province_name:
+          type: string
+        ward_code:
+          type: string
+        ward_name:
+          type: string
+    AmenityDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        icon:
+          type: string
+        category:
+          type: string
+    GeoPointDTO:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+    RoomDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        address:
+          $ref: '#/components/schemas/AddressDTO'
+        location:
+          $ref: '#/components/schemas/GeoPointDTO'
+        availability:
+          type: string
+        amenities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmenityDTO'
+        version:
+          type: integer
+          format: int32
+        host_id:
+          type: integer
+          format: int64
+        unit_code:
+          type: string
+        room_type:
+          type: string
+        area_m2:
+          type: number
+        max_occupants:
+          type: integer
+          format: int32
+        terms_version:
+          type: integer
+          format: int32
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ReviewCreateRequest:
+      required:
+      - bookingId
+      - rating
+      type: object
+      properties:
+        bookingId:
+          type: integer
+          format: int64
+        rating:
+          maximum: 5
+          minimum: 1
+          type: integer
+          format: int32
+        comment:
+          maxLength: 2000
+          minLength: 0
+          type: string
+    ReviewDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        rating:
+          type: integer
+          format: int32
+        comment:
+          type: string
+        booking_id:
+          type: integer
+          format: int64
+        reviewer_id:
+          type: integer
+          format: int64
+        reviewer_name:
+          type: string
+        room_id:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ReportCreateRequest:
+      required:
+      - reasonCode
+      - targetId
+      - targetType
+      type: object
+      properties:
+        targetType:
+          maxLength: 50
+          minLength: 0
+          type: string
+        targetId:
+          type: integer
+          format: int64
+        reasonCode:
+          maxLength: 50
+          minLength: 0
+          type: string
+        description:
+          maxLength: 2000
+          minLength: 0
+          type: string
+    ReportDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        description:
+          type: string
+        status:
+          type: string
+        reporter_id:
+          type: integer
+          format: int64
+        target_type:
+          type: string
+        target_id:
+          type: integer
+          format: int64
+        reason_code:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    PaymentCreateRequest:
+      required:
+      - bookingId
+      type: object
+      properties:
+        bookingId:
+          type: integer
+          format: int64
+    PaymentDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        provider:
+          type: string
+        status:
+          type: string
+        booking_id:
+          type: integer
+          format: int64
+        payer_id:
+          type: integer
+          format: int64
+        provider_payment_id:
+          type: string
+        amount_vnd:
+          pattern: ^[0-9]+$
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        succeeded_at:
+          type: string
+          format: date-time
+        is_test:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    NotificationDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        ref_type:
+          type: string
+        ref_id:
+          type: integer
+          format: int64
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    MediaDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        url:
+          type: string
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+        purpose:
+          type: string
+        status:
+          type: string
+        content_type:
+          type: string
+        file_size_bytes:
+          type: integer
+          format: int64
+        original_filename:
+          type: string
+        duration_secs:
+          type: integer
+          format: int32
+        display_order:
+          type: integer
+          format: int32
+        created_at:
+          type: string
+          format: date-time
+    AttachMediaRequest:
+      required:
+      - mediaIds
+      type: object
+      properties:
+        mediaIds:
+          maxItems: 16
+          minItems: 1
+          type: array
+          items:
+            type: integer
+            format: int64
+    ListingDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        version:
+          type: integer
+          format: int32
+        room:
+          $ref: '#/components/schemas/RoomSummary'
+        fees:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeeDTO'
+        room_id:
+          type: integer
+          format: int64
+        rent_vnd:
+          pattern: ^[0-9]+$
+          type: string
+        deposit_vnd:
+          pattern: ^[0-9]+$
+          type: string
+        terms_version:
+          type: integer
+          format: int32
+        published_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    RoomSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        address:
+          $ref: '#/components/schemas/AddressDTO'
+        location:
+          $ref: '#/components/schemas/GeoPointDTO'
+        availability:
+          type: string
+        amenities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmenityDTO'
+        host_id:
+          type: integer
+          format: int64
+        unit_code:
+          type: string
+        room_type:
+          type: string
+        area_m2:
+          type: number
+        max_occupants:
+          type: integer
+          format: int32
+    ListingWriteRequest:
+      type: object
+      properties:
+        title:
+          maxLength: 150
+          minLength: 0
+          type: string
+        description:
+          maxLength: 5000
+          minLength: 0
+          type: string
+        rentVnd:
+          minimum: 0
+          exclusiveMinimum: true
+          type: number
+        depositVnd:
+          minimum: 0
+          exclusiveMinimum: false
+          type: number
+        expectedVersion:
+          type: integer
+          format: int32
+    ConversationCreateRequest:
+      required:
+      - room_id
+      type: object
+      properties:
+        room_id:
+          type: integer
+          format: int64
+    ConversationDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        room_id:
+          type: integer
+          format: int64
+        tenant_id:
+          type: integer
+          format: int64
+        host_id:
+          type: integer
+          format: int64
+        room_title:
+          type: string
+        last_message_at:
+          type: string
+          format: date-time
+        last_message_preview:
+          type: string
+        sequence:
+          type: integer
+          format: int64
+        last_read_sequence:
+          type: integer
+          format: int64
+        unread_count:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+    ReadMarkerRequest:
+      required:
+      - last_read_sequence
+      type: object
+      properties:
+        last_read_sequence:
+          type: integer
+          format: int64
+    ReadMarkerDTO:
+      type: object
+      properties:
+        conversation_id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+        last_read_sequence:
+          type: integer
+          format: int64
+        updated_at:
+          type: string
+          format: date-time
+    BookingCreateRequest:
+      required:
+      - room_id
+      type: object
+      properties:
+        note:
+          maxLength: 1000
+          minLength: 0
+          type: string
+        room_id:
+          type: integer
+          format: int64
+        desired_move_in:
+          type: string
+          format: date
+        occupant_count:
+          maximum: 10
+          minimum: 1
+          type: integer
+          format: int32
+    BookingDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          type: string
+        note:
+          type: string
+        version:
+          type: integer
+          format: int32
+        tenant_id:
+          type: integer
+          format: int64
+        host_id:
+          type: integer
+          format: int64
+        room_id:
+          type: integer
+          format: int64
+        listing_id:
+          type: integer
+          format: int64
+        desired_move_in:
+          type: string
+          format: date
+        occupant_count:
+          type: integer
+          format: int32
+        rent_vnd:
+          pattern: ^[0-9]+$
+          type: string
+        deposit_vnd:
+          pattern: ^[0-9]+$
+          type: string
+        request_expires_at:
+          type: string
+          format: date-time
+        hold_expires_at:
+          type: string
+          format: date-time
+        handover_due_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        cancelled_at:
+          type: string
+          format: date-time
+        last_reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    BookingActionRequest:
+      type: object
+      properties:
+        reason:
+          maxLength: 1000
+          minLength: 0
+          type: string
+    CaseCreateRequest:
+      required:
+      - description
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - DEPOSIT_DISPUTE
+          - HANDOVER_OVERDUE
+          - NO_SHOW
+          - OTHER
+        description:
+          maxLength: 2000
+          minLength: 0
+          type: string
+    BookingCaseDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        status:
+          type: string
+        description:
+          type: string
+        decision:
+          type: string
+        booking_id:
+          type: integer
+          format: int64
+        resolution_note:
+          type: string
+        tenant_refund_vnd:
+          pattern: ^[0-9]+$
+          type: string
+        host_retained_vnd:
+          pattern: ^[0-9]+$
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    OneTimeTokenRequest:
+      required:
+      - token
+      type: object
+      properties:
+        token:
+          maxLength: 512
+          minLength: 43
+          type: string
+    RegisterRequest:
+      required:
+      - email
+      - fullName
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          maxLength: 128
+          minLength: 12
+          type: string
+        fullName:
+          maxLength: 100
+          minLength: 2
+          type: string
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: string
+        avatarUrl:
+          type: string
+        host:
+          type: boolean
+        emailVerified:
+          type: boolean
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    RefreshRequest:
+      required:
+      - refreshToken
+      type: object
+      properties:
+        refreshToken:
+          type: string
+        installationId:
+          type: string
+        deviceName:
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserLogin'
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+          format: int64
+    UserLogin:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+        fullName:
+          type: string
+        avatarUrl:
+          type: string
+        host:
+          type: boolean
+        emailVerified:
+          type: boolean
+        status:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+    LoginRequest:
+      required:
+      - deviceName
+      - email
+      - installationId
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        installationId:
+          type: string
+        deviceName:
+          maxLength: 100
+          minLength: 1
+          type: string
+    DeletionRequest:
+      required:
+      - currentPassword
+      type: object
+      properties:
+        currentPassword:
+          type: string
+        reason:
+          maxLength: 1000
+          minLength: 0
+          type: string
+    RoomPatchRequest:
+      required:
+      - expectedVersion
+      type: object
+      properties:
+        expectedVersion:
+          type: integer
+          format: int32
+        roomType:
+          pattern: SINGLE_ROOM|STUDIO|MINI_APARTMENT
+          type: string
+        areaM2:
+          maximum: 1000
+          exclusiveMaximum: false
+          minimum: 2
+          exclusiveMinimum: false
+          type: number
+        maxOccupants:
+          maximum: 10
+          minimum: 1
+          type: integer
+          format: int32
+        address:
+          $ref: '#/components/schemas/AddressInput'
+        location:
+          $ref: '#/components/schemas/GeoPointInput'
+        amenityIds:
+          maxItems: 30
+          minItems: 0
+          uniqueItems: true
+          type: array
+          items:
+            type: integer
+            format: int64
+    ReviewUpdateRequest:
+      type: object
+      properties:
+        rating:
+          maximum: 5
+          minimum: 1
+          type: integer
+          format: int32
+        comment:
+          maxLength: 2000
+          minLength: 0
+          type: string
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        fullName:
+          maxLength: 100
+          minLength: 2
+          type: string
+        phone:
+          maxLength: 15
+          minLength: 0
+          type: string
+        avatarUrl:
+          maxLength: 512
+          minLength: 0
+          type: string
+    NotificationPreferencesRequest:
+      required:
+      - expectedVersion
+      type: object
+      properties:
+        expectedVersion:
+          type: integer
+          format: int32
+        transactionPush:
+          type: boolean
+        transactionEmail:
+          type: boolean
+        chatPush:
+          type: boolean
+        recommendationPush:
+          type: boolean
+    NotificationPreference:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        transactionPush:
+          type: boolean
+        transactionEmail:
+          type: boolean
+        chatPush:
+          type: boolean
+        recommendationPush:
+          type: boolean
+        version:
+          type: integer
+          format: int32
+    Pageable:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+    PageResponseMapStringObject:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: object
+        total_elements:
+          type: integer
+          format: int64
+        total_pages:
+          type: integer
+          format: int32
+        current_page:
+          type: integer
+          format: int32
+        page_size:
+          type: integer
+          format: int32
+    PageResponseViewingDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewingDTO'
+        total_elements:
+          type: integer
+          format: int64
+        total_pages:
+          type: integer
+          format: int32
+        current_page:
+          type: integer
+          format: int32
+        page_size:
+          type: integer
+          format: int32
+    PageResponseRoomDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoomDTO'
+        total_elements:
+          type: integer
+          format: int64
+        total_pages:
+          type: integer
+          format: int32
+        current_page:
+          type: integer
+          format: int32
+        page_size:
+          type: integer
+          format: int32
+    PageResponseReviewDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewDTO'
+        total_elements:
+          type: integer
+          format: int64
+        total_pages:
+          type: integer
+          format: int32
+        current_page:
+          type: integer
+          format: int32
+        page_size:
+          type: integer
+          format: int32
+    ReviewStatsDTO:
+      type: object
+      properties:
+        averageRating:
+          type: number
+          format: double
+        totalReviews:
+          type: integer
+          format: int64
+    PageResponseReportDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportDTO'
+        total_elements:
+          type: integer
+          format: int64
+        total_pages:
+          type: integer
+          format: int32
+        current_page:
+          type: integer
+          format: int32
+        page_size:
+          type: integer
+          format: int32
+    PageResponseNotificationDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationDTO'
+        total_elements:
+          type: integer
+          format: int64
+        total_pages:
+          type: integer
+          format: int32
+        current_page:
+          type: integer
+          format: int32
+        page_size:
+          type: integer
+          format: int32
+    ListingSearchQuery:
+      type: object
+      properties:
+        query:
+          maxLength: 200
+          minLength: 0
+          type: string
+        room_type:
+          type: string
+        min_rent_vnd:
+          minimum: 0
+          exclusiveMinimum: false
+          pattern: ^[0-9]+$
+          type: string
+        max_rent_vnd:
+          minimum: 0
+          exclusiveMinimum: false
+          pattern: ^[0-9]+$
+          type: string
+        min_area_m2:
+          minimum: 0
+          exclusiveMinimum: false
+          type: number
+        max_area_m2:
+          minimum: 0
+          exclusiveMinimum: false
+          type: number
+        province_code:
+          maxLength: 20
+          minLength: 0
+          type: string
+        amenity_ids:
+          maxItems: 20
+          minItems: 0
+          type: array
+          items:
+            type: integer
+            format: int64
+        latitude:
+          maximum: 90
+          exclusiveMaximum: false
+          minimum: -90
+          exclusiveMinimum: false
+          type: number
+          format: double
+        longitude:
+          maximum: 180
+          exclusiveMaximum: false
+          minimum: -180
+          exclusiveMinimum: false
+          type: number
+          format: double
+        radius_km:
+          maximum: 100
+          exclusiveMaximum: false
+          minimum: 0.1
+          exclusiveMinimum: false
+          type: number
+          format: double
+        sort:
+          pattern: newest|rent_asc|rent_desc|nearest
+          type: string
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          maximum: 50
+          minimum: 1
+          type: integer
+          format: int32
+    PageResponseListingDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListingDTO'
+        total_elements:
+          type: integer
+          format: int64
+        total_pages:
+          type: integer
+          format: int32
+        current_page:
+          type: integer
+          format: int32
+        page_size:
+          type: integer
+          format: int32
+    PageResponseConversationDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationDTO'
+        total_elements:
+          type: integer
+          format: int64
+        total_pages:
+          type: integer
+          format: int32
+        current_page:
+          type: integer
+          format: int32
+        page_size:
+          type: integer
+          format: int32
+    MessageDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        conversation_id:
+          type: integer
+          format: int64
+        sender_id:
+          type: integer
+          format: int64
+        content:
+          type: string
+        client_message_id:
+          type: string
+        sequence:
+          type: integer
+          format: int64
+        content_type:
+          type: string
+          enum:
+          - TEXT
+          - IMAGE
+          - SYSTEM
+        created_at:
+          type: string
+          format: date-time
+    MessagePageDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDTO'
+        next_cursor:
+          type: integer
+          format: int64
+        has_more:
+          type: boolean
+    PageResponseBookingDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingDTO'
+        total_elements:
+          type: integer
+          format: int64
+        total_pages:
+          type: integer
+          format: int32
+        current_page:
+          type: integer
+          format: int32
+        page_size:
+          type: integer
+          format: int32
+    AccountDeletionResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          type: string
+        failureCode:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+    Amenity:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        icon:
+          type: string
+        category:
+          type: string
+    PageResponseBookingCaseDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingCaseDTO'
+        total_elements:
+          type: integer
+          format: int64
+        total_pages:
+          type: integer
+          format: int32
+        current_page:
+          type: integer
+          format: int32
+        page_size:
+          type: integer
+          format: int32
+    FieldErrorDTO:
+      type: object
+      properties:
+        field:
+          type: string
+        reason:
+          type: string
+    ProblemDTO:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        field_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldErrorDTO'
+        trace_id:
+          type: string
+    RestResponseProblemDTO:
+      required:
+      - statusCode
+      - message
+      - data
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+          example: 500
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/ProblemDTO'
+    RestResponseVoid:
+      required:
+      - statusCode
+      - message
+      - data
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+          example: 200
+        message:
+          type: string
+        data:
+          type: object
+          nullable: true
+    ChatMessageDTO:
+      type: object
+      required:
+      - id
+      - conversation_id
+      - sender_id
+      - content
+      - client_message_id
+      - sequence
+      - content_type
+      - created_at
+      properties:
+        id:
+          type: integer
+          format: int64
+        conversation_id:
+          type: integer
+          format: int64
+        sender_id:
+          type: integer
+          format: int64
+        content:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        client_message_id:
+          type: string
+          format: uuid
+        sequence:
+          type: integer
+          format: int64
+          minimum: 1
+        content_type:
+          type: string
+          enum:
+          - TEXT
+        created_at:
+          type: string
+          format: date-time
+    MessageSendFrame:
+      type: object
+      description: STOMP SEND /app/chat.send; retry the same UUID and payload after reconnect
+      required:
+      - conversation_id
+      - content
+      - client_message_id
+      properties:
+        conversation_id:
+          type: integer
+          format: int64
+          minimum: 1
+        content:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          pattern: \S
+        client_message_id:
+          type: string
+          format: uuid
+        content_type:
+          type: string
+          enum:
+          - TEXT
+          default: TEXT
+    ChatProblem:
+      $ref: '#/components/schemas/ProblemDTO'
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+        user:
+          $ref: '#/components/schemas/UserDTO'
+    UserDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        full_name:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum:
+            - TENANT
+            - HOST
+            - ADMIN
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+          - DELETED
+    ProblemDetails:
+      $ref: '#/components/schemas/ProblemDTO'
+    WebhookPayload:
+      required:
+      - provider_payment_id
+      - event_id
+      - status
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        provider_payment_id:
+          type: string
+          maxLength: 100
+        status:
+          enum:
+          - SUCCEEDED
+          - FAILED
+          type: string
+        failure_code:
+          type: string
+          maxLength: 100
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+x-stomp:
+  endpoint: /ws
+  transport: Native WebSocket (no SockJS)
+  authentication: Access JWT in HTTP Authorization Bearer header at handshake; no query token or STOMP credentials
+  send:
+    /app/chat.send:
+      schema:
+        $ref: '#/components/schemas/MessageSendFrame'
+  subscribe:
+    /user/queue/chat.messages:
+      description: Committed messages for either conversation member; reconnect uses REST history to recover missed events
+      schema:
+        $ref: '#/components/schemas/ChatMessageDTO'
+    /user/queue/chat.acks:
+      description: Persisted message for the sending session; exact retries return the existing message without a new event
+      schema:
+        $ref: '#/components/schemas/ChatMessageDTO'
+    /user/queue/chat.errors:
+      description: Domain or validation error; no guaranteed client_message_id correlation
+      schema:
+        $ref: '#/components/schemas/ChatProblem'
+  protocol-error:
+    description: STOMP ERROR may close the connection for invalid destinations, commands or authentication
+    schema:
+      $ref: '#/components/schemas/ChatProblem'
+  limits:
+    frame-bytes: 32768
+    messages-per-minute-per-user: 60
+  deployment: Single backend instance; in-process broker, REST resync and client deduplication required

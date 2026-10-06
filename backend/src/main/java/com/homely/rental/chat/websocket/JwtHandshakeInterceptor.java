@@ -3,6 +3,7 @@ package com.homely.rental.chat.websocket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.homely.rental.chat.service.ChatException;
 import com.homely.rental.common.dto.ProblemDTO;
+import com.homely.rental.common.dto.RestResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -34,10 +35,11 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             return true;
         } catch (ChatProtocolException | ChatException ex) {
             ProblemDTO problem = ChatProblems.from(ex);
+            problem.setInstance(request.getURI().getPath());
             response.setStatusCode(HttpStatusCode.valueOf(problem.getStatus()));
-            response.getHeaders().setContentType(MediaType.valueOf("application/problem+json"));
+            response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
             response.getHeaders().setCacheControl("no-store");
-            mapper.writeValue(response.getBody(), problem);
+            mapper.writeValue(response.getBody(), RestResponse.of(problem.getStatus(), problem));
             return false;
         }
     }

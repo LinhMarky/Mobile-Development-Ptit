@@ -54,7 +54,9 @@ class BusinessWorkflowTest {
     @Import({BookingService.class,BookingLocks.class,BookingTransitions.class,PaymentService.class,RefundService.class,
             CaseSettlementService.class,NotificationService.class,AccountAccessService.class,UserResolver.class,
             RoomService.class,ListingService.class,MediaService.class,PushOutbox.class,PushWorker.class,
-            com.homely.rental.interaction.service.ViewingService.class, com.homely.rental.auth.service.AccountDeletionService.class})
+            com.homely.rental.interaction.service.ViewingService.class, com.homely.rental.auth.service.AccountDeletionService.class,
+            com.homely.rental.auth.service.AccountDeletionEligibility.class, com.homely.rental.auth.service.AccountDeletionProcessor.class,
+            com.homely.rental.auth.service.AccountLifecycleGuard.class})
     static class Config { @Bean ObjectMapper mapper(){return new ObjectMapper();} }
     @MockBean StorageService storage;
     @MockBean FileValidator validator;
@@ -65,8 +67,13 @@ class BusinessWorkflowTest {
     @Autowired DeviceTokenRepository devices;
     @Autowired NotificationPreferenceRepository preferences;
     @Autowired NotificationService notifications;
+    @Autowired com.homely.rental.notification.repository.NotificationRepository inbox;
     @Autowired com.homely.rental.interaction.service.ViewingService viewings;
     @Autowired com.homely.rental.auth.service.AccountDeletionService deletion;
+    @Autowired com.homely.rental.auth.service.AccountDeletionProcessor deletionProcessor;
+    @Autowired AccountDeletionRequestRepository deletionRequests;
+    @Autowired RefreshTokenRepository sessions;
+    @Autowired WishlistRepository wishlist;
     @Autowired BookingService service;
     @Autowired PaymentService paymentService;
     @Autowired MediaService mediaService;
@@ -88,6 +95,7 @@ class BusinessWorkflowTest {
     Long roomId,listingId;
 
     @BeforeEach void seed() {
+        org.mockito.Mockito.when(passwordEncoder.encode(org.mockito.ArgumentMatchers.anyString())).thenReturn("deleted-password-hash");
         new TransactionTemplate(manager).executeWithoutResult(tx -> {
             Role role=roles.findByName(RoleName.ROLE_HOST).orElseGet(()->{Role r=new Role();r.setName(RoleName.ROLE_HOST);return roles.save(r);});
             host=user();host.getRoles().add(role);users.save(host); tenant=user();other=user();
@@ -140,6 +148,94 @@ class BusinessWorkflowTest {
         assertThat(refunds.findByPaymentId(old.getId())).isPresent();
         paymentService.processWebhook(event(next));
         assertThat(bookings.findById(id).orElseThrow().getAllocatedPaymentId()).isEqualTo(next.getId());
+    }
+
+    long noticeCount(Long bookingId, com.homely.rental.notification.entity.NotificationType type, Long userId) {
+        return inbox.findAll().stream().filter(n -> "booking".equals(n.getRefType()) && bookingId.equals(n.getRefId())
+                && type == n.getType() && userId.equals(n.getUser().getId())).count();
+    }
+
+    @Test void bookingAndPaymentNotificationsAreCreatedOncePerOutcome() throws Exception {
+        Long id = approved();
+        for (User member : List.of(tenant, host)) {
+            assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.BOOKING_CREATED, member.getId())).isEqualTo(1);
+            assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.BOOKING_APPROVED, member.getId())).isEqualTo(1);
+        }
+        var p = payment(id); var webhook = event(p);
+        paymentService.processWebhook(webhook); paymentService.processWebhook(webhook);
+        paymentService.processWebhook(event(p)); service.confirmDeposit(id);
+        for (User member : List.of(tenant, host))
+            assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.BOOKING_CONFIRMED, member.getId())).isEqualTo(1);
+        assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.PAYMENT_SUCCEEDED, tenant.getId())).isEqualTo(1);
+    }
+
+    @Test void failedWebhookNotifiesPayerOnceAndLeavesHoldForRetry() throws Exception {
+        Long id = approved(); var p = payment(id); var webhook = event(p); webhook.setStatus("FAILED");
+        paymentService.processWebhook(webhook); paymentService.processWebhook(webhook);
+        webhook.setEventId(UUID.randomUUID().toString()); paymentService.processWebhook(webhook);
+        assertThat(payments.findById(p.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.FAILED);
+        assertThat(bookings.findById(id).orElseThrow().getStatus()).isEqualTo(BookingStatus.APPROVED);
+        assertThat(rooms.findById(roomId).orElseThrow().getAvailability()).isEqualTo(RoomAvailability.HELD);
+        assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.PAYMENT_FAILED, tenant.getId())).isEqualTo(1);
+        assertThat(payment(id).getId()).isNotEqualTo(p.getId());
+    }
+
+    @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    void expirationScanExpiresDueAttemptOnceKeepsHoldAndAllowsRetry() throws Exception {
+        Long id = approved(); var p = payment(id);
+        new TransactionTemplate(manager).executeWithoutResult(tx -> payments.findById(p.getId()).orElseThrow().setExpiresAt(Instant.now().minusSeconds(60)));
+        var job = new com.homely.rental.payment.job.PaymentExpirationJob(payments, paymentService);
+        job.expirePendingPayments(); job.expirePendingPayments();
+        assertThat(payments.findById(p.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.EXPIRED);
+        assertThat(bookings.findById(id).orElseThrow().getStatus()).isEqualTo(BookingStatus.APPROVED);
+        assertThat(rooms.findById(roomId).orElseThrow().getAvailability()).isEqualTo(RoomAvailability.HELD);
+        assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.PAYMENT_EXPIRED, tenant.getId())).isEqualTo(1);
+        var next = payment(id); assertThat(next.getId()).isNotEqualTo(p.getId());
+        job.expirePendingPayments();
+        assertThat(payments.findById(next.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.PENDING);
+    }
+
+    @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    void staleExpirationCandidateDoesNotOverwriteSuccessfulPayment() throws Exception {
+        Long id = approved(); var p = payment(id); paymentService.processWebhook(event(p));
+        assertThat(paymentService.expirePayment(p.getId(), Instant.now().plusSeconds(3600))).isFalse();
+        assertThat(payments.findById(p.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.SUCCEEDED);
+        assertThat(bookings.findById(id).orElseThrow().getStatus()).isEqualTo(BookingStatus.CONFIRMED);
+        assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.PAYMENT_EXPIRED, tenant.getId())).isZero();
+    }
+
+    @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    void expirationRechecksDeadlineAndIgnoresEarlyOrMissingCandidate() throws Exception {
+        Long id = approved(); var p = payment(id);
+        assertThat(paymentService.expirePayment(p.getId(), Instant.now())).isFalse();
+        assertThat(paymentService.expirePayment(Long.MAX_VALUE, Instant.now())).isFalse();
+        assertThat(payments.findById(p.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.PENDING);
+        assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.PAYMENT_EXPIRED, tenant.getId())).isZero();
+    }
+
+    @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    void successfulWebhookAfterJobExpirationRefundsOnceWithoutConfirmingBooking() throws Exception {
+        Long id = approved(); var p = payment(id);
+        new TransactionTemplate(manager).executeWithoutResult(tx -> payments.findById(p.getId()).orElseThrow().setExpiresAt(Instant.now().minusSeconds(60)));
+        assertThat(paymentService.expirePayment(p.getId(), Instant.now())).isTrue();
+        var webhook = event(p); paymentService.processWebhook(webhook); paymentService.processWebhook(webhook); paymentService.processWebhook(event(p));
+        assertThat(refunds.findByPaymentId(p.getId()).orElseThrow().getAmountVnd()).isEqualByComparingTo(p.getAmountVnd());
+        assertThat(bookings.findById(id).orElseThrow().getStatus()).isEqualTo(BookingStatus.APPROVED);
+        assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.PAYMENT_REFUNDED, tenant.getId())).isEqualTo(1);
+        assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.BOOKING_CONFIRMED, host.getId())).isZero();
+    }
+
+    @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    void rollingBackPaymentOutcomeAlsoRollsBackInboxAndReceipt() throws Exception {
+        Long id = approved(); var p = payment(id); var webhook = event(p);
+        new TransactionTemplate(manager).executeWithoutResult(tx -> {
+            paymentService.processWebhook(webhook); em.flush(); tx.setRollbackOnly();
+        });
+        assertThat(bookings.findById(id).orElseThrow().getStatus()).isEqualTo(BookingStatus.APPROVED);
+        assertThat(payments.findById(p.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.PENDING);
+        assertThat(receipts.findByProviderAndEventId("MOCK_SANDBOX", webhook.getEventId())).isEmpty();
+        assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.PAYMENT_SUCCEEDED, tenant.getId())).isZero();
+        assertThat(noticeCount(id, com.homely.rental.notification.entity.NotificationType.BOOKING_CONFIRMED, host.getId())).isZero();
     }
     @Test void expiredRequestCannotBeApprovedBeforeJobRuns() throws Exception {
         Long id=create().getId();bookings.findById(id).orElseThrow().setRequestExpiresAt(Instant.now().minusSeconds(1));em.flush();login(host);
@@ -241,6 +337,120 @@ class BusinessWorkflowTest {
             em.flush();
             return deliveries.findAll().stream().filter(d->d.getNotificationId().equals(n.getId())).findFirst().orElseThrow().getId();
         });
+    }
+
+    com.homely.rental.auth.entity.AccountDeletionRequest requestDeletion(User user) throws Exception {
+        login(user);
+        org.mockito.Mockito.when(passwordEncoder.matches("password", "hash")).thenReturn(true);
+        var request = new com.homely.rental.auth.dto.request.DeletionRequest();
+        request.setCurrentPassword("password");
+        return deletion.requestDeletion(request);
+    }
+
+    @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    void deletionBlocksFurtherWritesButItsStatusRemainsReadable() throws Exception {
+        var request = requestDeletion(tenant);
+        assertThat(deletion.currentRequest().status()).isEqualTo("PENDING");
+        assertThatThrownBy(this::create).isInstanceOf(com.homely.rental.auth.security.AccountAccessException.class)
+                .hasMessageContaining("deletion is pending");
+        assertThatThrownBy(() -> requestDeletion(tenant)).isInstanceOf(ConflictException.class);
+        deletionProcessor.process(request.getId());
+        assertThat(users.findById(tenant.getId()).orElseThrow().getStatus())
+                .isEqualTo(com.homely.rental.auth.constant.UserStatus.DELETED);
+    }
+
+    @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    void hostDeletionRechecksNewBookingsAndReusesFailedRequestOnRetry() throws Exception {
+        var request = requestDeletion(host);
+        login(tenant);
+        var booking = create();
+        deletionProcessor.process(request.getId());
+        assertThat(deletionRequests.findById(request.getId()).orElseThrow().getFailureCode()).isEqualTo("DELETION_BLOCKED");
+        assertThat(users.findById(host.getId()).orElseThrow().getEmail()).isEqualTo(host.getEmail());
+        var cancel = new BookingActionRequest(); cancel.setReason("Cancel before account deletion");
+        service.cancelBooking(booking.getId(), cancel);
+        var retry = requestDeletion(host);
+        assertThat(retry.getId()).isEqualTo(request.getId());
+        deletionProcessor.process(retry.getId());
+        assertThat(listings.findById(listingId).orElseThrow().getStatus()).isEqualTo(ListingStatus.ARCHIVED);
+        assertThat(deletionRequests.findById(retry.getId()).orElseThrow().getStatus())
+                .isEqualTo(com.homely.rental.auth.entity.AccountDeletionRequest.DeletionStatus.COMPLETED);
+        assertThat(bookings.findById(booking.getId())).isPresent();
+    }
+
+    @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    void deletionRevokesSessionsDisablesDevicesAndRemovesPersonalProfile() throws Exception {
+        Long deliveryId = queuePush();
+        Long sessionId = new TransactionTemplate(manager).execute(tx -> {
+            var user = users.findById(tenant.getId()).orElseThrow();
+            user.setPhone("0901234567"); user.setAvatarUrl("https://example.test/avatar.png");
+            var session = new com.homely.rental.auth.entity.RefreshToken();
+            session.setUser(user); session.setTokenHash(UUID.randomUUID().toString());
+            session.setInstallationId(UUID.randomUUID().toString()); session.setDeviceName("Test");
+            session.setExpiresAt(Instant.now().plusSeconds(86400));
+            var item = new WishlistItem(); item.setUser(user); item.setRoom(rooms.findById(roomId).orElseThrow()); wishlist.save(item);
+            return sessions.save(session).getId();
+        });
+        var request = requestDeletion(tenant);
+        org.mockito.Mockito.when(passwordEncoder.encode(org.mockito.ArgumentMatchers.anyString())).thenReturn("new-disabled-hash");
+        deletionProcessor.process(request.getId());
+        deletionProcessor.process(request.getId()); // A second processing attempt is harmless.
+        var deleted = users.findById(tenant.getId()).orElseThrow();
+        assertThat(deleted.getEmail()).isEqualTo("deleted-" + tenant.getId() + "@deleted.invalid");
+        assertThat(deleted.getPhone()).isNull(); assertThat(deleted.getAvatarUrl()).isNull();
+        assertThat(deleted.getPassword()).isEqualTo("new-disabled-hash");
+        assertThat(sessions.findById(sessionId).orElseThrow().isRevoked()).isTrue();
+        assertThat(devices.findByUserIdAndActiveTrue(tenant.getId())).isEmpty();
+        assertThat(wishlist.existsByUserIdAndRoomId(tenant.getId(), roomId)).isFalse();
+        worker.tick();
+        assertThat(deliveries.findById(deliveryId).orElseThrow().getStatus()).isEqualTo("SKIPPED");
+    }
+
+    @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    void failedAnonymizationRollsBackAllChanges() throws Exception {
+        Long deliveryId = queuePush();
+        var request = requestDeletion(tenant);
+        org.mockito.Mockito.when(passwordEncoder.encode(org.mockito.ArgumentMatchers.anyString()))
+                .thenThrow(new IllegalStateException("Test failure"));
+        assertThatThrownBy(() -> deletionProcessor.process(request.getId())).isInstanceOf(IllegalStateException.class);
+        assertThat(users.findById(tenant.getId()).orElseThrow().getEmail()).isEqualTo(tenant.getEmail());
+        var delivery = deliveries.findById(deliveryId).orElseThrow();
+        assertThat(devices.findById(delivery.getDeviceId()).orElseThrow().isActive()).isTrue();
+        deletionProcessor.markFailed(request.getId());
+        assertThat(deletionRequests.findById(request.getId()).orElseThrow().getFailureCode()).isEqualTo("PROCESSING_ERROR");
+    }
+
+    @Test void unresolvedReportBlocksDeletion() throws Exception {
+        var report = new com.homely.rental.interaction.entity.Report();
+        report.setReporter(tenant); report.setTargetType("listing"); report.setTargetId(listingId); report.setReasonCode("OTHER");
+        em.persist(report); em.flush();
+        assertThatThrownBy(() -> requestDeletion(tenant)).isInstanceOf(ConflictException.class).hasMessageContaining("reports");
+    }
+
+    @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    void tenantDeletionPreservesCompletedBookingAndPaymentHistory() throws Exception {
+        Long id = approved();
+        var payment = payment(id);
+        paymentService.processWebhook(event(payment));
+        service.tenantHandover(id); login(host); service.hostHandover(id);
+        var request = requestDeletion(tenant);
+        deletionProcessor.process(request.getId());
+        assertThat(bookings.findById(id).orElseThrow().getStatus()).isEqualTo(BookingStatus.COMPLETED);
+        assertThat(payments.findById(payment.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.SUCCEEDED);
+    }
+
+    @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
+    void failedRefundStillBlocksDeletionAfterBookingCompletion() throws Exception {
+        Long id = approved();
+        var payment = payment(id);
+        paymentService.processWebhook(event(payment));
+        service.tenantHandover(id); login(host); service.hostHandover(id);
+        new TransactionTemplate(manager).executeWithoutResult(tx -> {
+            var refund = new Refund(); refund.setPayment(payments.findById(payment.getId()).orElseThrow());
+            refund.setAmountVnd(new BigDecimal("1000000")); refund.setReason(RefundReason.CASE_DECISION);
+            refund.setStatus(RefundStatus.FAILED); refunds.saveAndFlush(refund);
+        });
+        assertThatThrownBy(() -> requestDeletion(tenant)).isInstanceOf(ConflictException.class);
     }
 
     @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)
