@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Màn hình nhập thông tin một phòng mới. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/roomly_background"
+    android:focusableInTouchMode="true">
+
+    <!-- Thanh tiêu đề và nút quay lại. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_add_room_back"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:text="Quay lại"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_primary" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:text="Thêm phòng"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- Cho phép cuộn biểu mẫu khi bàn phím mở. -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_add_room"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:text="Nhập thông tin phòng bạn muốn quản lý."
+                android:textColor="@color/roomly_text_secondary"
+                android:textSize="14sp" />
+
+            <!-- Ảnh phòng và nút chọn ảnh từ thiết bị. -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardBackgroundColor="@color/roomly_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/roomly_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Hiển thị ảnh vừa chọn. -->
+                    <ImageView
+                        android:id="@+id/img_add_room_preview"
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
+                        android:background="@color/roomly_primary_light"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="Ảnh phòng đã chọn"
+                        android:visibility="gone" />
+
+                    <!-- Hiển thị trước khi người dùng chọn ảnh. -->
+                    <TextView
+                        android:id="@+id/tv_add_room_image_placeholder"
+                        android:layout_width="match_parent"
+                        android:layout_height="140dp"
+                        android:background="@color/roomly_primary_light"
+                        android:gravity="center"
+                        android:text="Thêm ảnh phòng"
+                        android:textColor="@color/roomly_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <!-- Mở trình chọn ảnh của thiết bị. -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_select_room_image"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="12dp"
+                        android:minHeight="48dp"
+                        android:text="Chọn ảnh"
+                        android:textAllCaps="false"
+                        android:textColor="@color/roomly_primary"
+                        app:strokeColor="@color/roomly_primary"
+                        app:cornerRadius="12dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Mã nhận diện phòng; không chỉnh sửa sau khi tạo. -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/input_room_code"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Mã phòng"
+                app:helperText="Ví dụ: P101. Mã phòng không đổi sau khi tạo."
+                app:boxBackgroundColor="@color/roomly_surface"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edt_room_code"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:imeOptions="actionNext"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="16sp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Tên dùng để nhận diện phòng trong danh sách quản lý. -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/input_room_name"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Tên phòng"
+                app:boxBackgroundColor="@color/roomly_surface"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edt_room_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"
+                    android:maxLines="1"
+                    android:imeOptions="actionNext"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="16sp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Địa chỉ của phòng cho thuê. -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/input_room_address"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Địa chỉ"
+                app:boxBackgroundColor="@color/roomly_surface"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edt_room_address"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPostalAddress"
+                    android:maxLines="1"
+                    android:imeOptions="actionNext"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="16sp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Diện tích tính theo mét vuông. -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/input_room_area"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Diện tích"
+                app:suffixText="m²"
+                app:boxBackgroundColor="@color/roomly_surface"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edt_room_area"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:maxLines="1"
+                    android:imeOptions="actionNext"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="16sp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Mô tả có thể nhập nhiều dòng. -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/input_room_description"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Mô tả phòng"
+                app:boxBackgroundColor="@color/roomly_surface"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edt_room_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minLines="4"
+                    android:gravity="top|start"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:imeOptions="actionDone"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="16sp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Hiển thị lỗi khi thao tác tạo phòng không thành công. -->
+            <TextView
+                android:id="@+id/tv_add_room_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:accessibilityLiveRegion="polite"
+                android:textColor="?attr/colorError"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <!-- Hiển thị trong lúc xử lý yêu cầu tạo phòng. -->
+            <ProgressBar
+                android:id="@+id/progress_add_room"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
+
+            <!-- Nút nằm trong vùng cuộn để có thể tiếp cận trên màn hình nhỏ. -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_create_room"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:minHeight="48dp"
+                android:text="Tạo phòng"
+                android:textAllCaps="false"
+                android:textColor="@color/roomly_surface"
+                app:backgroundTint="@color/roomly_primary"
+                app:cornerRadius="12dp" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

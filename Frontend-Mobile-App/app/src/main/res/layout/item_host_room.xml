@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Thẻ phòng trong danh sách quản lý của chủ trọ. -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardBackgroundColor="@color/roomly_surface"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/roomly_border"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Ảnh được chọn khi tạo phòng. -->
+        <ImageView
+            android:id="@+id/img_host_room"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="@color/roomly_primary_light"
+            android:scaleType="centerCrop"
+            android:contentDescription="Ảnh phòng"
+            android:visibility="gone" />
+
+        <!-- Hiển thị khi phòng chưa có ảnh hoặc ảnh không đọc được. -->
+        <TextView
+            android:id="@+id/tv_host_room_image_placeholder"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:background="@color/roomly_primary_light"
+            android:gravity="center"
+            android:text="Chưa có ảnh phòng"
+            android:textColor="@color/roomly_primary"
+            android:textSize="14sp" />
+
+        <!-- Thông tin phòng. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/tv_host_room_code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/roomly_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_host_room_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/roomly_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_host_room_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/roomly_text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tv_host_room_area"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="@color/roomly_text_primary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tv_host_room_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:maxLines="3"
+                android:ellipsize="end"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/roomly_text_secondary"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

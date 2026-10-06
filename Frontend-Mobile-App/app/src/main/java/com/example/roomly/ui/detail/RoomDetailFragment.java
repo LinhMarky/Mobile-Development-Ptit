@@ -32,6 +32,12 @@ import com.example.roomly.data.model.Conversation;
 import com.example.roomly.data.repository.DemoChatRepository;
 import com.example.roomly.ui.messages.ChatFragment;
 
+import com.example.roomly.data.model.UserRole;
+import com.example.roomly.data.repository.SessionAccess;
+import com.example.roomly.data.repository.SessionRepository;
+import com.example.roomly.ui.auth.LoginFragment;
+import com.example.roomly.ui.auth.VerifyEmailFragment;
+
 public class RoomDetailFragment extends Fragment {
 
     // Các khóa truyền thông tin phòng qua Bundle.
@@ -177,10 +183,91 @@ public class RoomDetailFragment extends Fragment {
     }
 
     /**
-     * Tạo bảng đặt lịch và đăng ký chọn ngày, giờ, xác nhận.
-     * Mỗi lần mở bảng, người dùng chọn lại ngày và giờ.
+     * Kiểm tra quyền hẹn xem phòng:
+     * cần đăng nhập, có vai trò TENANT và đã xác minh email.
+     * Nếu chưa đủ điều kiện, mở màn hình hướng dẫn tương ứng.
+     */
+    private boolean checkViewingPermission() {
+        SessionAccess.Result result = SessionAccess.requireRole(
+                UserRole.TENANT,
+                true
+        );
+
+        if (result == SessionAccess.Result.ALLOWED) {
+            return true;
+        }
+
+        // Đóng bảng đặt lịch trước khi chuyển sang màn hình khác.
+        if (bookingDialog != null) {
+            hideBookingKeyboard(
+                    bookingDialog,
+                    bookingDialog.getWindow() != null
+                            ? bookingDialog.getWindow().getDecorView()
+                            : binding.getRoot()
+            );
+
+            bookingDialog.dismiss();
+        }
+
+        Fragment nextFragment;
+
+        if (result == SessionAccess.Result.LOGIN_REQUIRED) {
+            Toast.makeText(
+                    requireContext(),
+                    "Bạn cần đăng nhập để hẹn xem phòng.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            nextFragment = new LoginFragment();
+
+        } else if (
+                result == SessionAccess.Result.EMAIL_VERIFICATION_REQUIRED
+        ) {
+            Toast.makeText(
+                    requireContext(),
+                    "Bạn cần xác minh email để hẹn xem phòng.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            String email = SessionRepository.getInstance()
+                    .getCurrentSession()
+                    .getEmail();
+
+            nextFragment = VerifyEmailFragment.newInstance(email);
+
+        } else {
+            Toast.makeText(
+                    requireContext(),
+                    "Tài khoản chưa có quyền người thuê để hẹn xem phòng.",
+                    Toast.LENGTH_LONG
+            ).show();
+
+            return false;
+        }
+
+        getParentFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(
+                        R.id.fragment_container,
+                        nextFragment
+                )
+                .addToBackStack(null)
+                .commit();
+
+        return false;
+    }
+
+    /**
+     * Kiểm tra quyền rồi mở bảng đặt lịch xem phòng mẫu.
+     * Thiết lập chọn ngày, giờ, ghi chú và xác nhận lịch hẹn.
      */
     private void showBookingDialog() {
+        if (!checkViewingPermission()) {
+            return;
+        }
+
+        // Không mở thêm bảng nếu bảng đặt lịch đang hiển thị.
         if (bookingDialog != null) {
             return;
         }
@@ -210,18 +297,18 @@ public class RoomDetailFragment extends Fragment {
 
         sheetBinding.tvBookingRoomTitle.setText(room.getTitle());
 
-        // Cho phép ô ghi chú nhiều dòng hiển thị nút Xong trên bàn phím.
-        sheetBinding.edtBookingNote.setImeOptions(
-                EditorInfo.IME_ACTION_DONE
-        );
-
+        // Cho phép nhập ghi chú nhiều dòng.
         sheetBinding.edtBookingNote.setRawInputType(
                 android.text.InputType.TYPE_CLASS_TEXT
                         | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
                         | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
         );
 
-// Bấm Xong sẽ đóng bàn phím và bỏ focus khỏi ô ghi chú.
+        sheetBinding.edtBookingNote.setImeOptions(
+                EditorInfo.IME_ACTION_DONE
+        );
+
+        // Đóng bàn phím khi người dùng bấm Xong.
         sheetBinding.edtBookingNote.setOnEditorActionListener(
                 (textView, actionId, event) -> {
                     if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -237,29 +324,39 @@ public class RoomDetailFragment extends Fragment {
                 }
         );
 
-        // Calendar giữ ngày và giờ người dùng chọn.
+        // Lưu ngày giờ được chọn, bỏ giây và mili giây.
         Calendar appointmentTime = Calendar.getInstance();
         appointmentTime.set(Calendar.SECOND, 0);
         appointmentTime.set(Calendar.MILLISECOND, 0);
 
-        // Hai phần tử lần lượt cho biết đã chọn ngày và giờ chưa.
+        // Phần tử 0 là đã chọn ngày, phần tử 1 là đã chọn giờ.
         boolean[] selected = {false, false};
 
-        sheetBinding.btnChooseDate.setOnClickListener(view ->
-                showDatePicker(
-                        sheetBinding,
-                        appointmentTime,
-                        selected
-                )
-        );
+        sheetBinding.btnChooseDate.setOnClickListener(view -> {
+            hideBookingKeyboard(
+                    dialog,
+                    sheetBinding.edtBookingNote
+            );
 
-        sheetBinding.btnChooseTime.setOnClickListener(view ->
-                showTimePicker(
-                        sheetBinding,
-                        appointmentTime,
-                        selected
-                )
-        );
+            showDatePicker(
+                    sheetBinding,
+                    appointmentTime,
+                    selected
+            );
+        });
+
+        sheetBinding.btnChooseTime.setOnClickListener(view -> {
+            hideBookingKeyboard(
+                    dialog,
+                    sheetBinding.edtBookingNote
+            );
+
+            showTimePicker(
+                    sheetBinding,
+                    appointmentTime,
+                    selected
+            );
+        });
 
         sheetBinding.btnConfirmBooking.setOnClickListener(view ->
                 confirmBooking(
@@ -271,7 +368,15 @@ public class RoomDetailFragment extends Fragment {
                 )
         );
 
+        // Gỡ các sự kiện và đóng bảng chọn ngày giờ khi đóng bảng.
         dialog.setOnDismissListener(dismissedDialog -> {
+            sheetBinding.edtBookingNote
+                    .setOnEditorActionListener(null);
+
+            sheetBinding.btnChooseDate.setOnClickListener(null);
+            sheetBinding.btnChooseTime.setOnClickListener(null);
+            sheetBinding.btnConfirmBooking.setOnClickListener(null);
+
             closePickerDialogs();
 
             if (bookingDialog == dialog) {
@@ -281,7 +386,6 @@ public class RoomDetailFragment extends Fragment {
 
         dialog.show();
     }
-
     /**
      * Mở bảng chọn ngày và không cho chọn ngày trước hôm nay.
      * Cập nhật nội dung nút sau khi người dùng xác nhận ngày.
@@ -404,8 +508,8 @@ public class RoomDetailFragment extends Fragment {
     }
 
     /**
-     * Kiểm tra ngày giờ và thêm lịch hẹn vào repository mẫu.
-     * Chỉ chấp nhận thời gian trong tương lai.
+     * Kiểm tra lại quyền, ngày giờ và ghi chú trước khi lưu lịch mẫu.
+     * Chỉ chấp nhận lịch trong tương lai và ghi chú tối đa 300 ký tự.
      */
     private void confirmBooking(
             RoomCard room,
@@ -414,11 +518,28 @@ public class RoomDetailFragment extends Fragment {
             Calendar appointmentTime,
             boolean[] selected
     ) {
+        // Không xử lý nếu bảng đã đóng hoặc nút đã được bấm trước đó.
+        if (!dialog.isShowing()
+                || !sheetBinding.btnConfirmBooking.isEnabled()) {
+            return;
+        }
+
+        // Kiểm tra lại vì phiên đăng nhập có thể đã thay đổi.
+        if (!checkViewingPermission()) {
+            return;
+        }
+
+        hideBookingKeyboard(
+                dialog,
+                sheetBinding.edtBookingNote
+        );
+
         if (!selected[0]) {
             showBookingError(
                     sheetBinding,
                     "Bạn hãy chọn ngày xem phòng."
             );
+
             return;
         }
 
@@ -427,15 +548,19 @@ public class RoomDetailFragment extends Fragment {
                     sheetBinding,
                     "Bạn hãy chọn giờ xem phòng."
             );
+
             return;
         }
 
-        if (appointmentTime.getTimeInMillis()
-                <= System.currentTimeMillis()) {
+        long appointmentTimeMillis =
+                appointmentTime.getTimeInMillis();
+
+        if (appointmentTimeMillis <= System.currentTimeMillis()) {
             showBookingError(
                     sheetBinding,
                     "Thời gian xem phòng phải sau thời điểm hiện tại."
             );
+
             return;
         }
 
@@ -448,20 +573,32 @@ public class RoomDetailFragment extends Fragment {
                     .trim();
         }
 
+        int noteLength = note.codePointCount(0, note.length());
+
+        if (noteLength > 300) {
+            showBookingError(
+                    sheetBinding,
+                    "Ghi chú không được vượt quá 300 ký tự."
+            );
+
+            return;
+        }
+
+        sheetBinding.tvBookingError.setVisibility(View.GONE);
+
+        // Khóa nút để tránh lưu nhiều lần trong cùng một bảng.
+        sheetBinding.btnConfirmBooking.setEnabled(false);
+
         ViewingAppointment appointment =
                 new ViewingAppointment(
                         room,
-                        appointmentTime.getTimeInMillis(),
+                        appointmentTimeMillis,
                         note
                 );
-
-        // Ngăn bấm xác nhận nhiều lần trong cùng một bảng.
-        sheetBinding.btnConfirmBooking.setEnabled(false);
 
         DemoAppointmentRepository.getInstance()
                 .addAppointment(appointment);
 
-        hideBookingKeyboard(dialog, sheetBinding.getRoot());
         dialog.dismiss();
 
         Toast.makeText(
@@ -470,7 +607,6 @@ public class RoomDetailFragment extends Fragment {
                 Toast.LENGTH_LONG
         ).show();
     }
-
     /**
      * Hiển thị lý do chưa thể xác nhận đặt lịch.
      */
@@ -523,11 +659,35 @@ public class RoomDetailFragment extends Fragment {
     }
 
     /**
-     * Mở hội thoại mẫu của phòng khi người dùng bấm Nhắn tin.
-     * Giữ màn hình chi tiết trong back stack để quay lại được.
+     * Kiểm tra đăng nhập trước khi mở hội thoại của phòng.
+     * Khách được chuyển sang màn hình Đăng nhập.
+     * Hội thoại hiện vẫn sử dụng dữ liệu mẫu.
      */
     private void setupMessageButton() {
         binding.btnDetailMessage.setOnClickListener(view -> {
+            SessionAccess.Result result =
+                    SessionAccess.requireLogin();
+
+            if (result != SessionAccess.Result.ALLOWED) {
+                Toast.makeText(
+                        requireContext(),
+                        "Bạn cần đăng nhập để nhắn tin với chủ trọ.",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .setReorderingAllowed(true)
+                        .replace(
+                                R.id.fragment_container,
+                                new LoginFragment()
+                        )
+                        .addToBackStack(null)
+                        .commit();
+
+                return;
+            }
+
             RoomCard room = getCurrentRoom();
 
             if (room == null) {
@@ -557,7 +717,6 @@ public class RoomDetailFragment extends Fragment {
                     .commit();
         });
     }
-
     /**
      * Đóng các bảng và giải phóng binding khi giao diện bị hủy.
      */

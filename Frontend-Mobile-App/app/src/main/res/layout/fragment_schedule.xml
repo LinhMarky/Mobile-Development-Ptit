@@ -26,13 +26,14 @@
         android:textColor="@color/roomly_text_secondary"
         android:textSize="14sp" />
 
-    <!-- Vùng danh sách và thông báo trống -->
+    <!-- Vùng danh sách và các trạng thái thông báo -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_marginTop="20dp">
 
+        <!-- Danh sách lịch hẹn -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_appointments"
             android:layout_width="match_parent"
@@ -42,14 +43,15 @@
             android:scrollbars="vertical"
             android:visibility="gone" />
 
-        <!-- Hiện khi người dùng chưa có lịch hẹn -->
+        <!-- Hiển thị khi đã đăng nhập nhưng chưa có lịch -->
         <LinearLayout
             android:id="@+id/layout_schedule_empty"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="24dp">
+            android:padding="24dp"
+            android:visibility="gone">
 
             <ImageView
                 android:layout_width="64dp"
@@ -78,6 +80,64 @@
                 android:lineSpacingExtra="4dp" />
 
         </LinearLayout>
+
+        <!-- Hiển thị khi chưa đăng nhập hoặc thiếu vai trò phù hợp -->
+        <ScrollView
+            android:id="@+id/layout_schedule_access"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="24dp">
+
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_calendar"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/tv_schedule_access_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:gravity="center"
+                    android:text="Đăng nhập để xem lịch trình"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_schedule_access_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Đăng nhập để theo dõi và quản lý các lịch hẹn xem phòng của bạn."
+                    android:textColor="@color/roomly_text_secondary"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_schedule_login"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:layout_marginTop="24dp"
+                    android:text="Đăng nhập"
+                    android:textAllCaps="false"
+                    android:textColor="@color/roomly_surface"
+                    android:backgroundTint="@color/roomly_primary" />
+
+            </LinearLayout>
+
+        </ScrollView>
 
     </FrameLayout>
 

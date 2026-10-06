@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Danh sách bài đăng mẫu thuộc tài khoản chủ trọ hiện tại. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/roomly_background"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp">
+
+    <!-- Tiêu đề màn hình. -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Bài đăng của tôi"
+        android:textColor="@color/roomly_text_primary"
+        android:textSize="26sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Quản lý các bản nháp bài đăng cho thuê."
+        android:textColor="@color/roomly_text_secondary"
+        android:textSize="14sp" />
+
+    <!-- Vùng danh sách hoặc thông báo trạng thái. -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="20dp">
+
+        <!-- Danh sách bản nháp được nối bằng adapter ở bước sau. -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_host_listings"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="16dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical"
+            android:visibility="gone" />
+
+        <!-- Thông báo trống hoặc không có quyền truy cập. -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/layout_host_listings_status"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:clipToPadding="false"
+            android:paddingBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="24dp">
+
+                <TextView
+                    android:id="@+id/tv_host_listings_status_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Bạn chưa có bài đăng"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_host_listings_status_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Mở một phòng trong Phòng của tôi và bấm “Tạo bài đăng” để lưu bản nháp."
+                    android:textColor="@color/roomly_text_secondary"
+                    android:textSize="14sp" />
+
+                <!-- Chỉ hiện khi cần đăng nhập. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_host_listings_login"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:minHeight="48dp"
+                    android:text="Đăng nhập"
+                    android:textAllCaps="false"
+                    android:textColor="@color/roomly_surface"
+                    android:visibility="gone"
+                    app:backgroundTint="@color/roomly_primary"
+                    app:cornerRadius="12dp" />
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </FrameLayout>
+
+</LinearLayout>
