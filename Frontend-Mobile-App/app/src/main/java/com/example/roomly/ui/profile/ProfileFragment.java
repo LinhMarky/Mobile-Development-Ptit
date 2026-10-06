@@ -17,6 +17,8 @@ import com.example.roomly.data.repository.DemoProfileRepository;
 import com.example.roomly.databinding.BottomSheetEditProfileBinding;
 import com.example.roomly.databinding.FragmentProfileBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.example.roomly.R;
+import com.example.roomly.ui.auth.LoginFragment;
 
 /**
  * Hiển thị và chỉnh sửa hồ sơ bằng dữ liệu mẫu.
@@ -62,6 +64,10 @@ public class ProfileFragment extends Fragment {
 
         binding.btnEditProfile.setOnClickListener(
                 clickedView -> showEditProfileDialog()
+        );
+
+        binding.btnOpenLogin.setOnClickListener(
+                clickedView -> openLoginScreen()
         );
     }
 
@@ -238,6 +244,21 @@ public class ProfileFragment extends Fragment {
                 );
 
         controller.hide(WindowInsetsCompat.Type.ime());
+    }
+
+    /**
+     * Mở màn hình đăng nhập và giữ trang Cá nhân trong back stack.
+     */
+    private void openLoginScreen() {
+        getParentFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(
+                        R.id.fragment_container,
+                        new LoginFragment()
+                )
+                .addToBackStack(null)
+                .commit();
     }
 
     /**

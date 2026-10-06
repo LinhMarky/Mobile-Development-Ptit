@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Giao diện đăng nhập có thể cuộn khi bàn phím mở. -->
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/roomly_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingTop="40dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="24dp">
+
+        <!-- Tên ứng dụng và lời giới thiệu. -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ROOMLY"
+            android:textColor="@color/roomly_primary"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Chào mừng bạn trở lại!"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Đăng nhập để lưu phòng, trao đổi và quản lý lịch hẹn."
+            android:textColor="@color/roomly_text_secondary"
+            android:textSize="14sp"
+            android:lineSpacingExtra="4dp" />
+
+        <!-- Email đăng nhập; lỗi nhập liệu sẽ hiện dưới ô. -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layout_login_email"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:hint="Email"
+            app:boxBackgroundColor="@color/roomly_surface"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edt_login_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="emailAddress"
+                android:imeOptions="actionNext"
+                android:inputType="textEmailAddress"
+                android:singleLine="true"
+                android:textColor="@color/roomly_text_primary"
+                android:textSize="14sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Mật khẩu có biểu tượng hiện/ẩn do Material cung cấp. -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layout_login_password"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Mật khẩu"
+            app:boxBackgroundColor="@color/roomly_surface"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp"
+            app:endIconMode="password_toggle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edt_login_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="password"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword"
+                android:saveEnabled="false"
+                android:singleLine="true"
+                android:textColor="@color/roomly_text_primary"
+                android:textSize="14sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Mở luồng khôi phục mật khẩu ở bước triển khai sau. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_forgot_password"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:minHeight="48dp"
+            android:text="Quên mật khẩu?"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_primary" />
+
+        <!-- Thông báo lỗi đăng nhập hoặc kết nối. -->
+        <TextView
+            android:id="@+id/tv_login_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:accessibilityLiveRegion="polite"
+            android:textColor="#B3261E"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <!-- Hiển thị khi yêu cầu đăng nhập đang được xử lý. -->
+        <ProgressBar
+            android:id="@+id/progress_login"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:indeterminateTint="@color/roomly_primary"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:minHeight="52dp"
+            android:text="Đăng nhập"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_surface"
+            android:textSize="16sp"
+            app:backgroundTint="@color/roomly_primary"
+            app:cornerRadius="12dp" />
+
+        <!-- Chuyển sang màn hình tạo tài khoản. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_open_register"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:minHeight="52dp"
+            android:text="Tạo tài khoản mới"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_primary"
+            android:textSize="15sp"
+            app:backgroundTint="@color/roomly_surface"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/roomly_primary"
+            app:strokeWidth="1dp" />
+
+        <!-- Guest được xem phòng công khai mà không cần đăng nhập. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_continue_guest"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:minHeight="48dp"
+            android:text="Tiếp tục với tư cách khách"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_text_secondary" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

@@ -20,6 +20,10 @@ import com.example.roomly.ui.saved.SavedFragment;
 import com.example.roomly.ui.schedule.ScheduleFragment;
 import com.example.roomly.ui.messages.MessagesFragment;
 import com.example.roomly.ui.messages.ChatFragment;
+import com.example.roomly.ui.auth.LoginFragment;
+import com.example.roomly.ui.auth.RegisterFragment;
+import com.example.roomly.ui.auth.ForgotPasswordFragment;
+import com.example.roomly.ui.auth.VerifyEmailFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -161,8 +165,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     /**
-     * Ẩn menu dưới khi xem chi tiết phòng hoặc trò chuyện.
-     * Hiện lại menu khi quay về các màn hình chính.
+     * Ẩn menu dưới ở chi tiết phòng, chat và các màn hình tài khoản.
+     * Hiện lại menu khi trở về các màn hình chính.
      */
     private void updateBottomNavVisibility() {
         Fragment currentFragment =
@@ -172,7 +176,11 @@ public class MainActivity extends AppCompatActivity {
 
         boolean shouldHideBottomNav =
                 currentFragment instanceof RoomDetailFragment
-                        || currentFragment instanceof ChatFragment;
+                        || currentFragment instanceof ChatFragment
+                        || currentFragment instanceof LoginFragment
+                        || currentFragment instanceof RegisterFragment
+                        || currentFragment instanceof ForgotPasswordFragment
+                        || currentFragment instanceof VerifyEmailFragment;
 
         binding.bottomNav.setVisibility(
                 shouldHideBottomNav ? View.GONE : View.VISIBLE

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Màn hình hướng dẫn xác minh email, có thể cuộn trên màn hình nhỏ. -->
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/roomly_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Quay lại màn hình trước. -->
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/btn_verify_email_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Quay lại"
+            android:padding="12dp"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/roomly_primary" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Xác minh email"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:lineSpacingExtra="4dp"
+            android:text="Mở email xác minh từ ROOMLY và làm theo hướng dẫn để hoàn tất xác minh tài khoản."
+            android:textColor="@color/roomly_text_secondary"
+            android:textSize="14sp" />
+
+        <!-- Email của tài khoản cần xác minh, cập nhật từ dữ liệu tài khoản. -->
+        <TextView
+            android:id="@+id/tv_verify_email_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textColor="@color/roomly_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:lineSpacingExtra="4dp"
+            android:text="Chưa thấy email? Hãy kiểm tra thư mục spam hoặc yêu cầu gửi lại."
+            android:textColor="@color/roomly_text_secondary"
+            android:textSize="14sp" />
+
+        <!-- Lỗi kết nối hoặc lỗi xử lý yêu cầu. -->
+        <TextView
+            android:id="@+id/tv_verify_email_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:accessibilityLiveRegion="polite"
+            android:textColor="#B3261E"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <!-- Thông báo kết quả do ViewModel cung cấp. -->
+        <TextView
+            android:id="@+id/tv_verify_email_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:accessibilityLiveRegion="polite"
+            android:textColor="@color/roomly_primary"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/progress_verify_email"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:indeterminateTint="@color/roomly_primary"
+            android:visibility="gone" />
+
+        <!-- Yêu cầu backend gửi lại email xác minh. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_resend_verification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:minHeight="52dp"
+            android:text="Gửi lại email xác minh"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_surface"
+            android:textSize="15sp"
+            app:backgroundTint="@color/roomly_primary"
+            app:cornerRadius="12dp" />
+
+        <!-- Kiểm tra lại trạng thái từ server, không tự cấp trạng thái verified. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_check_verification"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:minHeight="52dp"
+            android:text="Kiểm tra trạng thái xác minh"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_primary"
+            android:textSize="15sp"
+            app:backgroundTint="@color/roomly_surface"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/roomly_primary"
+            app:strokeWidth="1dp" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

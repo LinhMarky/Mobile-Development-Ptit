@@ -149,6 +149,20 @@
 
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Mở màn hình đăng nhập; hồ sơ phía trên hiện vẫn là dữ liệu mẫu. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_open_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:minHeight="48dp"
+            android:text="Đăng nhập"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_surface"
+            android:textSize="15sp"
+            app:backgroundTint="@color/roomly_primary"
+            app:cornerRadius="12dp" />
+
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
