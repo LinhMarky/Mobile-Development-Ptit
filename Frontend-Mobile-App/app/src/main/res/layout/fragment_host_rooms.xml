@@ -41,6 +41,21 @@
         app:backgroundTint="@color/roomly_primary"
         app:cornerRadius="12dp" />
 
+    <!-- Mở danh sách yêu cầu xem phòng gửi đến chủ trọ. -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_host_open_appointments"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:minHeight="48dp"
+        android:text="Yêu cầu xem phòng"
+        android:textAllCaps="false"
+        android:textColor="@color/roomly_primary"
+        android:visibility="gone"
+        app:strokeColor="@color/roomly_primary"
+        app:cornerRadius="12dp" />
+
     <!-- Vùng hiển thị danh sách hoặc trạng thái của màn hình. -->
     <FrameLayout
         android:layout_width="match_parent"

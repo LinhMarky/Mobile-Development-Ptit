@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Màn hình chủ trọ xem các yêu cầu hẹn xem phòng. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/roomly_background">
+
+    <!-- Nút quay lại và tiêu đề. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_host_appointments_back"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Quay lại"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_primary" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Yêu cầu xem phòng"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- Mô tả ngắn chức năng màn hình. -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="Theo dõi các yêu cầu hẹn xem phòng gửi đến bạn."
+        android:textColor="@color/roomly_text_secondary"
+        android:textSize="14sp"
+        android:lineSpacingExtra="3dp" />
+
+    <!-- Vùng danh sách hoặc thông báo trạng thái. -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="20dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
+
+        <!-- Danh sách yêu cầu sẽ được Fragment và Adapter cập nhật. -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_host_appointments"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="24dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical"
+            android:visibility="gone" />
+
+        <!-- Hiển thị khi danh sách trống hoặc không có quyền truy cập. -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/layout_host_appointments_status"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="24dp">
+
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_calendar"
+                    android:importantForAccessibility="no"
+                    app:tint="@color/roomly_primary" />
+
+                <TextView
+                    android:id="@+id/tv_host_appointments_status_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:gravity="center"
+                    android:text="Chưa có yêu cầu xem phòng"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:accessibilityLiveRegion="polite" />
+
+                <TextView
+                    android:id="@+id/tv_host_appointments_status_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Các yêu cầu hẹn xem phòng gửi đến bạn sẽ xuất hiện tại đây."
+                    android:textColor="@color/roomly_text_secondary"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp" />
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </FrameLayout>
+
+</LinearLayout>

@@ -20,6 +20,7 @@ import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentHostRoomsBinding;
 import com.example.roomly.ui.auth.LoginFragment;
 import com.example.roomly.ui.auth.VerifyEmailFragment;
+import com.example.roomly.ui.host.viewing.HostAppointmentsFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +78,11 @@ public class HostRoomsFragment extends Fragment {
                 clickedView -> handleAccess()
         );
 
+        // Mở danh sách yêu cầu xem phòng gửi đến chủ trọ.
+        binding.btnHostOpenAppointments.setOnClickListener(
+                clickedView -> openScreen(new HostAppointmentsFragment())
+        );
+
         SessionRepository.getInstance()
                 .getSessionState()
                 .observe(getViewLifecycleOwner(), this::renderSession);
@@ -96,7 +102,8 @@ public class HostRoomsFragment extends Fragment {
 
     /**
      * Kiểm tra quyền trước khi đọc danh sách phòng.
-     * Xóa dữ liệu đang hiển thị nếu phiên không còn quyền chủ trọ.
+     * Chỉ hiện nút thêm phòng và xem yêu cầu cho tài khoản có quyền chủ trọ.
+     * Xóa dữ liệu đang hiển thị nếu phiên không còn quyền truy cập.
      */
     private void renderSession(@Nullable SessionState session) {
         if (binding == null || roomAdapter == null) {
@@ -107,8 +114,10 @@ public class HostRoomsFragment extends Fragment {
                 ? SessionState.guest()
                 : session;
 
+        // Mặc định ẩn các nút trước khi kiểm tra quyền.
         binding.btnHostAddRoom.setVisibility(View.GONE);
         binding.btnHostRoomsAccess.setVisibility(View.GONE);
+        binding.btnHostOpenAppointments.setVisibility(View.GONE);
 
         if (!currentSession.isLoggedIn()) {
             roomAdapter.updateRooms(new ArrayList<>());
@@ -133,7 +142,9 @@ public class HostRoomsFragment extends Fragment {
             return;
         }
 
+        // Tài khoản có quyền chủ trọ được mở các màn hình quản lý.
         binding.btnHostAddRoom.setVisibility(View.VISIBLE);
+        binding.btnHostOpenAppointments.setVisibility(View.VISIBLE);
 
         displayRooms(currentSession);
     }

@@ -22,6 +22,7 @@ import com.example.roomly.ui.auth.RegisterFragment;
 import com.example.roomly.ui.auth.VerifyEmailFragment;
 import com.example.roomly.ui.detail.RoomDetailFragment;
 import com.example.roomly.ui.explore.ExploreFragment;
+import com.example.roomly.ui.host.HostEditListingFragment;
 import com.example.roomly.ui.host.HostRoomsFragment;
 import com.example.roomly.ui.messages.ChatFragment;
 import com.example.roomly.ui.messages.MessagesFragment;
@@ -33,6 +34,9 @@ import com.example.roomly.ui.host.HostRoomDetailFragment;
 import com.example.roomly.ui.host.HostEditRoomFragment;
 import com.example.roomly.ui.host.HostCreateListingFragment;
 import com.example.roomly.ui.host.HostListingsFragment;
+import com.example.roomly.ui.host.HostListingDetailFragment;
+import com.example.roomly.ui.host.viewing.HostViewingFragment;
+import com.example.roomly.ui.host.viewing.HostAppointmentsFragment;
 
 /**
  * Điều khiển màn hình chính và thanh điều hướng theo chế độ sử dụng.
@@ -348,7 +352,11 @@ public class MainActivity extends AppCompatActivity {
                         || currentFragment instanceof HostAddRoomFragment
                         || currentFragment instanceof HostRoomDetailFragment
                         || currentFragment instanceof HostEditRoomFragment
-                        || currentFragment instanceof HostCreateListingFragment;
+                        || currentFragment instanceof HostCreateListingFragment
+                        || currentFragment instanceof HostListingDetailFragment
+                        || currentFragment instanceof HostEditListingFragment
+                        || currentFragment instanceof HostViewingFragment
+                        || currentFragment instanceof HostAppointmentsFragment;
 
         binding.bottomNav.setVisibility(
                 hideBottomNav ? View.GONE : View.VISIBLE

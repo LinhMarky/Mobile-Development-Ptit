@@ -64,6 +64,7 @@ public class HostListingsFragment extends Fragment {
         );
 
         listingAdapter = new HostListingAdapter();
+        listingAdapter.setOnListingClickListener(this::openListingDetail);
         binding.rvHostListings.setAdapter(listingAdapter);
 
         binding.btnHostListingsLogin.setOnClickListener(
@@ -189,6 +190,35 @@ public class HostListingsFragment extends Fragment {
     }
 
     /**
+     * Kiểm tra bản nháp còn thuộc tài khoản hiện tại trước khi mở chi tiết.
+     * Chỉ truyền ID để màn hình chi tiết đọc lại dữ liệu và quyền.
+     */
+    private void openListingDetail(HostListing listing) {
+        HostListing currentListing =
+                DemoHostListingRepository.getInstance()
+                        .getMyListingById(listing.getId());
+
+        if (currentListing == null) {
+            renderSession(
+                    SessionRepository.getInstance().getCurrentSession()
+            );
+            return;
+        }
+
+        getParentFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(
+                        R.id.fragment_container,
+                        HostListingDetailFragment.newInstance(
+                                currentListing.getId()
+                        )
+                )
+                .addToBackStack(null)
+                .commit();
+    }
+
+    /**
      * Gỡ listener, adapter và binding khi giao diện bị hủy.
      */
     @Override
@@ -196,6 +226,10 @@ public class HostListingsFragment extends Fragment {
         if (binding != null) {
             binding.btnHostListingsLogin.setOnClickListener(null);
             binding.rvHostListings.setAdapter(null);
+        }
+
+        if (listingAdapter != null) {
+            listingAdapter.setOnListingClickListener(null);
         }
 
         listingAdapter = null;

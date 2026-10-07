@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Chi tiết phòng trong phần quản lý của chủ trọ. -->
+<!-- Chi tiết bản nháp bài đăng của chủ trọ. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -21,7 +21,7 @@
         android:paddingBottom="12dp">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_host_detail_back"
+            android:id="@+id/btn_listing_detail_back"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -36,15 +36,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="12dp"
-            android:text="Chi tiết phòng"
+            android:text="Chi tiết bài đăng"
             android:textColor="@color/roomly_text_primary"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
     </LinearLayout>
 
-    <!-- Nội dung được gán bằng Java.
-         Bỏ qua cảnh báo văn bản của vùng cuộn khi chưa có dữ liệu. -->
+    <!-- Nội dung chi tiết có thể cuộn. -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -61,9 +60,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Hiện khi không tìm thấy phòng hoặc không có quyền truy cập. -->
+            <!-- Hiện khi dữ liệu không còn hoặc không có quyền truy cập. -->
             <TextView
-                android:id="@+id/tv_host_detail_error"
+                android:id="@+id/tv_listing_detail_error"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
@@ -74,15 +73,15 @@
                 android:textSize="16sp"
                 android:visibility="gone" />
 
-            <!-- Chỉ hiển thị khi có dữ liệu phòng hợp lệ. -->
+            <!-- Chỉ hiển thị khi bản nháp thuộc tài khoản hiện tại. -->
             <LinearLayout
-                android:id="@+id/layout_host_detail_content"
+                android:id="@+id/layout_listing_detail_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <!-- Vùng ảnh phòng. -->
+                <!-- Ảnh lấy từ phòng liên kết với bài đăng. -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -95,15 +94,15 @@
                         android:layout_height="220dp">
 
                         <ImageView
-                            android:id="@+id/img_host_detail_room"
+                            android:id="@+id/img_listing_detail_room"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:scaleType="centerCrop"
-                            android:contentDescription="Ảnh phòng"
+                            android:contentDescription="Ảnh phòng của bài đăng"
                             android:visibility="gone" />
 
                         <TextView
-                            android:id="@+id/tv_host_detail_image_placeholder"
+                            android:id="@+id/tv_listing_detail_image_placeholder"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:gravity="center"
@@ -115,7 +114,7 @@
 
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Khối thông tin phòng. -->
+                <!-- Thông tin bài đăng. -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -132,120 +131,99 @@
                         android:orientation="vertical"
                         android:padding="20dp">
 
-                        <!-- Mã và tên phòng được gán từ dữ liệu. -->
                         <TextView
-                            android:id="@+id/tv_host_detail_code"
-                            android:layout_width="match_parent"
+                            android:id="@+id/tv_listing_detail_status"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:background="@color/roomly_primary_light"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp"
+                            android:text="Bản nháp mẫu"
                             android:textColor="@color/roomly_primary"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/tv_host_detail_name"
+                            android:id="@+id/tv_listing_detail_title"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
+                            android:layout_marginTop="16dp"
                             android:textColor="@color/roomly_text_primary"
                             android:textSize="22sp"
                             android:textStyle="bold" />
 
-                        <!-- Địa chỉ. -->
+                        <TextView
+                            android:id="@+id/tv_listing_detail_price"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:textColor="@color/roomly_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <!-- Thông tin phòng liên kết. -->
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
-                            android:text="Địa chỉ"
+                            android:layout_marginTop="24dp"
+                            android:text="Phòng liên kết"
                             android:textColor="@color/roomly_text_secondary"
                             android:textSize="13sp" />
 
                         <TextView
-                            android:id="@+id/tv_host_detail_address"
+                            android:id="@+id/tv_listing_detail_room_code"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
+                            android:textColor="@color/roomly_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_listing_detail_address"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
                             android:lineSpacingExtra="4dp"
-                            android:textColor="@color/roomly_text_primary"
-                            android:textSize="16sp" />
-
-                        <!-- Diện tích. -->
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
-                            android:text="Diện tích"
                             android:textColor="@color/roomly_text_secondary"
-                            android:textSize="13sp" />
+                            android:textSize="14sp" />
 
+                        <!-- Nội dung đầy đủ, không giới hạn số dòng. -->
                         <TextView
-                            android:id="@+id/tv_host_detail_area"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
+                            android:layout_marginTop="24dp"
+                            android:text="Nội dung bài đăng"
                             android:textColor="@color/roomly_text_primary"
-                            android:textSize="16sp" />
+                            android:textSize="17sp"
+                            android:textStyle="bold" />
 
-                        <!-- Mô tả hiển thị đầy đủ. -->
                         <TextView
+                            android:id="@+id/tv_listing_detail_description"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
-                            android:text="Mô tả phòng"
+                            android:layout_marginTop="10dp"
+                            android:lineSpacingExtra="5dp"
                             android:textColor="@color/roomly_text_secondary"
-                            android:textSize="13sp" />
-
-                        <TextView
-                            android:id="@+id/tv_host_detail_description"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:lineSpacingExtra="4dp"
-                            android:textColor="@color/roomly_text_primary"
                             android:textSize="16sp" />
 
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Nút mở biểu mẫu chỉnh sửa phòng. -->
+                <!-- Nút chỉnh sửa sẽ được nối sau khi tạo màn hình tương ứng. -->
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_host_detail_edit"
+                    android:id="@+id/btn_listing_detail_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:minHeight="48dp"
-                    android:text="Chỉnh sửa phòng"
+                    android:text="Chỉnh sửa bản nháp"
                     android:textAllCaps="false"
                     android:textColor="@color/roomly_surface"
                     app:backgroundTint="@color/roomly_primary"
-                    app:cornerRadius="12dp" />
-
-                <!-- Mở biểu mẫu tạo bài đăng cho phòng này. -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_host_detail_create_listing"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:minHeight="48dp"
-                    android:text="Tạo bài đăng"
-                    android:textAllCaps="false"
-                    android:textColor="@color/roomly_primary"
-                    app:strokeColor="@color/roomly_primary"
-                    app:cornerRadius="12dp" />
-
-                <!-- Mở màn hình quản lý khung giờ xem phòng. -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_host_detail_viewing"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:minHeight="48dp"
-                    android:text="Quản lý khung giờ"
-                    android:textAllCaps="false"
-                    android:textColor="@color/roomly_primary"
-                    app:strokeColor="@color/roomly_primary"
                     app:cornerRadius="12dp" />
 
             </LinearLayout>

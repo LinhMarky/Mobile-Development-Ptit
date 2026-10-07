@@ -149,6 +149,95 @@ public class DemoHostListingRepository {
     }
 
     /**
+     * Cập nhật nội dung bản nháp thuộc tài khoản hiện tại.
+     * Giữ nguyên mã bài đăng, chủ sở hữu, phòng liên kết và thời điểm tạo.
+     * Dữ liệu hiện chỉ được lưu trong bộ nhớ để thử giao diện.
+     */
+    @androidx.annotation.MainThread
+    public HostListing updateDraft(
+            String listingId,
+            String title,
+            long monthlyRent,
+            String description
+    ) {
+        com.example.roomly.data.model.SessionState session =
+                SessionRepository.getInstance().getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            throw new IllegalStateException(
+                    "Bạn cần đăng nhập để chỉnh sửa bản nháp."
+            );
+        }
+
+        if (!session.isEmailVerified()) {
+            throw new IllegalStateException(
+                    "Bạn cần xác minh email để chỉnh sửa bản nháp."
+            );
+        }
+
+        // Hàm này chỉ trả về bài đăng thuộc tài khoản có quyền HOST.
+        HostListing currentListing = getMyListingById(listingId);
+
+        if (currentListing == null) {
+            throw new IllegalStateException(
+                    "Không tìm thấy bản nháp thuộc tài khoản của bạn."
+            );
+        }
+
+        // Kiểm tra phòng liên kết vẫn thuộc tài khoản hiện tại.
+        if (DemoHostRoomRepository.getInstance().getMyRoomById(
+                currentListing.getRoomId()
+        ) == null) {
+            throw new IllegalStateException(
+                    "Không tìm thấy phòng liên kết với bản nháp."
+            );
+        }
+
+        String cleanedTitle = cleanText(title);
+        String cleanedDescription = cleanText(description);
+
+        if (cleanedTitle.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Bạn hãy nhập tiêu đề bài đăng."
+            );
+        }
+
+        if (monthlyRent <= 0) {
+            throw new IllegalArgumentException(
+                    "Giá thuê phải lớn hơn 0."
+            );
+        }
+
+        if (cleanedDescription.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Bạn hãy nhập nội dung bài đăng."
+            );
+        }
+
+        HostListing updatedListing = new HostListing(
+                currentListing.getId(),
+                currentListing.getOwnerId(),
+                currentListing.getRoomId(),
+                cleanedTitle,
+                monthlyRent,
+                cleanedDescription,
+                currentListing.getCreatedAtMillis()
+        );
+
+        // Thay thế bản nháp tại vị trí cũ trong danh sách.
+        for (int index = 0; index < listings.size(); index++) {
+            if (listings.get(index).getId().equals(currentListing.getId())) {
+                listings.set(index, updatedListing);
+                return updatedListing;
+            }
+        }
+
+        throw new IllegalStateException(
+                "Bản nháp không còn trong dữ liệu mẫu."
+        );
+    }
+
+    /**
      * Loại bỏ khoảng trắng ở hai đầu và xử lý giá trị null.
      */
     private String cleanText(String text) {

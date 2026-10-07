@@ -20,6 +20,7 @@ import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentHostRoomDetailBinding;
 import com.example.roomly.ui.auth.LoginFragment;
 import com.example.roomly.ui.auth.VerifyEmailFragment;
+import com.example.roomly.ui.host.viewing.HostViewingFragment;
 
 /**
  * Hiển thị chi tiết phòng thuộc tài khoản chủ trọ hiện tại.
@@ -98,6 +99,10 @@ public class HostRoomDetailFragment extends Fragment {
 
         binding.btnHostDetailCreateListing.setOnClickListener(
                 clickedView -> handleCreateListing()
+        );
+
+        binding.btnHostDetailViewing.setOnClickListener(
+                clickedView -> openViewingScreen()
         );
 
         SessionRepository.getInstance()
@@ -327,6 +332,21 @@ public class HostRoomDetailFragment extends Fragment {
     }
 
     /**
+     * Mở màn hình quản lý khung giờ của phòng đang xem.
+     * Kiểm tra lại quyền sở hữu trước khi chuyển màn hình.
+     */
+    private void openViewingScreen() {
+        if (DemoHostRoomRepository.getInstance()
+                .getMyRoomById(roomId) == null) {
+            return;
+        }
+
+        openScreen(
+                HostViewingFragment.newInstance(roomId)
+        );
+    }
+
+    /**
      * Gỡ listener, giải phóng ảnh và binding khi giao diện bị hủy.
      */
     @Override
@@ -336,6 +356,7 @@ public class HostRoomDetailFragment extends Fragment {
             binding.btnHostDetailEdit.setOnClickListener(null);
             binding.imgHostDetailRoom.setImageDrawable(null);
             binding.btnHostDetailCreateListing.setOnClickListener(null);
+            binding.btnHostDetailViewing.setOnClickListener(null);
         }
 
         binding = null;

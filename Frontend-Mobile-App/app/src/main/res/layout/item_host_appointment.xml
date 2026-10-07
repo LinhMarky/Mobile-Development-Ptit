@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Thẻ yêu cầu xem phòng gửi đến chủ trọ. -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardBackgroundColor="@color/roomly_surface"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/roomly_border"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Trạng thái yêu cầu. -->
+        <TextView
+            android:id="@+id/tv_host_appointment_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/roomly_primary"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <!-- Tên phòng được yêu cầu xem. -->
+        <TextView
+            android:id="@+id/tv_host_appointment_room"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <!-- Mã phòng giúp phân biệt các phòng có tên giống nhau. -->
+        <TextView
+            android:id="@+id/tv_host_appointment_room_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/roomly_text_secondary"
+            android:textSize="13sp" />
+
+        <!-- Tên người gửi yêu cầu. -->
+        <TextView
+            android:id="@+id/tv_host_appointment_guest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="14sp" />
+
+        <!-- Thời gian hẹn xem phòng. -->
+        <TextView
+            android:id="@+id/tv_host_appointment_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/roomly_text_secondary"
+            android:textSize="14sp"
+            android:lineSpacingExtra="3dp" />
+
+        <!-- Ghi chú chỉ hiển thị khi người gửi có nhập nội dung. -->
+        <TextView
+            android:id="@+id/tv_host_appointment_note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/roomly_text_secondary"
+            android:textSize="14sp"
+            android:lineSpacingExtra="3dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

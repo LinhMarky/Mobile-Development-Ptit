@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Hiển thị các bản nháp bài đăng của chủ trọ.
+ * Hiển thị bản nháp bài đăng và nhận thao tác bấm thẻ.
  * Ảnh và địa chỉ được lấy từ phòng liên kết trong dữ liệu mẫu.
  */
 public class HostListingAdapter
@@ -26,10 +26,30 @@ public class HostListingAdapter
 
     private final List<HostListing> listings = new ArrayList<>();
 
+    private OnListingClickListener onListingClickListener;
+
+    public interface OnListingClickListener {
+
+        /**
+         * Thông báo bản nháp được chọn để mở màn hình chi tiết.
+         */
+        void onListingClick(HostListing listing);
+    }
+
     /**
      * Khởi tạo adapter với danh sách rỗng.
      */
     public HostListingAdapter() {
+    }
+
+    /**
+     * Đăng ký xử lý thao tác bấm thẻ bài đăng.
+     * Truyền null để gỡ listener khi màn hình bị hủy.
+     */
+    public void setOnListingClickListener(
+            OnListingClickListener listener
+    ) {
+        this.onListingClickListener = listener;
     }
 
     /**
@@ -52,7 +72,8 @@ public class HostListingAdapter
     }
 
     /**
-     * Gán dữ liệu bài đăng và phòng liên kết vào thẻ.
+     * Hiển thị dữ liệu và đăng ký thao tác bấm thẻ bài đăng.
+     * Lấy vị trí hiện tại khi bấm để tránh sử dụng vị trí cũ.
      */
     @Override
     public void onBindViewHolder(
@@ -65,6 +86,20 @@ public class HostListingAdapter
                 .getMyRoomById(listing.getRoomId());
 
         holder.bind(listing, room);
+
+        holder.itemView.setOnClickListener(view -> {
+            int currentPosition = holder.getBindingAdapterPosition();
+
+            if (currentPosition == RecyclerView.NO_POSITION) {
+                return;
+            }
+
+            if (onListingClickListener != null) {
+                onListingClickListener.onListingClick(
+                        listings.get(currentPosition)
+                );
+            }
+        });
     }
 
     /**
@@ -77,6 +112,7 @@ public class HostListingAdapter
 
     /**
      * Thay danh sách bản nháp và cập nhật giao diện.
+     * Sao chép trước khi xóa danh sách cũ.
      */
     public void updateListings(List<HostListing> newListings) {
         List<HostListing> updatedListings =
@@ -89,12 +125,13 @@ public class HostListingAdapter
     }
 
     /**
-     * Giải phóng ảnh khi thẻ được đưa vào vùng tái sử dụng.
+     * Gỡ sự kiện bấm và giải phóng ảnh khi thẻ được tái sử dụng.
      */
     @Override
     public void onViewRecycled(
             @NonNull HostListingViewHolder holder
     ) {
+        holder.itemView.setOnClickListener(null);
         holder.clearImage();
 
         super.onViewRecycled(holder);
@@ -122,6 +159,7 @@ public class HostListingAdapter
         void bind(HostListing listing, HostRoom room) {
             binding.tvHostListingStatus.setText("Bản nháp mẫu");
             binding.tvHostListingTitle.setText(listing.getTitle());
+
             binding.tvHostListingPrice.setText(
                     listing.getFormattedPrice()
             );
