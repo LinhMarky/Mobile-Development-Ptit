@@ -1,113 +1,126 @@
 # 🏢 Homely Rental System — Infrastructure & Deployment
 
-![Java 17](https://img.shields.io/badge/Java-17-orange)
-![Spring Boot 3.3.x](https://img.shields.io/badge/Spring_Boot-3.3.x-green)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 ![MySQL 8.4](https://img.shields.io/badge/MySQL-8.4-blue)
 ![MinIO](https://img.shields.io/badge/MinIO-Storage-red)
+![Mailpit](https://img.shields.io/badge/Mailpit-SMTP-yellow)
 
-Tài liệu này cung cấp hướng dẫn cài đặt và vận hành hệ thống **Homely** (Room Rental System) trên môi trường Local/Demo bằng Docker Compose. Hệ thống bao gồm Backend (Spring Boot), Database (MySQL 8.4), Storage (MinIO) và Mock Email (Mailpit).
-
----
-
-## 🛠 Yêu cầu hệ thống (Prerequisites)
-
-- **Docker Desktop** / **Docker Engine** (đang chạy với Linux containers).
-- **PowerShell** (nếu chạy trên Windows).
-- **Java 17+ & Maven** (nếu muốn build thủ công không qua Docker).
+Tài liệu này cung cấp hướng dẫn toàn diện về cài đặt, vận hành và gỡ lỗi toàn bộ hạ tầng của hệ thống **Homely** (Room Rental System) thông qua **Docker Compose**.
 
 ---
 
-## 🚀 Khởi động nhanh (Quick Start)
+## 🛠 1. Yêu cầu hệ thống (Prerequisites)
 
-Mở Terminal (PowerShell) tại thư mục `Infra` và chạy lần lượt các lệnh sau:
-
-1. **Khởi tạo môi trường:**
-   ```powershell
-   # Sinh file .env với các biến bảo mật tự động
-   .\New-DemoEnv.ps1
-   ```
-
-2. **Kiểm tra file cấu hình (Tùy chọn):**
-   ```powershell
-   docker compose config --quiet
-   ```
-
-3. **Khởi động toàn bộ hệ thống:**
-   ```powershell
-   docker compose up --build -d
-   ```
-
-4. **Theo dõi log Backend:**
-   ```powershell
-   docker compose logs -f backend
-   ```
-> **Lưu ý:** Backend sẽ tự động chờ MySQL và MinIO `healthy` rồi mới bắt đầu chạy. Thời gian tải ban đầu có thể mất 1-2 phút.
+- **Docker Desktop** (Windows/Mac) hoặc **Docker Engine** (Linux) phải được cài đặt và đang ở trạng thái **Running**. Khuyến nghị cấp phát tối thiểu **4GB RAM** cho Docker để chạy mượt mà Spring Boot, MySQL và MinIO.
+- **Git** để quản lý và đồng bộ source code.
+- **PowerShell** (nếu dùng Windows) để thực thi các file kịch bản tự động `.ps1`.
+- Đảm bảo các port sau đang **trống** trên máy tính của bạn:
+  - `8080` (hoặc `8082`): API Backend
+  - `3306`: MySQL Database
+  - `9000` & `9001`: MinIO Object Storage
+  - `8025` & `1025`: Mailpit SMTP server
 
 ---
 
-## 🌍 Các dịch vụ và Cổng (Services & Ports)
+## 🚀 2. Hướng dẫn sử dụng Docker Compose chi tiết
 
-Sau khi hệ thống khởi động thành công, bạn có thể truy cập các dịch vụ qua các địa chỉ sau:
+Toàn bộ hệ thống chạy qua các containers độc lập, giao tiếp với nhau bằng mạng ảo của Docker.
 
-| Dịch vụ | Địa chỉ truy cập | Ghi chú |
-|---------|-----------------|---------|
-| **Backend API Health** | [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health) | Trạng thái server |
-| **Swagger UI (API Docs)** | [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) | Tài liệu API |
-| **Mailpit (Mock Email)** | [http://localhost:8025](http://localhost:8025) | Hộp thư test (Mã OTP, email xác nhận) |
-| **MinIO Console** | [http://localhost:9001](http://localhost:9001) | Quản lý File/Ảnh (User/Pass trong `.env`) |
+### 2.1. Khởi tạo môi trường
+Di chuyển vào thư mục `Infra` trên terminal và chạy script tạo file môi trường:
+```powershell
+.\New-DemoEnv.ps1
+```
+> Script này sẽ tự động sinh file `.env` (chứa mật khẩu ngẫu nhiên cho MySQL, MinIO, JWT Secret...). Không bao giờ commit file `.env` lên Git để tránh lộ thông tin nhạy cảm.
 
-*Lưu ý: Nếu cổng `8080` bị trùng, bạn có thể đổi cổng bằng cách cấu hình `$env:API_PORT='18082'` trước khi chạy Docker Compose.*
+### 2.2. Các lệnh Docker Compose cốt lõi
+
+**Khởi động hệ thống:**
+```powershell
+docker compose up --build -d
+```
+- Lệnh này sẽ kéo (pull) image của MySQL và Mailpit về, đồng thời tự động build (biên dịch) image cho Backend (từ `../backend/Dockerfile`) và MinIO (từ `minio/Dockerfile`).
+- Cờ `-d` (detached) giúp container chạy ngầm, không khóa terminal của bạn.
+
+**Kiểm tra trạng thái (Status):**
+```powershell
+docker compose ps
+```
+- Dùng lệnh này để xem danh sách các container. Chú ý cột trạng thái phải là `Running` (hoặc `Up`). Nếu thấy `Exit`, hãy xem log.
+
+**Xem log (Nhật ký chạy):**
+```powershell
+docker compose logs -f backend
+```
+- Theo dõi tiến trình khởi động của Spring Boot. Nó sẽ chờ các dịch vụ khác (DB, Storage) báo `healthy` rồi mới bắt đầu.
+- Để xem log của DB: `docker compose logs -f mysql`
+
+**Dừng hệ thống (Tạm thời):**
+```powershell
+docker compose stop
+```
+- Dừng container nhưng không xóa chúng.
+
+**Tắt và dọn dẹp hoàn toàn (Quan trọng khi lỗi nặng):**
+```powershell
+docker compose down
+```
+- Lệnh này xóa sạch container và network ảo.
+- **Lưu ý:** Nếu bạn muốn **xóa trắng luôn cả dữ liệu (Database, ảnh đã up)** để làm lại từ đầu, hãy thêm cờ `-v`:
+  ```powershell
+  docker compose down -v
+  ```
 
 ---
 
-## 👥 Tài khoản Demo (Sandbox Data)
+## 🔧 3. Cấu trúc dịch vụ & Port Mapping
 
-Khi khởi chạy, hệ thống sẽ tự động tạo dữ liệu mẫu (Seed Data) nếu biến `DEMO_SEED=true` được bật. Mật khẩu chung cho tất cả các tài khoản nằm trong biến `DEMO_PASSWORD` ở file `.env`.
+Hệ thống được quy định cụ thể trong file `compose.yaml` với các ánh xạ port (Port Mapping) từ container ra ngoài máy thật như sau:
 
-Danh sách tài khoản test:
-- 👑 **Admin**: `admin@homely.test` (Quản trị, duyệt tin)
-- 🏠 **Host**: `host@homely.test` (Chủ nhà, quản lý phòng, booking)
-- 🧑‍💼 **Tenant**: `tenant@homely.test` (Khách thuê phòng)
+| Tên Dịch Vụ | Port trong Container | Port ở Máy ngoài (Host) | Công dụng | Dữ liệu bền vững (Volume) |
+| --- | --- | --- | --- | --- |
+| **Backend** | `8080` | `8080` (hoặc cấu hình) | Chứa API Spring Boot | N/A |
+| **MySQL** | `3306` | `3307` | Database chính | `mysql_data` |
+| **MinIO** | `9000` (API), `9001` (Console)| `9000`, `9001` | Lưu file/ảnh. Web UI ở `:9001` | `minio_data` |
+| **Mailpit** | `1025` (SMTP), `8025` (UI) | `1025`, `8025` | Chặn email OTP. Xem thư tại `:8025` | N/A |
 
-> Dữ liệu seed bao gồm: 3 phòng, 2 tin công khai, 1 tin chờ duyệt và 1 lịch hẹn xem phòng. Seed an toàn và sẽ tự bỏ qua nếu phát hiện email đã tồn tại. Muốn test luồng tạo mới, bạn cứ dùng email tùy ý và check hộp thư Mailpit để lấy mã OTP nhé.
+*(Volume giúp dữ liệu của MySQL và MinIO không bị mất đi ngay cả khi bạn xóa container, trừ khi bạn cố tình chạy `docker compose down -v`)*
 
 ---
 
-## 🧪 Chạy Script Kiểm thử (Testing)
+## 🧪 4. Tự động hóa kiểm thử (Testing)
 
-Dự án cung cấp sẵn các công cụ tự động (Dev Tooling) để kiểm thử luồng nghiệp vụ. Chạy các lệnh sau trong PowerShell:
+Đứng tại thư mục `Infra`, chạy:
 
-1. **Kiểm tra luồng Hạ tầng (Tạo user, upload ảnh, gửi mail, rate limit):**
+1. **Kiểm tra Hạ tầng (`Test-Infrastructure.ps1`)**:
+   Xác minh DB, MinIO upload, Mailpit và Rate Limit.
    ```powershell
-   .\Test-Infrastructure.ps1 -BaseUrl 'http://localhost:8080/api/v1'
+   .\Test-Infrastructure.ps1 -BaseUrl http://localhost:8080/api/v1
    ```
 
-2. **Kiểm tra tải trọng Backend (Load Testing):**
+2. **Kiểm tra Luồng Nghiệp Vụ (`Test-Demo.ps1`)**:
+   Chạy luồng API thực tế (tạo tài khoản, tạo phòng, sandbox payment).
    ```powershell
-   .\Test-BackendLoad.ps1 -BaseUrl 'http://localhost:8080/api/v1'
+   $env:DEMO_PASSWORD = (Get-Content .env | Select-String "DEMO_PASSWORD=").Line.Split("=")[1]
+   .\Test-Demo.ps1 -BaseUrl http://localhost:8080/api/v1
    ```
-
-3. **Kiểm thử luồng Đặt phòng (Booking/Payment/Handover):**
-   ```powershell
-   .\Test-Demo.ps1 -BaseUrl 'http://localhost:8080/api/v1'
-   ```
-   *(Yêu cầu thiết lập `$env:DEMO_PASSWORD` trong Terminal trùng với `.env`)*
 
 ---
 
-## 📱 Kết nối với App Android
+## ⚠️ 5. Các lỗi Docker thường gặp & Cách khắc phục
 
-Xem chi tiết tại: [Hướng dẫn Android](../Homely-android/README.md).
-- **Emulator mặc định:** `http://10.0.2.2:8080/api/v1`
-- **Thiết bị thật (cắm cáp USB):** Chạy lệnh `adb reverse tcp:8080 tcp:8080` và gọi API qua `http://127.0.0.1:8080/api/v1`
+**Lỗi 1: `unable to prepare context: path ".../infra/minio" not found`**
+- **Nguyên nhân**: Bị thiếu thư mục `minio` do Git đã ẩn nó đi.
+- **Cách sửa**: Đã được patch trên nhánh `dev`. Hãy chạy `git pull` để nhận bản mới nhất.
 
----
+**Lỗi 2: `ports are not available: exposing port TCP 127.0.0.1:8080...`**
+- **Nguyên nhân**: Port `8080` của bạn đang bị phần mềm khác chiếm giữ (Zalo, Skype, IIS, Tomcat...).
+- **Cách sửa**: Mở file `Infra/.env`, thêm/sửa dòng `API_PORT=8082`. Chạy lại `docker compose up -d`. Lúc này API sẽ chạy ở `localhost:8082`.
 
-## ⚙️ Hướng dẫn Deploy lên Production (Môi trường thật)
+**Lỗi 3: Backend bị tắt ngay lập tức (Exit 1)**
+- **Nguyên nhân**: Có thể cấu hình `JWT_SECRET` bị sai định dạng.
+- **Cách sửa**: Chạy lệnh `docker compose logs backend` để đọc lỗi. Nếu do cấu hình, hãy xóa file `.env` đi, chạy lại `.\New-DemoEnv.ps1`, và sau đó `docker compose down` rồi khởi động lại hệ thống.
 
-Nếu muốn đưa dự án ra thực tế, cần lưu ý:
-1. Tắt chế độ Demo (`DEMO_ENABLED=false`, `DEMO_SEED=false`).
-2. Tự cấu hình biến môi trường thật (`MYSQL_*`, `JWT_SECRET`, `MINIO_*`, `SMTP_*`).
-3. Dùng giao thức HTTPS và thay Mailpit bằng SMTP Provider thật (như SendGrid, Gmail).
-4. Tích hợp Firebase Cloud Messaging để Push Notification (xem chi tiết [FIREBASE_SETUP.md](../Docs%20-%20contract/FIREBASE_SETUP.md)).
-5. Kết nối ví điện tử hoặc cổng thanh toán thật (VNPay/Momo) thay vì dùng Sandbox Payment.
+**Lỗi 4: Docker Desktop bị treo hoặc báo lỗi kết nối Daemon**
+- **Nguyên nhân**: Môi trường WSL2 hoặc Hyper-V trên Windows bị nghẽn.
+- **Cách sửa**: Tắt Docker Desktop. Mở Task Manager tắt hẳn các tiến trình Docker (hoặc chạy `wsl --shutdown` trên PowerShell) rồi bật lại Docker Desktop.

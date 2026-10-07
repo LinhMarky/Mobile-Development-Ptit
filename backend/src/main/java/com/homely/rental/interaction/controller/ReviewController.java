@@ -1,6 +1,6 @@
 package com.homely.rental.interaction.controller;
 
-import com.homely.rental.common.annotation.ApiMessage;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.dto.PageResponse;
 import com.homely.rental.common.exception.IdInvalidException;
 import com.homely.rental.interaction.dto.*;
@@ -24,7 +24,7 @@ public class ReviewController {
 
     // REV01: Create review
     @PostMapping
-    @ApiMessage("Create review")
+    @Operation(summary = "Create review")
     public ResponseEntity<ReviewDTO> createReview(
             @Valid @RequestBody ReviewCreateRequest request) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.createReview(request));
@@ -32,7 +32,7 @@ public class ReviewController {
 
     // REV02: Get reviews for a room
     @GetMapping("/room/{roomId}")
-    @ApiMessage("Get room reviews")
+    @Operation(summary = "Get room reviews")
     public ResponseEntity<PageResponse<ReviewDTO>> getRoomReviews(
             @PathVariable Long roomId, Pageable pageable) {
         return ResponseEntity.ok(reviewService.getRoomReviews(roomId, pageable));
@@ -40,14 +40,14 @@ public class ReviewController {
 
     // REV02 stats: Get review stats for a room
     @GetMapping("/room/{roomId}/stats")
-    @ApiMessage("Get room review stats")
+    @Operation(summary = "Get room review stats")
     public ResponseEntity<ReviewService.ReviewStatsDTO> getRoomReviewStats(@PathVariable Long roomId) {
         return ResponseEntity.ok(reviewService.getRoomReviewStats(roomId));
     }
 
     // REV03: Update review
     @PatchMapping("/{id}")
-    @ApiMessage("Update review")
+    @Operation(summary = "Update review")
     public ResponseEntity<ReviewDTO> updateReview(
             @PathVariable Long id,
             @Valid @RequestBody ReviewUpdateRequest request) throws IdInvalidException {
@@ -56,7 +56,7 @@ public class ReviewController {
 
     // REV04: Delete review
     @DeleteMapping("/{id}")
-    @ApiMessage("Delete review")
+    @Operation(summary = "Delete review")
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) throws IdInvalidException {
         reviewService.deleteReview(id);
         return ResponseEntity.noContent().build();

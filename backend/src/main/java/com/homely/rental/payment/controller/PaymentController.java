@@ -1,6 +1,6 @@
 package com.homely.rental.payment.controller;
 
-import com.homely.rental.common.annotation.ApiMessage;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.exception.IdInvalidException;
 import com.homely.rental.payment.dto.PaymentCreateRequest;
 import com.homely.rental.payment.dto.PaymentDTO;
@@ -23,7 +23,7 @@ public class PaymentController {
 
     // PAY01: Create mock payment link
     @PostMapping
-    @ApiMessage("Create payment for booking")
+    @Operation(summary = "Create payment for booking")
     public ResponseEntity<PaymentDTO> createPayment(
             @Valid @RequestBody PaymentCreateRequest request) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.createPayment(request));
@@ -31,7 +31,7 @@ public class PaymentController {
 
     // Get payment info
     @GetMapping("/booking/{bookingId}")
-    @ApiMessage("Get payment info for booking")
+    @Operation(summary = "Get payment info for booking")
     public ResponseEntity<PaymentDTO> getPaymentInfo(@PathVariable Long bookingId) throws IdInvalidException {
         return ResponseEntity.ok(paymentService.getPaymentInfo(bookingId));
     }

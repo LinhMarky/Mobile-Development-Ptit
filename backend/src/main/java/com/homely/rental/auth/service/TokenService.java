@@ -6,6 +6,7 @@ import com.homely.rental.auth.entity.User;
 import com.homely.rental.auth.repository.RefreshTokenRepository;
 import com.homely.rental.auth.security.SecurityUtils;
 import com.homely.rental.auth.security.AccountAccessException;
+import com.homely.rental.auth.security.AccessTokenIdentity;
 import com.homely.rental.auth.constant.UserStatus;
 import com.homely.rental.common.exception.IdInvalidException;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,7 @@ public class TokenService {
     private final JwtEncoder jwtEncoder;
     private final JwtDecoder jwtDecoder;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final com.homely.rental.auth.security.AccountAccessService accounts;
 
     @Value("${homely.jwt.access-token-validity-in-seconds}")
     private long accessTokenExpiration;
@@ -72,6 +74,7 @@ public class TokenService {
                 .expiresAt(validity)
                 .subject(email)
                 .claim(TOKEN_TYPE_CLAIM, TOKEN_TYPE_ACCESS)
+                .claim(AccessTokenIdentity.USER_ID_CLAIM, loginResponse.getUser().getId())
                 .claim("roles", roles)
                 .claim("user", userToken)
                 .build();
@@ -89,6 +92,7 @@ public class TokenService {
     @Transactional
     public String createRefreshToken(String email, LoginResponse loginResponse, User user,
                                      String installationId, String deviceName) {
+        user = accounts.requireActive(email);
         Instant now = Instant.now();
         Instant validity = now.plus(this.refreshTokenExpiration, ChronoUnit.SECONDS);
 
@@ -185,6 +189,17 @@ public class TokenService {
 
     @Transactional(rollbackFor = Exception.class)
     public LoginResponse rotate(com.homely.rental.auth.dto.request.RefreshRequest request) throws IdInvalidException {
+        Jwt decoded;
+        try {
+            decoded = jwtDecoder.decode(request.getRefreshToken());
+        } catch (JwtException ex) {
+            throw new IdInvalidException("Refresh token is invalid or expired");
+        }
+        if (!TOKEN_TYPE_REFRESH.equals(decoded.getClaimAsString(TOKEN_TYPE_CLAIM))) {
+            throw new IdInvalidException("Invalid token type for refresh");
+        }
+        // Lock the actor before the session, as required by the deletion processor.
+        accounts.requireActive(decoded.getSubject());
         RefreshToken stored = refreshTokenRepository.lockByHash(hashToken(request.getRefreshToken()))
                 .orElseThrow(() -> new IdInvalidException("Refresh token is invalid"));
         if (stored.isRevoked() || !stored.getExpiresAt().isAfter(Instant.now()))

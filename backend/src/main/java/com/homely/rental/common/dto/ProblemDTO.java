@@ -11,8 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RFC 9457 Problem Details response format.
- * Content-Type: application/problem+json
+ * Problem details carried in HTTP RestResponse.data, or directly in STOMP error frames.
  */
 @Data
 @Builder

@@ -5,7 +5,6 @@ import com.homely.rental.chat.security.ChatHttpGuardFilter;
 import com.homely.rental.chat.service.ChatService;
 import com.homely.rental.common.idempotency.IdempotencyFilter;
 import com.homely.rental.common.idempotency.IdempotencyKeyRepository;
-import com.nimbusds.jose.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,9 +24,10 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
+@org.springframework.boot.context.properties.EnableConfigurationProperties(AuthRateLimitProperties.class)
+@org.springframework.context.annotation.Import(AuthRequestLimiter.class)
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
 
@@ -46,8 +46,7 @@ public class SecurityConfig {
     }
 
     private SecretKey getSecretKey() {
-        byte[] keyBytes = Base64.from(jwtKey).decode();
-        return new SecretKeySpec(keyBytes, 0, keyBytes.length, SecurityUtils.JWT_ALGORITHM.getName());
+        return JwtSigningKey.decode(jwtKey);
     }
 
     @Bean
@@ -75,7 +74,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, ObjectMapper mapper,
                                            IdempotencyKeyRepository idempotencyRepository, ChatService chatService,
-                                           AccountAccessService accounts) throws Exception {
+                                           AccountAccessService accounts, AuthRateLimitProperties authLimits,
+                                           AuthRequestLimiter authLimiter) throws Exception {
         String base = "/" + apiPrefix.replaceAll("^/+|/+$", "");
         String[] PUBLIC_URLS = {
                 base + "/auth/login",
@@ -95,6 +95,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
+                        .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
                         .requestMatchers(PUBLIC_URLS).permitAll()
                         .requestMatchers(HttpMethod.POST, base + "/rooms", base + "/rooms/**",
                                 base + "/listings", base + "/listings/**").hasRole("HOST")
@@ -111,14 +112,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/webhooks/**").permitAll()
                         // Admin endpoints
                         .requestMatchers(base + "/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(errors -> errors.authenticationEntryPoint(problems).accessDeniedHandler(problems))
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .authenticationEntryPoint(problems).accessDeniedHandler(problems)
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .addFilterAfter(new AccountStateFilter(accounts, mapper, base), AuthorizationFilter.class)
+                .addFilterAfter(new AuthRateLimitFilter(authLimits, authLimiter, mapper, base), AccountStateFilter.class)
                 .addFilterAfter(new ChatHttpGuardFilter(chatService, mapper, base, chatRestRequestsPerMinute),
-                        AccountStateFilter.class)
+                        AuthRateLimitFilter.class)
                 .addFilterAfter(new IdempotencyFilter(idempotencyRepository, mapper, base), ChatHttpGuardFilter.class);
 
         return http.build();

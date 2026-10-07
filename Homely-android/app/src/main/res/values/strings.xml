@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Homely</string>
+    <string name="status_loading">Đang tải…</string>
+    <string name="status_data_unreadable">Không đọc được dữ liệu. Hãy tải lại màn hình.</string>
+    <string name="status_login_required">Đăng nhập để tiếp tục.</string>
+    <string name="status_registered">Đã tạo tài khoản. Mở email để xác minh trước khi đặt phòng.</string>
+    <string name="status_listing_submitted">Tin đã gửi duyệt.</string>
+    <string name="status_photo_added">Đã thêm ảnh phòng.</string>
+    <string name="status_updated">Đã cập nhật.</string>
+    <string name="status_email_sent">Đã gửi email. Kiểm tra hộp thư của bạn.</string>
+    <string name="status_email_verified">Email đã xác minh. Đăng nhập lại để cập nhật thông tin.</string>
+    <string name="status_chat_disconnected">Chưa kết nối chat. Bấm kết nối lại rồi thử gửi.</string>
+    <string name="status_invalid_input">Kiểm tra lại thông tin đã nhập.</string>
+</resources>

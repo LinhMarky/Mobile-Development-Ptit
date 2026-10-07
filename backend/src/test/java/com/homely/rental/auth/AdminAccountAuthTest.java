@@ -26,7 +26,7 @@ class AdminAccountAuthTest {
             return new Jwt("encoded", params.getClaims().getIssuedAt(), params.getClaims().getExpiresAt(),
                     params.getJwsHeader().getHeaders(), params.getClaims().getClaims());
         });
-        TokenService service = new TokenService(encoder, mock(JwtDecoder.class), mock(RefreshTokenRepository.class));
+        TokenService service = new TokenService(encoder, mock(JwtDecoder.class), mock(RefreshTokenRepository.class), mock(com.homely.rental.auth.security.AccountAccessService.class));
         ReflectionTestUtils.setField(service, "accessTokenExpiration", 900L);
         User user = new User(); user.setId(1L); user.setEmail("admin@example.test"); user.setFullName("Admin");
         Role role = new Role(); role.setName(RoleName.ROLE_ADMIN); user.getRoles().add(role);
@@ -55,7 +55,7 @@ class AdminAccountAuthTest {
         User user = new User(); user.setSuspended(true);
         RefreshToken session = new RefreshToken(); session.setUser(user); session.setExpiresAt(Instant.now().plusSeconds(600));
         when(sessions.findByTokenHashAndRevokedFalse(anyString())).thenReturn(Optional.of(session));
-        TokenService service = new TokenService(mock(JwtEncoder.class), decoder, sessions);
+        TokenService service = new TokenService(mock(JwtEncoder.class), decoder, sessions, mock(com.homely.rental.auth.security.AccountAccessService.class));
         assertThatThrownBy(() -> service.validateRefreshToken("refresh"))
                 .isInstanceOfSatisfying(AccountAccessException.class, error -> assertThat(error.getCode()).isEqualTo("ACCOUNT_INACTIVE"));
     }

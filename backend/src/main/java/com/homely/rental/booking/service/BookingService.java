@@ -64,7 +64,7 @@ public class BookingService {
     // BOOK01: Create booking (Tenant+Verified)
     @Transactional
     public BookingDTO createBooking(BookingCreateRequest dto) throws IdInvalidException {
-        User tenant = userResolver.requireVerified();
+        User tenant = getVerifiedUser();
 
         Room room = roomRepository.lockById(dto.getRoomId())
                 .orElseThrow(() -> new ResourceNotFoundException("Room", dto.getRoomId()));
@@ -136,7 +136,7 @@ public class BookingService {
     // BOOK03: List host's bookings
     @Transactional(readOnly = true)
     public PageResponse<BookingDTO> getHostBookings(Pageable pageable) throws IdInvalidException {
-        User host = userResolver.requireHost();
+        User host = getVerifiedHost();
         Page<Booking> page = bookingRepository.findByHostIdOrderByCreatedAtDesc(host.getId(), pageable);
         return PageResponse.of(page, page.getContent().stream().map(this::toDTO).toList());
     }
@@ -144,7 +144,7 @@ public class BookingService {
     // BOOK04: Approve booking (Host)
     @Transactional
     public BookingDTO approveBooking(Long bookingId) throws IdInvalidException {
-        User host = userResolver.requireHost();
+        User host = getVerifiedHost();
         Booking booking = owned(bookingId, host.getId(), true);
 
         assertStatus(booking, BookingStatus.PENDING, "approve");
@@ -174,7 +174,7 @@ public class BookingService {
     // BOOK05: Reject booking (Host)
     @Transactional
     public BookingDTO rejectBooking(Long bookingId, BookingActionRequest action) throws IdInvalidException {
-        User host = userResolver.requireHost();
+        User host = getVerifiedHost();
         Booking booking = owned(bookingId, host.getId(), true);
 
         assertStatus(booking, BookingStatus.PENDING, "reject");
@@ -231,7 +231,7 @@ public class BookingService {
     // BOOK08: Host confirms handover
     @Transactional
     public BookingDTO hostHandover(Long bookingId) throws IdInvalidException {
-        User host = userResolver.requireHost();
+        User host = getVerifiedHost();
         Booking booking = owned(bookingId, host.getId(), true);
 
         assertStatus(booking, BookingStatus.CONFIRMED, "handover");
@@ -466,4 +466,15 @@ public class BookingService {
     }
 
 
+    private User getVerifiedUser() throws IdInvalidException {
+        User user = userResolver.requireCurrent();
+        if (!user.isEmailVerified()) throw new IdInvalidException("Email must be verified");
+        return user;
+    }
+
+    private User getVerifiedHost() throws IdInvalidException {
+        User user = getVerifiedUser();
+        if (!user.isHost()) throw new IdInvalidException("User does not have HOST role");
+        return user;
+    }
 }

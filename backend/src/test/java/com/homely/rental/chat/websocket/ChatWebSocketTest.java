@@ -45,7 +45,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = ChatWebSocketTest.Config.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"apiPrefix=api/v1", "homely.jwt.base64-secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        properties = {"apiPrefix=api/v1", "homely.jwt.base64-secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
                 "logging.level.root=WARN", "debug=false"})
 class ChatWebSocketTest {
     @Configuration
@@ -83,11 +83,13 @@ class ChatWebSocketTest {
             String token = call.getArgument(0);
             return Jwt.withTokenValue(token).header("alg", "HS256").subject(token + "@example.test")
                     .claim("token_type", token.equals("refresh") ? "refresh" : "access")
+                    .claim("user_id", 1L)
                     .claim("roles", List.of("ROLE_TENANT"))
                     .issuedAt(Instant.now()).expiresAt(Instant.now().plusSeconds(600)).build();
         });
-        User active = new User(); active.setEmailVerified(true);
+        User active = new User(); active.setId(1L); active.setEmailVerified(true);
         when(service.requireActiveUser(anyString())).thenReturn(active);
+        when(accounts.requireActive(anyString())).thenReturn(active);
         when(service.sendMessage(any(), eq("tenant@example.test"))).thenAnswer(call -> {
             MessageSendFrame frame = call.getArgument(0);
             MessageDTO stored = MessageDTO.builder().id(7L).conversationId(frame.getConversationId())

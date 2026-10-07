@@ -4,7 +4,7 @@ import com.homely.rental.auth.dto.request.*;
 import com.homely.rental.auth.dto.response.UserResponse;
 import com.homely.rental.auth.entity.NotificationPreference;
 import com.homely.rental.auth.service.UserService;
-import com.homely.rental.common.annotation.ApiMessage;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.exception.IdInvalidException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,21 +31,21 @@ public class ProfileController {
 
     // AUTH07: Get profile
     @GetMapping
-    @ApiMessage("Get full user profile")
+    @Operation(summary = "Get full user profile")
     public ResponseEntity<UserResponse> getProfile() throws IdInvalidException {
         return ResponseEntity.ok(userService.fetchCurrentUserProfile());
     }
 
     // AUTH08: Update profile
     @PatchMapping
-    @ApiMessage("Update user profile")
+    @Operation(summary = "Update user profile")
     public ResponseEntity<UserResponse> updateProfile(@Valid @RequestBody ProfileUpdateRequest dto) throws IdInvalidException {
         return ResponseEntity.ok(userService.updateProfile(dto));
     }
 
     // AUTH10: Register/update device token (FCM)
     @PutMapping("/device-token")
-    @ApiMessage("Register or update device token")
+    @Operation(summary = "Register or update device token")
     public ResponseEntity<Map<String, String>> registerDeviceToken(@Valid @RequestBody DeviceTokenRequest dto) throws IdInvalidException {
         userService.registerDeviceToken(dto);
         return ResponseEntity.ok(Map.of("status", "registered"));
@@ -53,14 +53,14 @@ public class ProfileController {
 
     // AUTH11: Get notification preferences
     @GetMapping("/notification-preferences")
-    @ApiMessage("Get notification preferences")
+    @Operation(summary = "Get notification preferences")
     public ResponseEntity<NotificationPreference> getNotificationPreferences() throws IdInvalidException {
         return ResponseEntity.ok(userService.getNotificationPreferences());
     }
 
     // AUTH11: Update notification preferences
     @PatchMapping("/notification-preferences")
-    @ApiMessage("Update notification preferences")
+    @Operation(summary = "Update notification preferences")
     public ResponseEntity<NotificationPreference> updateNotificationPreferences(
             @Valid @RequestBody NotificationPreferencesRequest dto) throws IdInvalidException {
         return ResponseEntity.ok(userService.updateNotificationPreferences(dto));

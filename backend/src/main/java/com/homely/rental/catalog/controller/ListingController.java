@@ -4,7 +4,7 @@ import com.homely.rental.catalog.dto.request.FeeInput;
 import com.homely.rental.catalog.dto.request.ListingWriteRequest;
 import com.homely.rental.catalog.dto.response.ListingDTO;
 import com.homely.rental.catalog.service.ListingService;
-import com.homely.rental.common.annotation.ApiMessage;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.dto.PageResponse;
 import com.homely.rental.common.exception.IdInvalidException;
 import jakarta.validation.Valid;
@@ -34,7 +34,7 @@ public class ListingController {
 
     // CAT05: Search listings
     @GetMapping
-    @ApiMessage("Search listings")
+    @Operation(summary = "Search listings")
     public ResponseEntity<PageResponse<ListingDTO>> searchListings(
             @Valid @ModelAttribute com.homely.rental.catalog.dto.request.ListingSearchQuery query) {
         return ResponseEntity.ok(listingService.searchListings(query));
@@ -42,7 +42,7 @@ public class ListingController {
 
     // CAT07: Get listing detail
     @GetMapping("/{id}")
-    @ApiMessage("Get listing detail")
+    @Operation(summary = "Get listing detail")
     public ResponseEntity<ListingDTO> getListingDetail(@PathVariable Long id) {
         return ResponseEntity.ok(listingService.getListingDetail(id));
     }
@@ -52,7 +52,7 @@ public class ListingController {
     // CAT01: Create listing for a room
     @PostMapping("/room/{roomId}")
     @PreAuthorize("hasRole('ROLE_HOST')")
-    @ApiMessage("Create listing")
+    @Operation(summary = "Create listing")
     public ResponseEntity<ListingDTO> createListing(@PathVariable Long roomId,
                                                      @Valid @RequestBody ListingWriteRequest dto) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.CREATED).body(listingService.createListing(roomId, dto));
@@ -61,7 +61,7 @@ public class ListingController {
     // CAT02: Update listing
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_HOST')")
-    @ApiMessage("Update listing")
+    @Operation(summary = "Update listing")
     public ResponseEntity<ListingDTO> updateListing(@PathVariable Long id,
                                                      @Valid @RequestBody ListingWriteRequest dto) throws IdInvalidException {
         return ResponseEntity.ok(listingService.updateListing(id, dto));
@@ -70,7 +70,7 @@ public class ListingController {
     // CAT03: Submit listing for review
     @PostMapping("/{id}/submit")
     @PreAuthorize("hasRole('ROLE_HOST')")
-    @ApiMessage("Submit listing for review")
+    @Operation(summary = "Submit listing for review")
     public ResponseEntity<ListingDTO> submitForReview(@PathVariable Long id) throws IdInvalidException {
         return ResponseEntity.ok(listingService.submitForReview(id));
     }
@@ -78,7 +78,7 @@ public class ListingController {
     // CAT04: Hide listing
     @PostMapping("/{id}/hide")
     @PreAuthorize("hasRole('ROLE_HOST')")
-    @ApiMessage("Hide listing")
+    @Operation(summary = "Hide listing")
     public ResponseEntity<ListingDTO> hideListing(@PathVariable Long id) throws IdInvalidException {
         return ResponseEntity.ok(listingService.hideListing(id));
     }
@@ -86,7 +86,7 @@ public class ListingController {
     // Host: List own listings
     @GetMapping("/my")
     @PreAuthorize("hasRole('ROLE_HOST')")
-    @ApiMessage("List host listings")
+    @Operation(summary = "List host listings")
     public ResponseEntity<PageResponse<ListingDTO>> getHostListings(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable)
             throws IdInvalidException {
@@ -98,7 +98,7 @@ public class ListingController {
     // CAT08: Set fees for listing
     @PutMapping("/{id}/fees")
     @PreAuthorize("hasRole('ROLE_HOST')")
-    @ApiMessage("Set listing fees")
+    @Operation(summary = "Set listing fees")
     public ResponseEntity<List<ListingDTO.FeeDTO>> setFees(@PathVariable Long id,
                                                             @Valid @RequestBody List<FeeInput> fees) throws IdInvalidException {
         return ResponseEntity.ok(listingService.setFees(id, fees));
@@ -106,7 +106,7 @@ public class ListingController {
 
     // CAT09-10: Get fees for listing
     @GetMapping("/{id}/fees")
-    @ApiMessage("Get listing fees")
+    @Operation(summary = "Get listing fees")
     public ResponseEntity<List<ListingDTO.FeeDTO>> getFees(@PathVariable Long id) {
         return ResponseEntity.ok(listingService.getFees(id));
     }

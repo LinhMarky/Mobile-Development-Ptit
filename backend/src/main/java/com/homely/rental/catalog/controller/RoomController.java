@@ -4,7 +4,7 @@ import com.homely.rental.catalog.dto.request.RoomCreateRequest;
 import com.homely.rental.catalog.dto.request.RoomPatchRequest;
 import com.homely.rental.catalog.dto.response.RoomDTO;
 import com.homely.rental.catalog.service.RoomService;
-import com.homely.rental.common.annotation.ApiMessage;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.dto.PageResponse;
 import com.homely.rental.common.exception.IdInvalidException;
 import jakarta.validation.Valid;
@@ -31,7 +31,7 @@ public class RoomController {
     // HOST01: Create room
     @PostMapping
     @PreAuthorize("hasRole('ROLE_HOST')")
-    @ApiMessage("Create a new room")
+    @Operation(summary = "Create a new room")
     public ResponseEntity<RoomDTO> createRoom(@Valid @RequestBody RoomCreateRequest dto) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.CREATED).body(roomService.createRoom(dto));
     }
@@ -39,7 +39,7 @@ public class RoomController {
     // HOST02: Update room
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_HOST')")
-    @ApiMessage("Update room")
+    @Operation(summary = "Update room")
     public ResponseEntity<RoomDTO> updateRoom(@PathVariable Long id,
                                                @Valid @RequestBody RoomPatchRequest dto) throws IdInvalidException {
         return ResponseEntity.ok(roomService.updateRoom(id, dto));
@@ -48,7 +48,7 @@ public class RoomController {
     // HOST03: List host's rooms
     @GetMapping
     @PreAuthorize("hasRole('ROLE_HOST')")
-    @ApiMessage("List host rooms")
+    @Operation(summary = "List host rooms")
     public ResponseEntity<PageResponse<RoomDTO>> getHostRooms(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable)
             throws IdInvalidException {
@@ -58,7 +58,7 @@ public class RoomController {
     // HOST04: Get room detail
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_HOST')")
-    @ApiMessage("Get room detail")
+    @Operation(summary = "Get room detail")
     public ResponseEntity<RoomDTO> getRoomDetail(@PathVariable Long id) throws IdInvalidException {
         return ResponseEntity.ok(roomService.getRoomDetail(id));
     }

@@ -1,5 +1,8 @@
-target
-apache-maven-*
+target/
+apache-maven-*/
+maven.zip
 .env
+.env.*
+.git/
 *.log
-*.json
+*.pid

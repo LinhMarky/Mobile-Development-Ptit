@@ -133,6 +133,19 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Test-only defaults; never packaged in the application JAR. -->
+                    <systemPropertyVariables>
+                        <homely.jwt.base64-secret>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</homely.jwt.base64-secret>
+                        <homely.auth.rate-limit.enabled>false</homely.auth.rate-limit.enabled>
+                        <homely.account-deletion.enabled>false</homely.account-deletion.enabled>
+                        <homely.retention.enabled>false</homely.retention.enabled>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>

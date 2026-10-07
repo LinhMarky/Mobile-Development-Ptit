@@ -35,6 +35,7 @@ public class ChatService {
             "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
 
     private final UserRepository users;
+    private final com.homely.rental.auth.security.AccountAccessService accounts;
     private final ChatRoomRepository rooms;
     private final ListingRepository listings;
     private final ConversationRepository conversations;
@@ -183,12 +184,11 @@ public class ChatService {
     }
 
     public User requireActiveUser(String email) {
-        User user = email == null || email.isBlank() ? null : users.findByEmail(email);
-        if (user == null) throw new ChatException(401, "AUTHENTICATION_REQUIRED", "Authentication is required");
-        if (user.getStatus() != UserStatus.ACTIVE || user.isSuspended()) {
-            throw new ChatException(403, "ACCOUNT_INACTIVE", "Your account is not active");
+        try {
+            return accounts.requireActive(email);
+        } catch (com.homely.rental.auth.security.AccountAccessException ex) {
+            throw new ChatException(ex.getStatus(), ex.getCode(), ex.getMessage());
         }
-        return user;
     }
 
     private Conversation findMemberConversation(Long id, User user, boolean lock) {

@@ -1,6 +1,6 @@
 package com.homely.rental.interaction.controller;
 
-import com.homely.rental.common.annotation.ApiMessage;
+import io.swagger.v3.oas.annotations.Operation;
 import com.homely.rental.common.dto.PageResponse;
 import com.homely.rental.common.exception.IdInvalidException;
 import com.homely.rental.interaction.dto.*;
@@ -31,14 +31,14 @@ public class ViewingController {
 
     // VIEW01: Get available slots for a room
     @GetMapping("/viewing-slots/{roomId}")
-    @ApiMessage("Get available viewing slots")
+    @Operation(summary = "Get available viewing slots")
     public ResponseEntity<List<ViewingSlotDTO>> getSlots(@PathVariable Long roomId) {
         return ResponseEntity.ok(viewingService.getSlots(roomId));
     }
 
     // VIEW02: Create slot (Host)
     @PostMapping("/viewing-slots")
-    @ApiMessage("Create viewing slot")
+    @Operation(summary = "Create viewing slot")
     public ResponseEntity<ViewingSlotDTO> createSlot(
             @Valid @RequestBody ViewingSlotCreateRequest request) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.CREATED).body(viewingService.createSlot(request));
@@ -46,7 +46,7 @@ public class ViewingController {
 
     // VIEW03: Delete slot (Host)
     @DeleteMapping("/viewing-slots/{id}")
-    @ApiMessage("Delete viewing slot")
+    @Operation(summary = "Delete viewing slot")
     public ResponseEntity<Void> deleteSlot(@PathVariable Long id) throws IdInvalidException {
         viewingService.deleteSlot(id);
         return ResponseEntity.noContent().build();
@@ -54,21 +54,21 @@ public class ViewingController {
 
     // VIEW04: My viewings (Tenant)
     @GetMapping("/viewings/my")
-    @ApiMessage("Get my viewings")
+    @Operation(summary = "Get my viewings")
     public ResponseEntity<PageResponse<ViewingDTO>> getMyViewings(Pageable pageable) throws IdInvalidException {
         return ResponseEntity.ok(viewingService.getMyViewings(pageable));
     }
 
     // VIEW04 host: Host's viewings
     @GetMapping("/viewings/host")
-    @ApiMessage("Get host viewings")
+    @Operation(summary = "Get host viewings")
     public ResponseEntity<PageResponse<ViewingDTO>> getHostViewings(Pageable pageable) throws IdInvalidException {
         return ResponseEntity.ok(viewingService.getHostViewings(pageable));
     }
 
     // VIEW05: Create viewing (Tenant+Verified)
     @PostMapping("/viewings")
-    @ApiMessage("Book a viewing")
+    @Operation(summary = "Book a viewing")
     public ResponseEntity<ViewingDTO> createViewing(
             @Valid @RequestBody ViewingCreateRequest request) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.CREATED).body(viewingService.createViewing(request));
@@ -76,14 +76,14 @@ public class ViewingController {
 
     // VIEW06: Confirm viewing (Host)
     @PostMapping("/viewings/{id}/confirm")
-    @ApiMessage("Confirm viewing")
+    @Operation(summary = "Confirm viewing")
     public ResponseEntity<ViewingDTO> confirmViewing(@PathVariable Long id) throws IdInvalidException {
         return ResponseEntity.ok(viewingService.confirmViewing(id));
     }
 
     // VIEW07: Cancel viewing (Auth)
     @PostMapping("/viewings/{id}/cancel")
-    @ApiMessage("Cancel viewing")
+    @Operation(summary = "Cancel viewing")
     public ResponseEntity<ViewingDTO> cancelViewing(
             @PathVariable Long id,
             @RequestParam(required = false) String reason) throws IdInvalidException {
@@ -92,7 +92,7 @@ public class ViewingController {
 
     // VIEW08: Complete viewing (Host)
     @PostMapping("/viewings/{id}/complete")
-    @ApiMessage("Complete viewing")
+    @Operation(summary = "Complete viewing")
     public ResponseEntity<ViewingDTO> completeViewing(@PathVariable Long id) throws IdInvalidException {
         return ResponseEntity.ok(viewingService.completeViewing(id));
     }

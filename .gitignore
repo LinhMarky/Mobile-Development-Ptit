@@ -1,0 +1,22 @@
+# Secrets and local configuration
+Infra/.env
+Infra/.env.*
+!Infra/.env.example
+**/google-services.json
+**/*service-account*.json
+**/local.properties
+**/.env
+**/.env.*
+!**/.env.example
+
+# Generated output, caches and isolated database files
+backend/target/
+backend/apache-maven-*/
+backend/maven.zip
+Homely-android/.gradle/
+Homely-android/.kotlin/
+Homely-android/**/build/
+**/*.log
+**/*.pid
+.idea/
+.vscode/

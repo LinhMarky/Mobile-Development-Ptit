@@ -56,7 +56,7 @@ class AdminWorkflowTest {
             "com.homely.rental.booking.repository", "com.homely.rental.interaction.repository",
             "com.homely.rental.notification.repository", "com.homely.rental.common.audit"})
     @Import({AdminService.class, AuditService.class, NotificationService.class, AccountAccessService.class,
-            com.homely.rental.auth.security.UserResolver.class})
+            com.homely.rental.auth.security.UserResolver.class, com.homely.rental.auth.service.AccountLifecycleGuard.class})
     static class Config { @Bean ObjectMapper mapper() { return new ObjectMapper(); } }
 
     @Autowired AdminService admin;

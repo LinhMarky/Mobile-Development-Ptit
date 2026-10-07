@@ -1,5 +1,6 @@
 package com.homely.rental.chat.websocket;
 
+import com.homely.rental.auth.security.AccessTokenIdentity;
 import com.homely.rental.auth.service.TokenService;
 import com.homely.rental.chat.service.ChatService;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -46,7 +47,8 @@ public class JwtAccessAuthenticator {
                 || jwt.getNotBefore() != null && jwt.getNotBefore().isAfter(now)) {
             throw unauthorized();
         }
-        chatService.requireActiveUser(jwt.getSubject());
+        var account = chatService.requireActiveUser(jwt.getSubject());
+        if (!AccessTokenIdentity.matches(jwt, account.getId())) throw unauthorized();
     }
 
     private ChatProtocolException unauthorized() {
