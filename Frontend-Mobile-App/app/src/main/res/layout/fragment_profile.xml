@@ -18,7 +18,6 @@
         android:paddingEnd="20dp"
         android:paddingBottom="24dp">
 
-        <!-- Tiêu đề trang -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,7 +26,7 @@
             android:textSize="26sp"
             android:textStyle="bold" />
 
-        <!-- Vùng dành cho khách chưa đăng nhập -->
+        <!-- Nội dung dành cho khách chưa đăng nhập. -->
         <LinearLayout
             android:id="@+id/layout_profile_guest"
             android:layout_width="match_parent"
@@ -81,7 +80,6 @@
                         android:textColor="@color/roomly_text_secondary"
                         android:textSize="14sp" />
 
-                    <!-- Mở màn hình đăng nhập -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_open_login"
                         android:layout_width="match_parent"
@@ -95,7 +93,7 @@
                         app:backgroundTint="@color/roomly_primary"
                         app:cornerRadius="12dp" />
 
-                    <!-- Java chỉ hiện nút này trong bản debug -->
+                    <!-- Công cụ kiểm thử, chỉ hiển thị trong bản debug. -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_enable_demo_session"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -103,7 +101,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:minHeight="48dp"
-                        android:text="Bật tài khoản thử giao diện"
+                        android:text="Chọn tài khoản thử"
                         android:textAllCaps="false"
                         android:textColor="@color/roomly_primary"
                         android:visibility="gone"
@@ -112,7 +110,6 @@
                         app:strokeColor="@color/roomly_primary"
                         app:strokeWidth="1dp" />
 
-                    <!-- Chỉ hiện cho khách trong bản debug để thử giao diện admin. -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_enable_demo_admin_session"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -133,7 +130,7 @@
 
         </LinearLayout>
 
-        <!-- Vùng tài khoản: chỉ hiện khi có phiên đăng nhập -->
+        <!-- Nội dung tài khoản đang đăng nhập. -->
         <LinearLayout
             android:id="@+id/layout_profile_account"
             android:layout_width="match_parent"
@@ -142,7 +139,6 @@
             android:orientation="vertical"
             android:visibility="gone">
 
-            <!-- Thẻ thông tin tài khoản -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -188,7 +184,17 @@
                         android:textColor="@color/roomly_text_secondary"
                         android:textSize="14sp" />
 
-                    <!-- Trạng thái xác minh lấy từ phiên tài khoản -->
+                    <!-- Chỉ hiện khi người dùng đã nhập số điện thoại. -->
+                    <TextView
+                        android:id="@+id/tv_profile_phone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"
+                        android:textColor="@color/roomly_text_secondary"
+                        android:textSize="14sp"
+                        android:visibility="gone" />
+
                     <TextView
                         android:id="@+id/tv_profile_verification"
                         android:layout_width="match_parent"
@@ -229,7 +235,6 @@
                         app:strokeColor="@color/roomly_primary"
                         app:strokeWidth="1dp" />
 
-                    <!-- Chỉ hiện khi tài khoản có quyền ADMIN. -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_profile_admin"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -244,7 +249,7 @@
                         app:strokeColor="@color/roomly_primary"
                         app:cornerRadius="12dp" />
 
-                    <!-- Chỉ hiện khi đang dùng phiên mẫu trong debug -->
+                    <!-- Giữ lại để kiểm thử, sẽ gỡ khỏi bản chính thức. -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_disable_demo_session"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -265,7 +270,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Chọn chế độ giao diện theo vai trò tài khoản -->
+            <!-- Bộ chọn chế độ theo vai trò tài khoản. -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/layout_profile_mode"
                 android:layout_width="match_parent"
@@ -292,7 +297,6 @@
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
-                    <!-- Java hiển thị chế độ đang chọn -->
                     <TextView
                         android:id="@+id/tv_profile_current_mode"
                         android:layout_width="match_parent"
@@ -302,7 +306,6 @@
                         android:textSize="14sp"
                         android:accessibilityLiveRegion="polite" />
 
-                    <!-- Chỉ hiện lựa chọn có vai trò tương ứng -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -345,15 +348,6 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- Điện thoại chưa có trong dữ liệu hồ sơ hiện tại -->
-            <TextView
-                android:id="@+id/tv_profile_phone"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/roomly_text_primary"
-                android:textSize="16sp"
-                android:visibility="gone" />
 
         </LinearLayout>
 

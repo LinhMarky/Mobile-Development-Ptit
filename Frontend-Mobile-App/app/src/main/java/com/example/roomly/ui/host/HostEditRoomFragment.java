@@ -14,35 +14,63 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.roomly.data.model.HostRoom;
+import com.example.roomly.data.model.RoomCard.RoomType;
 import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.model.UserRole;
 import com.example.roomly.data.repository.DemoHostRoomRepository;
 import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentHostEditRoomBinding;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Chỉnh sửa thông tin và ảnh phòng mẫu.
+ * Chỉnh sửa thông tin và ảnh phòng trong repository mẫu.
  * ID, chủ sở hữu và mã phòng được giữ nguyên.
  */
 public class HostEditRoomFragment extends Fragment {
 
     private static final String ARG_ROOM_ID = "edit_room_id";
     private static final String STATE_DRAFT = "edit_room_draft";
-    private static final String STATE_IMAGE = "edit_room_image";
+
+    private static final String[] TYPE_LABELS = {
+            "Phòng trọ", "Căn hộ", "Studio"
+    };
+
+    private static final RoomType[] ROOM_TYPES = {
+            RoomType.ROOM, RoomType.APARTMENT, RoomType.STUDIO
+    };
+
+    // Danh mục thử giao diện, chưa phải amenity_ids của API.
+    private static final String[] AMENITY_LABELS = {
+            "Wi-Fi",
+            "Điều hòa",
+            "Có nội thất",
+            "Bếp riêng",
+            "Chỗ để xe",
+            "Máy giặt",
+            "Ban công"
+    };
 
     private FragmentHostEditRoomBinding binding;
+    private AlertDialog optionsDialog;
 
     private String roomId;
     private String selectedImageUri;
+    private String imagePickerOwnerId;
+    private RoomType selectedRoomType;
     private Bundle restoredDraft;
+
+    private final List<String> selectedAmenities = new ArrayList<>();
 
     private final ActivityResultLauncher<String[]> imagePicker =
             registerForActivityResult(
@@ -76,7 +104,9 @@ public class HostEditRoomFragment extends Fragment {
 
         if (savedInstanceState != null) {
             restoredDraft = savedInstanceState.getBundle(STATE_DRAFT);
-            selectedImageUri = savedInstanceState.getString(STATE_IMAGE);
+            imagePickerOwnerId = savedInstanceState.getString(
+                    "image_picker_owner_id"
+            );
         }
     }
 
@@ -91,9 +121,7 @@ public class HostEditRoomFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         binding = FragmentHostEditRoomBinding.inflate(
-                inflater,
-                container,
-                false
+                inflater, container, false
         );
 
         return binding.getRoot();
@@ -117,14 +145,25 @@ public class HostEditRoomFragment extends Fragment {
         });
 
         binding.btnEditRoomSelectImage.setOnClickListener(clickedView -> {
-            if (getAccessibleRoom() == null) {
+            HostRoom room = getAccessibleRoom();
+
+            if (room == null) {
                 renderAccess();
                 return;
             }
 
+            imagePickerOwnerId = room.getOwnerId();
             hideKeyboard();
             imagePicker.launch(new String[]{"image/*"});
         });
+
+        binding.btnEditRoomType.setOnClickListener(
+                clickedView -> showRoomTypeDialog()
+        );
+
+        binding.btnEditRoomAmenities.setOnClickListener(
+                clickedView -> showAmenitiesDialog()
+        );
 
         binding.btnEditRoomSave.setOnClickListener(
                 clickedView -> saveChanges()
@@ -155,8 +194,8 @@ public class HostEditRoomFragment extends Fragment {
     }
 
     /**
-     * Điền dữ liệu sau khi Android khôi phục trạng thái các ô nhập.
-     * Ưu tiên bản nháp để không mất nội dung khi xoay màn hình.
+     * Điền dữ liệu sau khi Android khôi phục trạng thái View.
+     * Ưu tiên bản nháp để giữ nội dung người dùng đang sửa.
      */
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
@@ -168,6 +207,8 @@ public class HostEditRoomFragment extends Fragment {
             renderAccess();
             return;
         }
+
+        selectedAmenities.clear();
 
         if (restoredDraft != null) {
             binding.edtEditRoomName.setText(
@@ -182,35 +223,75 @@ public class HostEditRoomFragment extends Fragment {
                     restoredDraft.getString("area", "")
             );
 
+            binding.edtEditRoomMaxOccupants.setText(
+                    restoredDraft.getString("occupants", "")
+            );
+
             binding.edtEditRoomDescription.setText(
                     restoredDraft.getString("description", "")
+            );
+
+            // Giữ ảnh mới nhận nếu callback đã chạy trước khi khôi phục View.
+            if (selectedImageUri == null) {
+                selectedImageUri = restoredDraft.getString("image_uri");
+            }
+
+            String restoredType = restoredDraft.getString("room_type");
+
+            try {
+                selectedRoomType = restoredType == null
+                        ? room.getRoomType()
+                        : RoomType.valueOf(restoredType);
+            } catch (IllegalArgumentException exception) {
+                selectedRoomType = room.getRoomType();
+            }
+
+            ArrayList<String> amenities =
+                    restoredDraft.getStringArrayList("amenities");
+
+            selectedAmenities.addAll(
+                    amenities == null ? room.getAmenities() : amenities
             );
         } else {
             binding.edtEditRoomName.setText(room.getName());
             binding.edtEditRoomAddress.setText(room.getAddress());
 
             binding.edtEditRoomArea.setText(
-                    room.getArea().stripTrailingZeros().toPlainString()
+                    room.getArea() == null
+                            ? ""
+                            : room.getArea()
+                            .stripTrailingZeros()
+                            .toPlainString()
+            );
+
+            binding.edtEditRoomMaxOccupants.setText(
+                    room.getMaxOccupants() > 0
+                            ? String.valueOf(room.getMaxOccupants())
+                            : ""
             );
 
             binding.edtEditRoomDescription.setText(
                     room.getDescription()
             );
 
-            selectedImageUri = room.getImageUri();
+            if (selectedImageUri == null) {
+                selectedImageUri = room.getImageUri();
+            }
+
+            selectedRoomType = room.getRoomType();
+            selectedAmenities.addAll(room.getAmenities());
         }
 
+        renderRoomOptions();
         displayImage();
         renderAccess();
     }
 
     /**
-     * Lưu bản nháp và đường dẫn ảnh khi Android tạo lại màn hình.
+     * Lưu bản nháp và tài khoản chọn ảnh khi Android tạo lại màn hình.
      */
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-
         if (binding != null) {
             restoredDraft = captureDraft();
         }
@@ -219,11 +300,15 @@ public class HostEditRoomFragment extends Fragment {
             outState.putBundle(STATE_DRAFT, restoredDraft);
         }
 
-        outState.putString(STATE_IMAGE, selectedImageUri);
+        outState.putString(
+                "image_picker_owner_id", imagePickerOwnerId
+        );
+
+        super.onSaveInstanceState(outState);
     }
 
     /**
-     * Đọc nội dung đang nhập để giữ lại bản nháp.
+     * Chụp toàn bộ nội dung và lựa chọn của biểu mẫu.
      */
     private Bundle captureDraft() {
         Bundle draft = new Bundle();
@@ -231,9 +316,28 @@ public class HostEditRoomFragment extends Fragment {
         draft.putString("name", readText(binding.edtEditRoomName));
         draft.putString("address", readText(binding.edtEditRoomAddress));
         draft.putString("area", readText(binding.edtEditRoomArea));
+
+        draft.putString(
+                "occupants",
+                readText(binding.edtEditRoomMaxOccupants)
+        );
+
         draft.putString(
                 "description",
                 readText(binding.edtEditRoomDescription)
+        );
+
+        draft.putString("image_uri", selectedImageUri);
+
+        draft.putString(
+                "room_type",
+                selectedRoomType == null
+                        ? null
+                        : selectedRoomType.name()
+        );
+
+        draft.putStringArrayList(
+                "amenities", new ArrayList<>(selectedAmenities)
         );
 
         return draft;
@@ -242,14 +346,18 @@ public class HostEditRoomFragment extends Fragment {
     /**
      * Chỉ trả về phòng thuộc tài khoản chủ trọ hiện tại.
      */
+    @Nullable
     private HostRoom getAccessibleRoom() {
+        if (roomId == null || roomId.trim().isEmpty()) {
+            return null;
+        }
+
         return DemoHostRoomRepository.getInstance()
                 .getMyRoomById(roomId);
     }
 
     /**
-     * Hiển thị biểu mẫu khi còn quyền truy cập.
-     * Việc lưu yêu cầu email đã xác minh và được kiểm tra lại khi bấm nút.
+     * Hiển thị biểu mẫu khi tài khoản còn quyền truy cập phòng.
      */
     private void renderAccess() {
         if (binding == null) {
@@ -259,6 +367,7 @@ public class HostEditRoomFragment extends Fragment {
         HostRoom room = getAccessibleRoom();
 
         if (room == null) {
+            closeOptionsDialog();
             binding.layoutEditRoomForm.setVisibility(View.GONE);
             hideKeyboard();
 
@@ -270,17 +379,29 @@ public class HostEditRoomFragment extends Fragment {
         }
 
         binding.layoutEditRoomForm.setVisibility(View.VISIBLE);
+
         binding.tvEditRoomCode.setText(
                 "Mã phòng: " + room.getUnitCode()
         );
     }
 
     /**
-     * Giữ quyền đọc và hiển thị ảnh mới.
-     * Hủy trình chọn ảnh sẽ giữ nguyên ảnh hiện tại.
+     * Nhận ảnh khi tài khoản vẫn là tài khoản đã mở trình chọn ảnh.
      */
     private void handleSelectedImage(@Nullable Uri uri) {
-        if (uri == null || getAccessibleRoom() == null) {
+        if (uri == null || !isAdded()) {
+            return;
+        }
+
+        HostRoom room = getAccessibleRoom();
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (room == null
+                || !session.isLoggedIn()
+                || !session.hasRole(UserRole.HOST)
+                || imagePickerOwnerId == null
+                || !imagePickerOwnerId.equals(session.getUserId())) {
             return;
         }
 
@@ -292,8 +413,12 @@ public class HostEditRoomFragment extends Fragment {
                     );
 
             selectedImageUri = uri.toString();
-            displayImage();
 
+            if (restoredDraft != null) {
+                restoredDraft.putString("image_uri", selectedImageUri);
+            }
+
+            displayImage();
         } catch (SecurityException exception) {
             Toast.makeText(
                     requireContext(),
@@ -304,8 +429,7 @@ public class HostEditRoomFragment extends Fragment {
     }
 
     /**
-     * Hiển thị ảnh hiện tại hoặc phần thay thế.
-     * Không xóa đường dẫn cũ chỉ vì ảnh tạm thời không đọc được.
+     * Hiển thị ảnh hoặc nội dung thay thế nếu không đọc được ảnh.
      */
     private void displayImage() {
         if (binding == null) {
@@ -313,7 +437,6 @@ public class HostEditRoomFragment extends Fragment {
         }
 
         binding.imgEditRoomPreview.setImageDrawable(null);
-
         boolean imageLoaded = false;
 
         if (selectedImageUri != null && !selectedImageUri.isEmpty()) {
@@ -324,7 +447,6 @@ public class HostEditRoomFragment extends Fragment {
 
                 imageLoaded =
                         binding.imgEditRoomPreview.getDrawable() != null;
-
             } catch (SecurityException exception) {
                 binding.imgEditRoomPreview.setImageDrawable(null);
             }
@@ -339,13 +461,158 @@ public class HostEditRoomFragment extends Fragment {
         );
 
         binding.btnEditRoomSelectImage.setText(
-                selectedImageUri == null ? "Chọn ảnh" : "Đổi ảnh"
+                selectedImageUri == null || selectedImageUri.isEmpty()
+                        ? "Chọn ảnh"
+                        : "Đổi ảnh"
         );
     }
 
     /**
-     * Kiểm tra quyền và thông tin trước khi cập nhật phòng mẫu.
-     * Giữ nội dung biểu mẫu nếu thao tác thất bại.
+     * Hiển thị loại phòng và danh sách tiện ích đang chọn.
+     */
+    private void renderRoomOptions() {
+        if (binding == null) {
+            return;
+        }
+
+        String typeLabel = "Chọn loại phòng";
+
+        for (int index = 0; index < ROOM_TYPES.length; index++) {
+            if (ROOM_TYPES[index] == selectedRoomType) {
+                typeLabel = "Loại phòng: " + TYPE_LABELS[index];
+                break;
+            }
+        }
+
+        binding.btnEditRoomType.setText(typeLabel);
+
+        binding.tvEditRoomAmenities.setText(
+                selectedAmenities.isEmpty()
+                        ? "Chưa chọn tiện ích"
+                        : android.text.TextUtils.join(
+                        " • ", selectedAmenities
+                )
+        );
+    }
+
+    /**
+     * Chọn loại phòng và chỉ cập nhật khi bấm Áp dụng.
+     */
+    private void showRoomTypeDialog() {
+        if (binding == null
+                || optionsDialog != null
+                || getAccessibleRoom() == null) {
+            return;
+        }
+
+        hideKeyboard();
+
+        int currentIndex = -1;
+
+        for (int index = 0; index < ROOM_TYPES.length; index++) {
+            if (ROOM_TYPES[index] == selectedRoomType) {
+                currentIndex = index;
+                break;
+            }
+        }
+
+        final int[] chosenIndex = {currentIndex};
+
+        optionsDialog = new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Loại phòng")
+                .setSingleChoiceItems(
+                        TYPE_LABELS,
+                        currentIndex,
+                        (dialog, which) -> chosenIndex[0] = which
+                )
+                .setNegativeButton("Đóng", null)
+                .setPositiveButton("Áp dụng", (dialog, which) -> {
+                    if (binding == null
+                            || getAccessibleRoom() == null
+                            || chosenIndex[0] < 0) {
+                        return;
+                    }
+
+                    selectedRoomType = ROOM_TYPES[chosenIndex[0]];
+                    renderRoomOptions();
+                })
+                .create();
+
+        optionsDialog.setOnDismissListener(
+                dialog -> optionsDialog = null
+        );
+
+        optionsDialog.show();
+    }
+
+    /**
+     * Chọn nhiều tiện ích và giữ lựa chọn cũ nếu đóng hộp thoại.
+     */
+    private void showAmenitiesDialog() {
+        if (binding == null
+                || optionsDialog != null
+                || getAccessibleRoom() == null) {
+            return;
+        }
+
+        hideKeyboard();
+
+        boolean[] checked = new boolean[AMENITY_LABELS.length];
+
+        for (int index = 0; index < AMENITY_LABELS.length; index++) {
+            checked[index] = selectedAmenities.contains(
+                    AMENITY_LABELS[index]
+            );
+        }
+
+        optionsDialog = new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Tiện ích phòng")
+                .setMultiChoiceItems(
+                        AMENITY_LABELS,
+                        checked,
+                        (dialog, which, isChecked) ->
+                                checked[which] = isChecked
+                )
+                .setNegativeButton("Đóng", null)
+                .setPositiveButton("Áp dụng", (dialog, which) -> {
+                    if (binding == null || getAccessibleRoom() == null) {
+                        return;
+                    }
+
+                    // Giữ tiện ích cũ ngoài danh mục thử giao diện.
+                    for (int index = 0; index < checked.length; index++) {
+                        selectedAmenities.remove(AMENITY_LABELS[index]);
+
+                        if (checked[index]) {
+                            selectedAmenities.add(
+                                    AMENITY_LABELS[index]
+                            );
+                        }
+                    }
+
+                    renderRoomOptions();
+                })
+                .create();
+
+        optionsDialog.setOnDismissListener(
+                dialog -> optionsDialog = null
+        );
+
+        optionsDialog.show();
+    }
+
+    /**
+     * Đóng hộp thoại lựa chọn khi giao diện hoặc quyền truy cập thay đổi.
+     */
+    private void closeOptionsDialog() {
+        if (optionsDialog != null) {
+            optionsDialog.dismiss();
+            optionsDialog = null;
+        }
+    }
+
+    /**
+     * Kiểm tra quyền và dữ liệu rồi lưu thay đổi vào repository mẫu.
      */
     private void saveChanges() {
         if (binding == null || !binding.btnEditRoomSave.isEnabled()) {
@@ -378,6 +645,7 @@ public class HostEditRoomFragment extends Fragment {
 
         hideKeyboard();
         binding.btnEditRoomSave.setEnabled(false);
+        binding.progressEditRoom.setVisibility(View.VISIBLE);
 
         try {
             BigDecimal area = new BigDecimal(
@@ -390,7 +658,12 @@ public class HostEditRoomFragment extends Fragment {
                     readText(binding.edtEditRoomAddress),
                     area,
                     readText(binding.edtEditRoomDescription),
-                    selectedImageUri
+                    selectedImageUri,
+                    selectedRoomType,
+                    Integer.parseInt(
+                            readText(binding.edtEditRoomMaxOccupants)
+                    ),
+                    new ArrayList<>(selectedAmenities)
             );
 
             Toast.makeText(
@@ -400,32 +673,38 @@ public class HostEditRoomFragment extends Fragment {
             ).show();
 
             getParentFragmentManager().popBackStack();
-
         } catch (IllegalArgumentException | IllegalStateException exception) {
             showError(exception.getMessage());
-
         } finally {
             if (binding != null) {
                 binding.btnEditRoomSave.setEnabled(true);
+                binding.progressEditRoom.setVisibility(View.GONE);
             }
         }
     }
 
     /**
-     * Kiểm tra tên, địa chỉ và diện tích trước khi lưu.
+     * Kiểm tra dữ liệu và đưa focus đến ô sai đầu tiên.
      */
     private boolean validateForm() {
         boolean valid = true;
         EditText firstInvalid = null;
 
         if (readText(binding.edtEditRoomName).isEmpty()) {
-            binding.inputEditRoomName.setError("Vui lòng nhập tên phòng.");
+            binding.inputEditRoomName.setError(
+                    "Vui lòng nhập tên phòng."
+            );
             firstInvalid = binding.edtEditRoomName;
             valid = false;
         }
 
-        if (readText(binding.edtEditRoomAddress).isEmpty()) {
-            binding.inputEditRoomAddress.setError("Vui lòng nhập địa chỉ.");
+        String address = readText(binding.edtEditRoomAddress);
+        int addressLength = address.codePointCount(0, address.length());
+
+        if (addressLength < 5 || addressLength > 300) {
+            binding.inputEditRoomAddress.setError(
+                    "Địa chỉ phải có từ 5 đến 300 ký tự."
+            );
 
             if (firstInvalid == null) {
                 firstInvalid = binding.edtEditRoomAddress;
@@ -434,23 +713,9 @@ public class HostEditRoomFragment extends Fragment {
             valid = false;
         }
 
-        String areaText = readText(binding.edtEditRoomArea)
-                .replace(',', '.');
-
-        boolean validArea = false;
-
-        if (areaText.matches("[0-9]+(\\.[0-9]+)?")) {
-            try {
-                validArea = new BigDecimal(areaText)
-                        .compareTo(BigDecimal.ZERO) > 0;
-            } catch (NumberFormatException exception) {
-                validArea = false;
-            }
-        }
-
-        if (!validArea) {
+        if (!isValidArea(readText(binding.edtEditRoomArea))) {
             binding.inputEditRoomArea.setError(
-                    "Nhập diện tích là số lớn hơn 0."
+                    "Diện tích phải từ 2 đến 1.000 m²."
             );
 
             if (firstInvalid == null) {
@@ -460,11 +725,51 @@ public class HostEditRoomFragment extends Fragment {
             valid = false;
         }
 
+        if (!readText(binding.edtEditRoomMaxOccupants)
+                .matches("(?:[1-9]|10)")) {
+            binding.inputEditRoomMaxOccupants.setError(
+                    "Nhập số người tối đa từ 1 đến 10."
+            );
+
+            if (firstInvalid == null) {
+                firstInvalid = binding.edtEditRoomMaxOccupants;
+            }
+
+            valid = false;
+        }
+
+        if (selectedRoomType == null) {
+            showError("Vui lòng chọn loại phòng.");
+            valid = false;
+        }
+
         if (firstInvalid != null) {
             firstInvalid.requestFocus();
+        } else if (!valid) {
+            binding.btnEditRoomType.requestFocus();
         }
 
         return valid;
+    }
+
+    /**
+     * Kiểm tra diện tích và chấp nhận dấu phẩy hoặc dấu chấm.
+     */
+    private boolean isValidArea(String text) {
+        String normalized = text.replace(',', '.');
+
+        if (!normalized.matches("[0-9]+(\\.[0-9]+)?")) {
+            return false;
+        }
+
+        try {
+            BigDecimal area = new BigDecimal(normalized);
+
+            return area.compareTo(new BigDecimal("2")) >= 0
+                    && area.compareTo(new BigDecimal("1000")) <= 0;
+        } catch (NumberFormatException exception) {
+            return false;
+        }
     }
 
     /**
@@ -477,12 +782,13 @@ public class HostEditRoomFragment extends Fragment {
     }
 
     /**
-     * Xóa lỗi cũ trước khi kiểm tra lại biểu mẫu.
+     * Xóa lỗi cũ trước lần kiểm tra mới.
      */
     private void clearErrors() {
         binding.inputEditRoomName.setError(null);
         binding.inputEditRoomAddress.setError(null);
         binding.inputEditRoomArea.setError(null);
+        binding.inputEditRoomMaxOccupants.setError(null);
         binding.inputEditRoomDescription.setError(null);
 
         binding.tvEditRoomError.setText("");
@@ -490,7 +796,7 @@ public class HostEditRoomFragment extends Fragment {
     }
 
     /**
-     * Hiển thị thông báo lỗi chung.
+     * Hiển thị lỗi chung của biểu mẫu.
      */
     private void showError(@Nullable String message) {
         if (binding == null) {
@@ -498,39 +804,45 @@ public class HostEditRoomFragment extends Fragment {
         }
 
         binding.tvEditRoomError.setText(
-                message == null ? "Không thể cập nhật phòng." : message
+                message == null || message.trim().isEmpty()
+                        ? "Không thể cập nhật phòng."
+                        : message
         );
 
         binding.tvEditRoomError.setVisibility(View.VISIBLE);
     }
 
     /**
-     * Thêm khoảng trống để bàn phím không che biểu mẫu.
+     * Thêm khoảng trống bàn phím và giữ padding ban đầu.
      */
     private void setupKeyboardInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(
-                binding.getRoot(),
-                (view, insets) -> {
-                    int keyboardBottom = insets.getInsets(
-                            WindowInsetsCompat.Type.ime()
-                    ).bottom;
+        View root = binding.getRoot();
 
-                    int systemBottom = insets.getInsets(
-                            WindowInsetsCompat.Type.systemBars()
-                    ).bottom;
+        int left = root.getPaddingLeft();
+        int top = root.getPaddingTop();
+        int right = root.getPaddingRight();
+        int bottom = root.getPaddingBottom();
 
-                    view.setPadding(
-                            0,
-                            0,
-                            0,
-                            Math.max(0, keyboardBottom - systemBottom)
-                    );
+        ViewCompat.setOnApplyWindowInsetsListener(root, (view, insets) -> {
+            int keyboardBottom = insets.getInsets(
+                    WindowInsetsCompat.Type.ime()
+            ).bottom;
 
-                    return insets;
-                }
-        );
+            int systemBottom = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+            ).bottom;
 
-        ViewCompat.requestApplyInsets(binding.getRoot());
+            view.setPadding(
+                    left,
+                    top,
+                    right,
+                    bottom + Math.max(0, keyboardBottom - systemBottom)
+            );
+
+            return insets;
+        });
+
+        ViewCompat.requestApplyInsets(root);
     }
 
     /**
@@ -556,27 +868,29 @@ public class HostEditRoomFragment extends Fragment {
     }
 
     /**
-     * Giữ bản nháp và giải phóng các tham chiếu giao diện.
+     * Giữ bản nháp, đóng hộp thoại và giải phóng ViewBinding.
      */
     @Override
     public void onDestroyView() {
+        closeOptionsDialog();
+
         if (binding != null) {
             restoredDraft = captureDraft();
 
             binding.btnEditRoomBack.setOnClickListener(null);
             binding.btnEditRoomSave.setOnClickListener(null);
             binding.btnEditRoomSelectImage.setOnClickListener(null);
+            binding.btnEditRoomType.setOnClickListener(null);
+            binding.btnEditRoomAmenities.setOnClickListener(null);
             binding.edtEditRoomDescription.setOnEditorActionListener(null);
             binding.imgEditRoomPreview.setImageDrawable(null);
 
             ViewCompat.setOnApplyWindowInsetsListener(
-                    binding.getRoot(),
-                    null
+                    binding.getRoot(), null
             );
         }
 
         binding = null;
-
         super.onDestroyView();
     }
 }

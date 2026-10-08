@@ -20,6 +20,7 @@ import com.example.roomly.data.model.AppMode;
 import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.model.UserRole;
 import com.example.roomly.data.repository.DebugSessionHelper;
+import com.example.roomly.data.repository.DemoProfileRepository;
 import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentProfileBinding;
 import com.example.roomly.ui.admin.AdminDashboardFragment;
@@ -44,6 +45,7 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         viewModel = new ViewModelProvider(this)
                 .get(ProfileViewModel.class);
     }
@@ -80,6 +82,16 @@ public class ProfileFragment extends Fragment {
         viewModel.getMode().observe(
                 getViewLifecycleOwner(),
                 this::renderMode
+        );
+    }
+
+    /** Cập nhật lại hồ sơ khi quay về trang Cá nhân. */
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        renderSession(
+                SessionRepository.getInstance().getCurrentSession()
         );
     }
 
@@ -125,7 +137,8 @@ public class ProfileFragment extends Fragment {
         SessionState session = SessionRepository.getInstance()
                 .getCurrentSession();
 
-        if (!BuildConfig.DEBUG || session.isLoggedIn()
+        if (!BuildConfig.DEBUG
+                || session.isLoggedIn()
                 || demoDialog != null) {
             return;
         }
@@ -165,14 +178,15 @@ public class ProfileFragment extends Fragment {
         dialog.show();
     }
 
-    /** Cập nhật thông tin tài khoản và quyền hiển thị các nút. */
+    /** Cập nhật hồ sơ và quyền hiển thị các nút. */
     private void renderSession(@Nullable SessionState session) {
         if (binding == null) {
             return;
         }
 
         currentSession = session == null
-                ? SessionState.guest() : session;
+                ? SessionState.guest()
+                : session;
 
         boolean loggedIn = currentSession.isLoggedIn();
 
@@ -189,12 +203,20 @@ public class ProfileFragment extends Fragment {
 
         binding.tvProfileName.setText(currentSession.getFullName());
         binding.tvProfileEmail.setText(currentSession.getEmail());
-        binding.tvProfilePhone.setText("");
-        binding.tvProfilePhone.setVisibility(View.GONE);
+
+        String phone = DemoProfileRepository.getInstance().getPhone();
+
+        binding.tvProfilePhone.setText(phone);
+        binding.tvProfilePhone.setVisibility(
+                loggedIn && !phone.isEmpty()
+                        ? View.VISIBLE
+                        : View.GONE
+        );
 
         binding.btnProfileAdmin.setVisibility(
                 loggedIn && currentSession.hasRole(UserRole.ADMIN)
-                        ? View.VISIBLE : View.GONE
+                        ? View.VISIBLE
+                        : View.GONE
         );
 
         boolean canEnableDemo = BuildConfig.DEBUG && !loggedIn;
@@ -208,11 +230,13 @@ public class ProfileFragment extends Fragment {
         );
         binding.btnDisableDemoSession.setVisibility(
                 DebugSessionHelper.isDemoSession()
-                        ? View.VISIBLE : View.GONE
+                        ? View.VISIBLE
+                        : View.GONE
         );
 
         binding.tvProfileVerification.setText(
-                !loggedIn ? ""
+                !loggedIn
+                        ? ""
                         : currentSession.isEmailVerified()
                           ? "Email đã được xác minh"
                           : "Email chưa được xác minh"
@@ -220,8 +244,10 @@ public class ProfileFragment extends Fragment {
 
         binding.btnProfileVerifyEmail.setVisibility(
                 loggedIn && !currentSession.isEmailVerified()
-                        ? View.VISIBLE : View.GONE
+                        ? View.VISIBLE
+                        : View.GONE
         );
+
         binding.btnEditProfile.setEnabled(loggedIn);
 
         currentMode = viewModel.getCurrentMode();
@@ -287,14 +313,16 @@ public class ProfileFragment extends Fragment {
         button.setBackgroundTintList(ColorStateList.valueOf(
                 ContextCompat.getColor(
                         requireContext(),
-                        selected ? R.color.roomly_primary
+                        selected
+                                ? R.color.roomly_primary
                                 : R.color.roomly_surface
                 )
         ));
 
         button.setTextColor(ContextCompat.getColor(
                 requireContext(),
-                selected ? R.color.roomly_surface
+                selected
+                        ? R.color.roomly_surface
                         : R.color.roomly_primary
         ));
 
@@ -346,18 +374,34 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    /** Kiểm tra phiên trước khi sử dụng chức năng chỉnh sửa hồ sơ. */
+    /** Kiểm tra phiên và mở biểu mẫu chỉnh sửa hồ sơ. */
     private void handleEditProfile() {
         SessionState session = SessionRepository.getInstance()
                 .getCurrentSession();
 
         if (!session.isLoggedIn()) {
             openLoginScreen();
-        } else if (!session.isEmailVerified()) {
-            openVerifyEmailScreen();
-        } else {
-            showMessage("Chưa kết nối dịch vụ cập nhật hồ sơ.");
+            return;
         }
+
+        if (!session.isEmailVerified()) {
+            openVerifyEmailScreen();
+            return;
+        }
+
+        if (binding == null
+                || getChildFragmentManager().isStateSaved()
+                || getChildFragmentManager().findFragmentByTag(
+                EditProfileDialogFragment.TAG
+        ) != null) {
+            return;
+        }
+
+        EditProfileDialogFragment.newInstance(session.getUserId())
+                .showNow(
+                        getChildFragmentManager(),
+                        EditProfileDialogFragment.TAG
+                );
     }
 
     /** Mở trang quản trị khi phiên hiện tại có quyền ADMIN. */
@@ -392,7 +436,9 @@ public class ProfileFragment extends Fragment {
     private void showMessage(String message) {
         if (isAdded()) {
             Toast.makeText(
-                    requireContext(), message, Toast.LENGTH_LONG
+                    requireContext(),
+                    message,
+                    Toast.LENGTH_LONG
             ).show();
         }
     }
@@ -402,6 +448,7 @@ public class ProfileFragment extends Fragment {
         if (demoDialog != null) {
             AlertDialog dialog = demoDialog;
             demoDialog = null;
+
             dialog.setOnDismissListener(null);
             dialog.dismiss();
         }
