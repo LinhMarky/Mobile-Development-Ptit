@@ -13,30 +13,28 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.roomly.BuildConfig;
 import com.example.roomly.R;
 import com.example.roomly.data.model.AppMode;
 import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.model.UserRole;
+import com.example.roomly.data.repository.DebugSessionHelper;
 import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentProfileBinding;
+import com.example.roomly.ui.admin.AdminDashboardFragment;
 import com.example.roomly.ui.auth.LoginFragment;
 import com.example.roomly.ui.auth.VerifyEmailFragment;
 import com.google.android.material.button.MaterialButton;
 
-import com.example.roomly.BuildConfig;
-import com.example.roomly.data.repository.DebugSessionHelper;
-
-
 /**
  * Hiển thị trang Cá nhân theo phiên đăng nhập.
- * Cho phép chọn chế độ Người thuê hoặc Chủ trọ theo vai trò hiện có.
+ * Cho phép chọn chế độ theo vai trò và mở quản trị khi có quyền ADMIN.
  */
 public class ProfileFragment extends Fragment {
 
     private FragmentProfileBinding binding;
     private ProfileViewModel viewModel;
 
-    // Trạng thái hiện tại dùng để hiển thị giao diện.
     private SessionState currentSession = SessionState.guest();
     private AppMode currentMode = AppMode.TENANT;
 
@@ -71,7 +69,7 @@ public class ProfileFragment extends Fragment {
     }
 
     /**
-     * Đăng ký các thao tác và quan sát phiên, chế độ theo vòng đời View.
+     * Đăng ký thao tác và quan sát phiên, chế độ theo vòng đời giao diện.
      */
     @Override
     public void onViewCreated(
@@ -94,7 +92,8 @@ public class ProfileFragment extends Fragment {
     }
 
     /**
-     * Đăng ký đăng nhập, xác minh, chỉnh sửa và chọn chế độ.
+     * Đăng ký đăng nhập, xác minh, chỉnh sửa, quản trị và chọn chế độ.
+     * Giữ các nút phiên mẫu để thử giao diện trong bản debug.
      */
     private void setupActionButtons() {
         binding.btnOpenLogin.setOnClickListener(
@@ -107,6 +106,10 @@ public class ProfileFragment extends Fragment {
 
         binding.btnEditProfile.setOnClickListener(
                 view -> handleEditProfile()
+        );
+
+        binding.btnProfileAdmin.setOnClickListener(
+                view -> openAdminDashboard()
         );
 
         binding.btnModeTenant.setOnClickListener(
@@ -129,14 +132,27 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        binding.btnDisableDemoSession.setOnClickListener(view ->
-                DebugSessionHelper.disableDemoSession()
+        // Bật phiên admin mẫu khi đang là khách trong bản debug.
+        binding.btnEnableDemoAdminSession.setOnClickListener(view -> {
+            boolean enabled = DebugSessionHelper.enableDemoAdminSession();
+
+            if (!enabled) {
+                Toast.makeText(
+                        requireContext(),
+                        "Hãy tắt phiên thử hiện tại trước khi bật admin thử.",
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
+
+        binding.btnDisableDemoSession.setOnClickListener(
+                view -> DebugSessionHelper.disableDemoSession()
         );
     }
 
     /**
-     * Hiển thị lời mời đăng nhập cho khách hoặc thông tin tài khoản.
-     * Các lựa chọn chế độ được cập nhật theo vai trò trong phiên.
+     * Hiển thị thông tin tài khoản và các chức năng theo quyền hiện tại.
+     * Chỉ hiện nút quản trị khi tài khoản đã đăng nhập và có quyền ADMIN.
      */
     private void renderSession(@Nullable SessionState session) {
         if (binding == null) {
@@ -149,22 +165,29 @@ public class ProfileFragment extends Fragment {
 
         boolean loggedIn = currentSession.isLoggedIn();
 
-        // Chỉ hiện nút bật phiên mẫu cho khách trong bản debug.
+        boolean isAdmin = loggedIn
+                && currentSession.hasRole(UserRole.ADMIN);
+
+        binding.btnProfileAdmin.setVisibility(
+                isAdmin ? View.VISIBLE : View.GONE
+        );
+
+        // Chỉ cho khách tạo phiên mẫu trong bản debug.
+        boolean canEnableDemo = BuildConfig.DEBUG && !loggedIn;
+
         binding.btnEnableDemoSession.setVisibility(
-                BuildConfig.DEBUG && !loggedIn
+                canEnableDemo ? View.VISIBLE : View.GONE
+        );
+
+        binding.btnEnableDemoAdminSession.setVisibility(
+                canEnableDemo ? View.VISIBLE : View.GONE
+        );
+
+// Nút tắt dùng được cho cả phiên Người thuê/Chủ trọ và Admin mẫu.
+        binding.btnDisableDemoSession.setVisibility(
+                DebugSessionHelper.isDemoSession()
                         ? View.VISIBLE
                         : View.GONE
-        );
-
-        // Chỉ hiện nút tắt khi đang dùng đúng tài khoản mẫu.
-        boolean isDemoSession = BuildConfig.DEBUG
-                && loggedIn
-                && "debug-demo-user".equals(
-                currentSession.getUserId()
-        );
-
-        binding.btnDisableDemoSession.setVisibility(
-                isDemoSession ? View.VISIBLE : View.GONE
         );
 
         binding.layoutProfileGuest.setVisibility(
@@ -191,7 +214,6 @@ public class ProfileFragment extends Fragment {
             binding.tvProfileVerification.setText("");
             binding.btnProfileVerifyEmail.setVisibility(View.GONE);
             binding.btnEditProfile.setEnabled(false);
-
         } else {
             boolean verified = currentSession.isEmailVerified();
 
@@ -214,7 +236,7 @@ public class ProfileFragment extends Fragment {
     }
 
     /**
-     * Nhận chế độ mới từ repository và cập nhật các nút lựa chọn.
+     * Nhận chế độ mới và cập nhật các nút lựa chọn.
      */
     private void renderMode(@Nullable AppMode mode) {
         currentMode = mode == null ? AppMode.TENANT : mode;
@@ -224,18 +246,20 @@ public class ProfileFragment extends Fragment {
 
     /**
      * Chỉ hiện chế độ mà tài khoản có vai trò tương ứng.
-     * Khách và tài khoản chỉ có ADMIN không thấy bộ chọn này.
+     * Tài khoản chỉ có ADMIN không thấy bộ chọn Người thuê/Chủ trọ.
      */
     private void renderModeOptions() {
         if (binding == null) {
             return;
         }
 
-        boolean canUseTenant =
-                currentSession.hasRole(UserRole.TENANT);
+        boolean loggedIn = currentSession.isLoggedIn();
 
-        boolean canUseHost =
-                currentSession.hasRole(UserRole.HOST);
+        boolean canUseTenant = loggedIn
+                && currentSession.hasRole(UserRole.TENANT);
+
+        boolean canUseHost = loggedIn
+                && currentSession.hasRole(UserRole.HOST);
 
         boolean hasAvailableMode = canUseTenant || canUseHost;
 
@@ -265,15 +289,8 @@ public class ProfileFragment extends Fragment {
         boolean hostSelected =
                 canUseHost && currentMode == AppMode.HOST;
 
-        updateModeButton(
-                binding.btnModeTenant,
-                tenantSelected
-        );
-
-        updateModeButton(
-                binding.btnModeHost,
-                hostSelected
-        );
+        updateModeButton(binding.btnModeTenant, tenantSelected);
+        updateModeButton(binding.btnModeHost, hostSelected);
 
         binding.tvProfileCurrentMode.setText(
                 currentMode == AppMode.HOST
@@ -283,7 +300,7 @@ public class ProfileFragment extends Fragment {
     }
 
     /**
-     * Đổi màu nút và mô tả để thể hiện chế độ đang được chọn.
+     * Đổi màu và mô tả nút để thể hiện chế độ đang chọn.
      */
     private void updateModeButton(
             MaterialButton button,
@@ -318,14 +335,13 @@ public class ProfileFragment extends Fragment {
 
     /**
      * Yêu cầu repository đổi chế độ sau khi kiểm tra vai trò.
-     * Không sửa vai trò hoặc token đăng nhập.
+     * Việc đổi chế độ không thay đổi quyền của tài khoản.
      */
     private void selectMode(AppMode requestedMode) {
         if (binding == null) {
             return;
         }
 
-        // Đọc phiên mới nhất thay vì chỉ dựa vào dữ liệu đang hiển thị.
         currentSession = SessionRepository.getInstance()
                 .getCurrentSession();
 
@@ -412,6 +428,10 @@ public class ProfileFragment extends Fragment {
      * Chức năng cập nhật hồ sơ thật sẽ được nối với API sau.
      */
     private void handleEditProfile() {
+        if (binding == null) {
+            return;
+        }
+
         currentSession = SessionRepository.getInstance()
                 .getCurrentSession();
 
@@ -433,7 +453,36 @@ public class ProfileFragment extends Fragment {
     }
 
     /**
-     * Gỡ sự kiện và giải phóng Binding khi giao diện bị hủy.
+     * Kiểm tra lại quyền ADMIN và mở trang quản trị.
+     * Giữ trang Cá nhân trong back stack để có thể quay lại.
+     */
+    private void openAdminDashboard() {
+        if (binding == null) {
+            return;
+        }
+
+        currentSession = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!currentSession.isLoggedIn()
+                || !currentSession.hasRole(UserRole.ADMIN)) {
+            renderSession(currentSession);
+            return;
+        }
+
+        getParentFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(
+                        R.id.fragment_container,
+                        new AdminDashboardFragment()
+                )
+                .addToBackStack(null)
+                .commit();
+    }
+
+    /**
+     * Gỡ sự kiện và giải phóng binding khi giao diện bị hủy.
      * Observer tự được gỡ theo vòng đời giao diện.
      */
     @Override
@@ -442,10 +491,12 @@ public class ProfileFragment extends Fragment {
             binding.btnOpenLogin.setOnClickListener(null);
             binding.btnProfileVerifyEmail.setOnClickListener(null);
             binding.btnEditProfile.setOnClickListener(null);
+            binding.btnProfileAdmin.setOnClickListener(null);
             binding.btnModeTenant.setOnClickListener(null);
             binding.btnModeHost.setOnClickListener(null);
             binding.btnEnableDemoSession.setOnClickListener(null);
             binding.btnDisableDemoSession.setOnClickListener(null);
+            binding.btnEnableDemoAdminSession.setOnClickListener(null);
         }
 
         binding = null;

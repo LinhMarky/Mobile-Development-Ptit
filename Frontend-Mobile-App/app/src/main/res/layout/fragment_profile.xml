@@ -112,6 +112,21 @@
                         app:strokeColor="@color/roomly_primary"
                         app:strokeWidth="1dp" />
 
+                    <!-- Chỉ hiện cho khách trong bản debug để thử giao diện admin. -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_enable_demo_admin_session"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:minHeight="48dp"
+                        android:text="Bật tài khoản admin thử (debug)"
+                        android:textAllCaps="false"
+                        android:textColor="@color/roomly_primary"
+                        android:visibility="gone"
+                        app:strokeColor="@color/roomly_primary"
+                        app:cornerRadius="12dp" />
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
@@ -213,6 +228,21 @@
                         app:cornerRadius="12dp"
                         app:strokeColor="@color/roomly_primary"
                         app:strokeWidth="1dp" />
+
+                    <!-- Chỉ hiện khi tài khoản có quyền ADMIN. -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_profile_admin"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:minHeight="48dp"
+                        android:text="Trang quản trị"
+                        android:textAllCaps="false"
+                        android:textColor="@color/roomly_primary"
+                        android:visibility="gone"
+                        app:strokeColor="@color/roomly_primary"
+                        app:cornerRadius="12dp" />
 
                     <!-- Chỉ hiện khi đang dùng phiên mẫu trong debug -->
                     <com.google.android.material.button.MaterialButton

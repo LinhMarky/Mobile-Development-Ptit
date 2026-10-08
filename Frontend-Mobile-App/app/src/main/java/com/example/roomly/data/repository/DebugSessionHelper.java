@@ -10,35 +10,31 @@ import java.util.EnumSet;
 
 /**
  * Tạo phiên mẫu để kiểm tra giao diện khi chưa có backend.
- * Chỉ cho phép sử dụng trong bản debug.
+ * Chỉ hoạt động trong bản debug, không tạo token đăng nhập.
  */
 public final class DebugSessionHelper {
 
+    private static final String DEMO_USER_ID = "debug-demo-user";
+    private static final String DEMO_ADMIN_ID = "debug-demo-admin";
+
     /**
-     * Ngăn tạo đối tượng vì lớp chỉ chứa hàm dùng chung.
+     * Ngăn tạo đối tượng vì lớp chỉ chứa các hàm dùng chung.
      */
     private DebugSessionHelper() {
     }
 
     /**
      * Bật tài khoản mẫu có hai vai trò Người thuê và Chủ trọ.
-     * Không tạo token và không thực hiện đăng nhập với backend.
+     * Không thay thế tài khoản đang đăng nhập.
      */
     @MainThread
     public static boolean enableDemoSession() {
-        if (!BuildConfig.DEBUG) {
-            return false;
-        }
-
-        // Không thay thế một phiên tài khoản đang đăng nhập.
-        if (SessionRepository.getInstance()
-                .getCurrentSession()
-                .isLoggedIn()) {
+        if (!canEnableDemoSession()) {
             return false;
         }
 
         SessionState demoSession = SessionState.authenticated(
-                "debug-demo-user",
+                DEMO_USER_ID,
                 "Tài khoản thử giao diện",
                 "demo@example.com",
                 true,
@@ -55,20 +51,68 @@ public final class DebugSessionHelper {
     }
 
     /**
-     * Xóa phiên nếu đây đúng là tài khoản mẫu do helper tạo.
-     * Không xóa phiên của tài khoản khác.
+     * Bật tài khoản mẫu chỉ có quyền ADMIN để kiểm tra trang quản trị.
+     * Không cấp quyền admin cho tài khoản khác đang đăng nhập.
      */
     @MainThread
-    public static boolean disableDemoSession() {
+    public static boolean enableDemoAdminSession() {
+        if (!canEnableDemoSession()) {
+            return false;
+        }
+
+        SessionState demoSession = SessionState.authenticated(
+                DEMO_ADMIN_ID,
+                "Admin thử giao diện",
+                "admin-demo@example.com",
+                true,
+                EnumSet.of(UserRole.ADMIN)
+        );
+
+        SessionRepository.getInstance()
+                .updateAuthenticatedSession(demoSession);
+
+        return true;
+    }
+
+    /**
+     * Chỉ cho tạo phiên mẫu trong bản debug khi đang ở trạng thái khách.
+     */
+    private static boolean canEnableDemoSession() {
+        return BuildConfig.DEBUG
+                && !SessionRepository.getInstance()
+                .getCurrentSession()
+                .isLoggedIn();
+    }
+
+    /**
+     * Nhận biết phiên mẫu Người thuê/Chủ trọ hoặc Admin do helper tạo.
+     */
+    @MainThread
+    public static boolean isDemoSession() {
         if (!BuildConfig.DEBUG) {
             return false;
         }
 
-        String userId = SessionRepository.getInstance()
-                .getCurrentSession()
-                .getUserId();
+        SessionState session =
+                SessionRepository.getInstance().getCurrentSession();
 
-        if (!"debug-demo-user".equals(userId)) {
+        if (!session.isLoggedIn()) {
+            return false;
+        }
+
+        String userId = session.getUserId();
+
+        return DEMO_USER_ID.equals(userId)
+                || DEMO_ADMIN_ID.equals(userId);
+    }
+
+    /**
+     * Xóa phiên nếu đúng là một trong hai tài khoản mẫu của helper.
+     * Không xóa phiên của tài khoản khác.
+     */
+    @MainThread
+    public static boolean disableDemoSession() {
+        if (!isDemoSession()) {
             return false;
         }
 

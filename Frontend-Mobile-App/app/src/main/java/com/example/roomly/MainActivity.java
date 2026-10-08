@@ -37,6 +37,13 @@ import com.example.roomly.ui.host.HostListingsFragment;
 import com.example.roomly.ui.host.HostListingDetailFragment;
 import com.example.roomly.ui.host.viewing.HostViewingFragment;
 import com.example.roomly.ui.host.viewing.HostAppointmentsFragment;
+import com.example.roomly.ui.admin.AdminDashboardFragment;
+import com.example.roomly.ui.admin.AdminListingsFragment;
+import com.example.roomly.ui.admin.AdminListingDetailFragment;
+import com.example.roomly.ui.admin.AdminReportsFragment;
+import com.example.roomly.ui.admin.AdminReportDetailFragment;
+import com.example.roomly.ui.admin.AdminAccountsFragment;
+import com.example.roomly.ui.admin.AdminMetricsFragment;
 
 /**
  * Điều khiển màn hình chính và thanh điều hướng theo chế độ sử dụng.
@@ -356,7 +363,14 @@ public class MainActivity extends AppCompatActivity {
                         || currentFragment instanceof HostListingDetailFragment
                         || currentFragment instanceof HostEditListingFragment
                         || currentFragment instanceof HostViewingFragment
-                        || currentFragment instanceof HostAppointmentsFragment;
+                        || currentFragment instanceof HostAppointmentsFragment
+                        || currentFragment instanceof AdminDashboardFragment
+                        || currentFragment instanceof AdminListingsFragment
+                        || currentFragment instanceof AdminListingDetailFragment
+                        || currentFragment instanceof AdminReportsFragment
+                        || currentFragment instanceof AdminReportDetailFragment
+                        || currentFragment instanceof AdminAccountsFragment
+                        || currentFragment instanceof AdminMetricsFragment;
 
         binding.bottomNav.setVisibility(
                 hideBottomNav ? View.GONE : View.VISIBLE
