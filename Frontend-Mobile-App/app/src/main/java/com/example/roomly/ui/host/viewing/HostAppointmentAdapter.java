@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Hiển thị danh sách yêu cầu xem phòng gửi đến chủ trọ.
+ * Hiển thị yêu cầu xem phòng và thông báo khi người dùng bấm thẻ.
  */
 public class HostAppointmentAdapter
         extends RecyclerView.Adapter<
@@ -26,18 +26,29 @@ public class HostAppointmentAdapter
     private final List<HostViewingAppointment> appointments =
             new ArrayList<>();
 
-    /**
-     * Sao chép danh sách yêu cầu ban đầu vào Adapter.
-     */
+    private OnAppointmentClickListener clickListener;
+
+    public interface OnAppointmentClickListener {
+
+        /** Thông báo mã yêu cầu được chọn để màn hình đọc lại dữ liệu. */
+        void onAppointmentClick(String appointmentId);
+    }
+
+    /** Sao chép danh sách ban đầu vào Adapter. */
     public HostAppointmentAdapter(
             List<HostViewingAppointment> initialAppointments
     ) {
         appointments.addAll(initialAppointments);
     }
 
-    /**
-     * Tạo giao diện một thẻ từ item_host_appointment.xml.
-     */
+    /** Đăng ký nơi nhận thao tác bấm thẻ yêu cầu. */
+    public void setOnAppointmentClickListener(
+            OnAppointmentClickListener listener
+    ) {
+        clickListener = listener;
+    }
+
+    /** Tạo giao diện thẻ từ item_host_appointment.xml. */
     @NonNull
     @Override
     public AppointmentViewHolder onCreateViewHolder(
@@ -55,7 +66,8 @@ public class HostAppointmentAdapter
     }
 
     /**
-     * Gán dữ liệu yêu cầu vào thẻ tại vị trí tương ứng.
+     * Hiển thị dữ liệu và đăng ký thao tác bấm.
+     * Đọc lại vị trí hiện tại để tránh dùng vị trí cũ sau cập nhật.
      */
     @Override
     public void onBindViewHolder(
@@ -63,50 +75,66 @@ public class HostAppointmentAdapter
             int position
     ) {
         holder.bind(appointments.get(position));
+
+        holder.itemView.setOnClickListener(view -> {
+            int currentPosition = holder.getBindingAdapterPosition();
+
+            if (currentPosition == RecyclerView.NO_POSITION
+                    || clickListener == null) {
+                return;
+            }
+
+            clickListener.onAppointmentClick(
+                    appointments.get(currentPosition).getId()
+            );
+        });
     }
 
-    /**
-     * Trả về số yêu cầu đang hiển thị.
-     */
+    /** Gỡ thao tác bấm khi thẻ được đưa vào vùng tái sử dụng. */
+    @Override
+    public void onViewRecycled(
+            @NonNull AppointmentViewHolder holder
+    ) {
+        holder.itemView.setOnClickListener(null);
+
+        super.onViewRecycled(holder);
+    }
+
+    /** Trả về số yêu cầu đang hiển thị. */
     @Override
     public int getItemCount() {
         return appointments.size();
     }
 
-    /**
-     * Cập nhật danh sách từ repository và hiển thị lại các thẻ.
-     */
+    /** Sao chép danh sách mới và cập nhật các thẻ dữ liệu mẫu. */
     public void updateAppointments(
             List<HostViewingAppointment> newAppointments
     ) {
-        List<HostViewingAppointment> updatedAppointments =
+        List<HostViewingAppointment> updated =
                 new ArrayList<>(newAppointments);
 
         appointments.clear();
-        appointments.addAll(updatedAppointments);
+        appointments.addAll(updated);
 
         notifyDataSetChanged();
     }
 
-    /**
-     * Giữ các thành phần giao diện của một thẻ yêu cầu.
-     */
+    /** Giữ các thành phần giao diện của một thẻ yêu cầu. */
     static class AppointmentViewHolder
             extends RecyclerView.ViewHolder {
 
         private final ItemHostAppointmentBinding binding;
 
-        /**
-         * Khởi tạo ViewHolder bằng binding của thẻ.
-         */
+        /** Khởi tạo ViewHolder bằng binding của thẻ. */
         AppointmentViewHolder(ItemHostAppointmentBinding binding) {
             super(binding.getRoot());
+
             this.binding = binding;
         }
 
         /**
-         * Hiển thị phòng, người gửi, thời gian, trạng thái và ghi chú.
-         * Luôn cập nhật cả nội dung và độ hiển thị khi tái sử dụng thẻ.
+         * Hiển thị thông tin và trạng thái hiện tại.
+         * Gộp lý do từ chối vào vùng ghi chú đang có trong XML.
          */
         void bind(HostViewingAppointment appointment) {
             binding.tvHostAppointmentStatus.setText(
@@ -132,28 +160,37 @@ public class HostAppointmentAdapter
                             + formatTime(appointment.getEndTimeMillis())
             );
 
-            String note = appointment.getNote().trim();
-            boolean hasNote = !note.isEmpty();
+            StringBuilder extra = new StringBuilder();
 
-            binding.tvHostAppointmentNote.setText(
-                    hasNote ? "Ghi chú: " + note : ""
-            );
+            String note = appointment.getNote().trim();
+
+            if (!note.isEmpty()) {
+                extra.append("Ghi chú: ").append(note);
+            }
+
+            String reason = appointment.getDecisionReason().trim();
+
+            if (!reason.isEmpty()) {
+                if (extra.length() > 0) {
+                    extra.append("\n");
+                }
+
+                extra.append("Lý do xử lý: ").append(reason);
+            }
+
+            binding.tvHostAppointmentNote.setText(extra.toString());
 
             binding.tvHostAppointmentNote.setVisibility(
-                    hasNote ? View.VISIBLE : View.GONE
+                    extra.length() > 0 ? View.VISIBLE : View.GONE
             );
         }
 
-        /**
-         * Hiển thị ngày giờ theo múi giờ hiện tại của thiết bị.
-         */
+        /** Hiển thị ngày giờ theo múi giờ của thiết bị. */
         private String formatTime(long timeMillis) {
-            SimpleDateFormat formatter = new SimpleDateFormat(
+            return new SimpleDateFormat(
                     "dd/MM/yyyy HH:mm",
                     new Locale("vi", "VN")
-            );
-
-            return formatter.format(new Date(timeMillis));
+            ).format(new Date(timeMillis));
         }
     }
 }

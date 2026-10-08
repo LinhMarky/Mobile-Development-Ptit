@@ -6,6 +6,7 @@ import com.example.roomly.data.model.HostListing;
 import com.example.roomly.data.model.HostRoom;
 import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.model.UserRole;
+import com.example.roomly.data.model.AdminListing;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class DemoHostListingRepository {
 
         for (HostListing listing : listings) {
             if (session.getUserId().equals(listing.getOwnerId())) {
-                result.add(listing);
+                result.add(withCurrentModeration(listing));
             }
         }
 
@@ -149,6 +150,62 @@ public class DemoHostListingRepository {
     }
 
     /**
+     * Lấy trạng thái kiểm duyệt mới nhất cho bài của chủ trọ.
+     * Khi chưa gửi duyệt, giữ nguyên bản nháp.
+     */
+    private HostListing withCurrentModeration(HostListing listing) {
+        AdminListing submitted =
+                DemoAdminListingRepository.getInstance()
+                        .getMySubmittedListing(listing.getId());
+
+        if (submitted == null) {
+            return listing;
+        }
+
+        HostListing.Status status;
+
+        switch (submitted.getStatus()) {
+            case PENDING:
+                status = HostListing.Status.PENDING;
+                break;
+
+            case PUBLISHED:
+                status = HostListing.Status.PUBLISHED;
+                break;
+
+            case HIDDEN:
+                status = HostListing.Status.HIDDEN;
+                break;
+
+            case REJECTED:
+                status = HostListing.Status.REJECTED;
+                break;
+
+            default:
+                throw new IllegalStateException(
+                        "Trạng thái kiểm duyệt chưa được hỗ trợ."
+                );
+        }
+
+        return listing.withModeration(
+                status,
+                submitted.getModerationReason()
+        );
+    }
+
+    /**
+     * Gửi bản nháp của tài khoản hiện tại sang hàng chờ admin.
+     * Trả về bài đăng với trạng thái đã cập nhật.
+     */
+    @MainThread
+    public HostListing submitDraft(String listingId) {
+        DemoAdminListingRepository.getInstance()
+                .submitHostDraft(listingId);
+
+        return getMyListingById(listingId);
+    }
+
+    /**
      * Cập nhật nội dung bản nháp thuộc tài khoản hiện tại.
      * Giữ nguyên mã bài đăng, chủ sở hữu, phòng liên kết và thời điểm tạo.
      * Dữ liệu hiện chỉ được lưu trong bộ nhớ để thử giao diện.
@@ -181,6 +238,13 @@ public class DemoHostListingRepository {
         if (currentListing == null) {
             throw new IllegalStateException(
                     "Không tìm thấy bản nháp thuộc tài khoản của bạn."
+            );
+        }
+
+        // Không sửa nội dung đã gửi duyệt bằng hàm cập nhật bản nháp.
+        if (currentListing.getStatus() != HostListing.Status.DRAFT) {
+            throw new IllegalStateException(
+                    "Chỉ có thể chỉnh sửa bài đang ở trạng thái Bản nháp."
             );
         }
 

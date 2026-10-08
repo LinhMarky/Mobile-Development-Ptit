@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Chi tiết bản nháp bài đăng của chủ trọ. -->
+<!-- Chi tiết bài đăng thuộc tài khoản chủ trọ hiện tại. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -43,7 +42,7 @@
 
     </LinearLayout>
 
-    <!-- Nội dung chi tiết có thể cuộn. -->
+    <!-- Nội dung có thể cuộn trên màn hình nhỏ. -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -52,15 +51,14 @@
         android:clipToPadding="false"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
-        android:paddingBottom="24dp"
-        tools:ignore="SpeakableTextPresentCheck">
+        android:paddingBottom="24dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Hiện khi dữ liệu không còn hoặc không có quyền truy cập. -->
+            <!-- Lỗi truy cập hoặc dữ liệu không còn tồn tại. -->
             <TextView
                 android:id="@+id/tv_listing_detail_error"
                 android:layout_width="match_parent"
@@ -73,7 +71,6 @@
                 android:textSize="16sp"
                 android:visibility="gone" />
 
-            <!-- Chỉ hiển thị khi bản nháp thuộc tài khoản hiện tại. -->
             <LinearLayout
                 android:id="@+id/layout_listing_detail_content"
                 android:layout_width="match_parent"
@@ -81,7 +78,7 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <!-- Ảnh lấy từ phòng liên kết với bài đăng. -->
+                <!-- Ảnh phòng liên kết. -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -114,7 +111,7 @@
 
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Thông tin bài đăng. -->
+                <!-- Thông tin và trạng thái bài đăng. -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -140,7 +137,6 @@
                             android:paddingEnd="12dp"
                             android:paddingTop="6dp"
                             android:paddingBottom="6dp"
-                            android:text="Bản nháp mẫu"
                             android:textColor="@color/roomly_primary"
                             android:textSize="12sp"
                             android:textStyle="bold" />
@@ -163,7 +159,6 @@
                             android:textSize="20sp"
                             android:textStyle="bold" />
 
-                        <!-- Thông tin phòng liên kết. -->
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -190,7 +185,6 @@
                             android:textColor="@color/roomly_text_secondary"
                             android:textSize="14sp" />
 
-                        <!-- Nội dung đầy đủ, không giới hạn số dòng. -->
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -209,20 +203,48 @@
                             android:textColor="@color/roomly_text_secondary"
                             android:textSize="16sp" />
 
+                        <!-- Lý do từ chối, ẩn hoặc khôi phục từ admin. -->
+                        <TextView
+                            android:id="@+id/tv_listing_detail_moderation_reason"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:background="@color/roomly_primary_light"
+                            android:padding="16dp"
+                            android:lineSpacingExtra="4dp"
+                            android:textColor="@color/roomly_text_primary"
+                            android:textSize="14sp"
+                            android:visibility="gone" />
+
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Nút chỉnh sửa sẽ được nối sau khi tạo màn hình tương ứng. -->
+                <!-- Chỉ hiển thị khi bài còn là bản nháp. -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_listing_detail_edit"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:minHeight="48dp"
                     android:text="Chỉnh sửa bản nháp"
                     android:textAllCaps="false"
+                    android:textColor="@color/roomly_primary"
+                    android:visibility="gone"
+                    app:strokeColor="@color/roomly_primary"
+                    app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_listing_detail_submit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="48dp"
+                    android:text="Gửi duyệt"
+                    android:textAllCaps="false"
                     android:textColor="@color/roomly_surface"
+                    android:visibility="gone"
                     app:backgroundTint="@color/roomly_primary"
                     app:cornerRadius="12dp" />
 

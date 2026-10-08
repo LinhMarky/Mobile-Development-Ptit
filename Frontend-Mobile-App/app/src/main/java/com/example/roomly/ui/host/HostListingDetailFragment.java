@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.roomly.R;
@@ -22,9 +23,10 @@ import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentHostListingDetailBinding;
 import com.example.roomly.ui.auth.LoginFragment;
 import com.example.roomly.ui.auth.VerifyEmailFragment;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 /**
- * Hiển thị chi tiết bản nháp thuộc tài khoản chủ trọ hiện tại.
+ * Hiển thị bài đăng của chủ trọ cùng kết quả kiểm duyệt mới nhất.
  * Chỉ truyền ID qua Bundle và đọc lại dữ liệu từ repository.
  */
 public class HostListingDetailFragment extends Fragment {
@@ -34,10 +36,13 @@ public class HostListingDetailFragment extends Fragment {
     private FragmentHostListingDetailBinding binding;
     private String listingId;
 
-    /**
-     * Tạo màn hình chi tiết với ID bản nháp được chọn.
-     */
-    public static HostListingDetailFragment newInstance(String listingId) {
+    private AlertDialog submitDialog;
+    private String submitDialogOwnerId;
+
+    /** Tạo màn hình chi tiết với mã bài đăng được chọn. */
+    public static HostListingDetailFragment newInstance(
+            String listingId
+    ) {
         HostListingDetailFragment fragment =
                 new HostListingDetailFragment();
 
@@ -48,9 +53,7 @@ public class HostListingDetailFragment extends Fragment {
         return fragment;
     }
 
-    /**
-     * Đọc ID bản nháp khi Fragment được tạo.
-     */
+    /** Đọc mã bài đăng khi Fragment được tạo. */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,9 +63,7 @@ public class HostListingDetailFragment extends Fragment {
         }
     }
 
-    /**
-     * Tạo giao diện chi tiết bài đăng bằng ViewBinding.
-     */
+    /** Tạo giao diện chi tiết bằng ViewBinding. */
     @Nullable
     @Override
     public View onCreateView(
@@ -79,9 +80,7 @@ public class HostListingDetailFragment extends Fragment {
         return binding.getRoot();
     }
 
-    /**
-     * Đăng ký thao tác và theo dõi phiên để cập nhật quyền truy cập.
-     */
+    /** Đăng ký nút thao tác và theo dõi thay đổi phiên. */
     @Override
     public void onViewCreated(
             @NonNull View view,
@@ -90,33 +89,41 @@ public class HostListingDetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         binding.btnListingDetailBack.setOnClickListener(
-                clickedView -> getParentFragmentManager().popBackStack()
+                clickedView ->
+                        getParentFragmentManager().popBackStack()
         );
 
         binding.btnListingDetailEdit.setOnClickListener(
                 clickedView -> handleEditListing()
         );
 
+        binding.btnListingDetailSubmit.setOnClickListener(
+                clickedView -> handleSubmitListing()
+        );
+
         SessionRepository.getInstance()
                 .getSessionState()
                 .observe(
                         getViewLifecycleOwner(),
-                        session -> displayListing()
+                        session -> {
+                            closeSubmitDialogIfAccessChanged();
+                            displayListing();
+                        }
                 );
     }
 
-    /**
-     * Đọc lại dữ liệu khi trở về từ màn hình khác.
-     */
+    /** Đọc lại thông tin khi trở về từ màn hình khác. */
     @Override
     public void onResume() {
         super.onResume();
 
+        closeSubmitDialogIfAccessChanged();
         displayListing();
     }
 
     /**
-     * Kiểm tra quyền và hiển thị bản nháp cùng phòng liên kết.
+     * Kiểm tra quyền và hiển thị bài đăng cùng trạng thái mới nhất.
+     * Chỉ hiện nút chỉnh sửa và gửi duyệt khi bài còn là bản nháp.
      */
     private void displayListing() {
         if (binding == null) {
@@ -140,7 +147,7 @@ public class HostListingDetailFragment extends Fragment {
 
         if (listing == null) {
             showError(
-                    "Không tìm thấy bản nháp thuộc tài khoản của bạn. "
+                    "Không tìm thấy bài đăng thuộc tài khoản của bạn. "
                             + "Dữ liệu mẫu có thể đã mất khi app khởi động lại."
             );
             return;
@@ -153,22 +160,48 @@ public class HostListingDetailFragment extends Fragment {
         binding.tvListingDetailError.setVisibility(View.GONE);
         binding.layoutListingDetailContent.setVisibility(View.VISIBLE);
 
-        binding.tvListingDetailStatus.setText("Bản nháp mẫu");
+        binding.tvListingDetailStatus.setText(
+                listing.getStatusLabel()
+        );
         binding.tvListingDetailTitle.setText(listing.getTitle());
         binding.tvListingDetailPrice.setText(
                 listing.getFormattedPrice()
         );
-
         binding.tvListingDetailDescription.setText(
                 listing.getDescription()
         );
 
-        // Chỉ cho phép chỉnh sửa khi phòng liên kết còn truy cập được.
-        binding.btnListingDetailEdit.setEnabled(room != null);
+        String reason = listing.getModerationReason().trim();
+
+        binding.tvListingDetailModerationReason.setText(
+                reason.isEmpty()
+                        ? ""
+                        : "Thông tin kiểm duyệt:\n" + reason
+        );
+
+        binding.tvListingDetailModerationReason.setVisibility(
+                reason.isEmpty() ? View.GONE : View.VISIBLE
+        );
+
+        boolean draft = listing.getStatus() == HostListing.Status.DRAFT;
+
+        binding.btnListingDetailEdit.setVisibility(
+                draft ? View.VISIBLE : View.GONE
+        );
+        binding.btnListingDetailSubmit.setVisibility(
+                draft ? View.VISIBLE : View.GONE
+        );
+
+        binding.btnListingDetailEdit.setEnabled(draft && room != null);
+        binding.btnListingDetailSubmit.setEnabled(
+                draft && room != null && submitDialog == null
+        );
 
         clearImage();
 
         if (room == null) {
+            closeSubmitDialog();
+
             binding.tvListingDetailRoomCode.setText(
                     "Không tìm thấy phòng liên kết"
             );
@@ -179,16 +212,171 @@ public class HostListingDetailFragment extends Fragment {
         binding.tvListingDetailRoomCode.setText(
                 "Mã phòng: " + room.getUnitCode()
         );
-
         binding.tvListingDetailAddress.setText(room.getAddress());
 
         displayImage(room);
     }
 
     /**
-     * Hiển thị ảnh của phòng liên kết.
-     * Giữ phần thay thế khi ảnh không còn đọc được.
+     * Kiểm tra quyền sở hữu, trạng thái nháp và xác minh email
+     * trước khi cho chỉnh sửa hoặc gửi duyệt.
      */
+    @Nullable
+    private HostListing requireEditableDraft() {
+        if (binding == null) {
+            return null;
+        }
+
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            openScreen(new LoginFragment());
+            return null;
+        }
+
+        if (!session.hasRole(UserRole.HOST)) {
+            displayListing();
+            showMessage("Tài khoản chưa có quyền chủ trọ.");
+            return null;
+        }
+
+        HostListing listing = DemoHostListingRepository.getInstance()
+                .getMyListingById(listingId);
+
+        if (listing == null) {
+            displayListing();
+            return null;
+        }
+
+        if (listing.getStatus() != HostListing.Status.DRAFT) {
+            displayListing();
+            showMessage("Bài đăng không còn ở trạng thái Bản nháp.");
+            return null;
+        }
+
+        HostRoom room = DemoHostRoomRepository.getInstance()
+                .getMyRoomById(listing.getRoomId());
+
+        if (room == null) {
+            displayListing();
+            showMessage("Không tìm thấy phòng liên kết.");
+            return null;
+        }
+
+        if (!session.isEmailVerified()) {
+            openScreen(
+                    VerifyEmailFragment.newInstance(session.getEmail())
+            );
+            return null;
+        }
+
+        return listing;
+    }
+
+    /** Mở chỉnh sửa sau khi kiểm tra lại bản nháp hiện tại. */
+    private void handleEditListing() {
+        HostListing listing = requireEditableDraft();
+
+        if (listing != null) {
+            openScreen(
+                    HostEditListingFragment.newInstance(listing.getId())
+            );
+        }
+    }
+
+    /** Hỏi xác nhận trước khi chuyển bản nháp sang hàng chờ admin. */
+    private void handleSubmitListing() {
+        if (submitDialog != null) {
+            return;
+        }
+
+        HostListing listing = requireEditableDraft();
+
+        if (listing == null) {
+            return;
+        }
+
+        AlertDialog dialog =
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Gửi bài đăng để duyệt?")
+                        .setMessage(
+                                listing.getTitle()
+                                        + "\n\nSau khi gửi, bài chuyển sang "
+                                        + "Chờ duyệt và không thể chỉnh sửa "
+                                        + "bằng chức năng sửa bản nháp."
+                        )
+                        .setNegativeButton("Quay lại", null)
+                        .setPositiveButton("Gửi duyệt", null)
+                        .create();
+
+        submitDialog = dialog;
+        submitDialogOwnerId = listing.getOwnerId();
+
+        dialog.setOnDismissListener(dismissedDialog -> {
+            if (submitDialog == dialog) {
+                submitDialog = null;
+                submitDialogOwnerId = null;
+
+                if (binding != null) {
+                    displayListing();
+                }
+            }
+        });
+
+        dialog.show();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setOnClickListener(clickedView ->
+                        submitCurrentDraft(dialog)
+                );
+    }
+
+    /**
+     * Kiểm tra lại tài khoản mở hộp thoại và gửi bản nháp.
+     * Repository tiếp tục kiểm tra quyền, phòng và dữ liệu khi lưu.
+     */
+    private void submitCurrentDraft(AlertDialog dialog) {
+        if (binding == null
+                || submitDialog != dialog
+                || !dialog.isShowing()
+                || !dialog.getButton(
+                AlertDialog.BUTTON_POSITIVE
+        ).isEnabled()) {
+            return;
+        }
+
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn()
+                || !session.getUserId().equals(submitDialogOwnerId)) {
+            closeSubmitDialog();
+            displayListing();
+            showMessage("Phiên tài khoản đã thay đổi.");
+            return;
+        }
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+
+        try {
+            DemoHostListingRepository.getInstance()
+                    .submitDraft(listingId);
+
+            closeSubmitDialog();
+            displayListing();
+
+            showMessage("Đã gửi bài đăng mẫu sang hàng chờ admin.");
+        } catch (
+                IllegalArgumentException | IllegalStateException exception
+        ) {
+            closeSubmitDialog();
+            displayListing();
+            showMessage(exception.getMessage());
+        }
+    }
+
+    /** Hiển thị ảnh phòng; dùng phần thay thế nếu không đọc được ảnh. */
     private void displayImage(HostRoom room) {
         String imageUri = room.getImageUri();
 
@@ -201,50 +389,51 @@ public class HostListingDetailFragment extends Fragment {
                     Uri.parse(imageUri)
             );
 
-            boolean imageLoaded =
+            boolean loaded =
                     binding.imgListingDetailRoom.getDrawable() != null;
 
             binding.imgListingDetailRoom.setVisibility(
-                    imageLoaded ? View.VISIBLE : View.GONE
+                    loaded ? View.VISIBLE : View.GONE
             );
-
             binding.tvListingDetailImagePlaceholder.setVisibility(
-                    imageLoaded ? View.GONE : View.VISIBLE
+                    loaded ? View.GONE : View.VISIBLE
             );
-
             binding.imgListingDetailRoom.setContentDescription(
                     "Ảnh phòng " + room.getName()
             );
-
-        } catch (SecurityException exception) {
+        } catch (SecurityException | IllegalArgumentException exception) {
             clearImage();
         }
     }
 
-    /**
-     * Xóa ảnh cũ và hiển thị phần thay thế.
-     */
+    /** Xóa ảnh cũ và hiển thị phần thay thế. */
     private void clearImage() {
         binding.imgListingDetailRoom.setImageDrawable(null);
         binding.imgListingDetailRoom.setVisibility(View.GONE);
-
         binding.tvListingDetailImagePlaceholder.setVisibility(
                 View.VISIBLE
         );
     }
 
-    /**
-     * Xóa nội dung riêng tư và hiển thị lỗi khi không còn quyền truy cập.
-     */
+    /** Xóa thông tin riêng tư khi không còn quyền truy cập. */
     private void showError(String message) {
-        binding.layoutListingDetailContent.setVisibility(View.GONE);
-        binding.btnListingDetailEdit.setEnabled(false);
+        closeSubmitDialog();
 
+        binding.layoutListingDetailContent.setVisibility(View.GONE);
+
+        binding.btnListingDetailEdit.setEnabled(false);
+        binding.btnListingDetailEdit.setVisibility(View.GONE);
+        binding.btnListingDetailSubmit.setEnabled(false);
+        binding.btnListingDetailSubmit.setVisibility(View.GONE);
+
+        binding.tvListingDetailStatus.setText("");
         binding.tvListingDetailTitle.setText("");
         binding.tvListingDetailPrice.setText("");
         binding.tvListingDetailDescription.setText("");
         binding.tvListingDetailRoomCode.setText("");
         binding.tvListingDetailAddress.setText("");
+        binding.tvListingDetailModerationReason.setText("");
+        binding.tvListingDetailModerationReason.setVisibility(View.GONE);
 
         clearImage();
 
@@ -252,57 +441,40 @@ public class HostListingDetailFragment extends Fragment {
         binding.tvListingDetailError.setVisibility(View.VISIBLE);
     }
 
-    /**
-     * Kiểm tra quyền, bản nháp, phòng liên kết và xác minh email.
-     * Màn hình chỉnh sửa bản nháp sẽ được nối ở bước tiếp theo.
-     */
-    private void handleEditListing() {
+    /** Đóng hộp thoại nếu tài khoản hoặc điều kiện truy cập thay đổi. */
+    private void closeSubmitDialogIfAccessChanged() {
+        if (submitDialog == null) {
+            return;
+        }
+
         SessionState session = SessionRepository.getInstance()
                 .getCurrentSession();
 
-        if (!session.isLoggedIn()) {
-            openScreen(new LoginFragment());
-            return;
+        if (!session.isLoggedIn()
+                || !session.hasRole(UserRole.HOST)
+                || !session.isEmailVerified()
+                || !session.getUserId().equals(submitDialogOwnerId)) {
+            closeSubmitDialog();
         }
-
-        if (!session.hasRole(UserRole.HOST)) {
-            displayListing();
-            return;
-        }
-
-        HostListing listing = DemoHostListingRepository.getInstance()
-                .getMyListingById(listingId);
-
-        if (listing == null) {
-            displayListing();
-            return;
-        }
-
-        HostRoom room = DemoHostRoomRepository.getInstance()
-                .getMyRoomById(listing.getRoomId());
-
-        if (room == null) {
-            displayListing();
-            return;
-        }
-
-        if (!session.isEmailVerified()) {
-            openScreen(
-                    VerifyEmailFragment.newInstance(session.getEmail())
-            );
-            return;
-        }
-
-        // Mở màn hình chỉnh sửa bản nháp đang xem.
-        openScreen(
-                HostEditListingFragment.newInstance(listingId)
-        );
     }
 
-    /**
-     * Mở màn hình xác thực và giữ chi tiết bài đăng trong back stack.
-     */
+    /** Đóng hộp thoại và gỡ listener trước khi giải phóng tham chiếu. */
+    private void closeSubmitDialog() {
+        AlertDialog dialog = submitDialog;
+
+        submitDialog = null;
+        submitDialogOwnerId = null;
+
+        if (dialog != null) {
+            dialog.setOnDismissListener(null);
+            dialog.dismiss();
+        }
+    }
+
+    /** Mở màn hình tiếp theo và giữ chi tiết bài đăng trong back stack. */
     private void openScreen(Fragment fragment) {
+        closeSubmitDialog();
+
         getParentFragmentManager()
                 .beginTransaction()
                 .setReorderingAllowed(true)
@@ -311,14 +483,28 @@ public class HostListingDetailFragment extends Fragment {
                 .commit();
     }
 
-    /**
-     * Gỡ listener, giải phóng ảnh và binding khi giao diện bị hủy.
-     */
+    /** Hiển thị thông báo khi giao diện vẫn còn hoạt động. */
+    private void showMessage(@Nullable String message) {
+        if (binding == null || !isAdded()) {
+            return;
+        }
+
+        Toast.makeText(
+                requireContext(),
+                message == null ? "Không thể xử lý bài đăng." : message,
+                Toast.LENGTH_LONG
+        ).show();
+    }
+
+    /** Đóng hộp thoại, gỡ listener và giải phóng ảnh, binding. */
     @Override
     public void onDestroyView() {
+        closeSubmitDialog();
+
         if (binding != null) {
             binding.btnListingDetailBack.setOnClickListener(null);
             binding.btnListingDetailEdit.setOnClickListener(null);
+            binding.btnListingDetailSubmit.setOnClickListener(null);
             binding.imgListingDetailRoom.setImageDrawable(null);
         }
 

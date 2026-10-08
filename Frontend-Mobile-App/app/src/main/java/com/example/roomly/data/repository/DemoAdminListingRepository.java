@@ -5,15 +5,20 @@ import androidx.annotation.Nullable;
 
 import com.example.roomly.BuildConfig;
 import com.example.roomly.data.model.AdminListing;
+import com.example.roomly.data.model.HostListing;
+import com.example.roomly.data.model.HostRoom;
+import com.example.roomly.data.model.RoomCard;
 import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.model.UserRole;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Quản lý bài đăng mẫu để thử giao diện admin.
- * Các thao tác chỉ thay đổi dữ liệu trong bộ nhớ.
+ * Quản lý kiểm duyệt bài đăng mẫu trong bộ nhớ.
+ * Tách dữ liệu công khai khỏi dữ liệu kiểm duyệt riêng tư.
  */
 public final class DemoAdminListingRepository {
 
@@ -22,26 +27,21 @@ public final class DemoAdminListingRepository {
 
     private final List<AdminListing> listings = new ArrayList<>();
 
+    // Giữ thông tin phòng tại thời điểm bài đăng được gửi duyệt.
+    private final Map<String, HostRoom> submittedRooms = new HashMap<>();
+
     private boolean demoDataInitialized;
 
-    /**
-     * Khởi tạo repository, chưa tạo dữ liệu khi chưa truy cập.
-     */
+    /** Chỉ cho phép sử dụng repository dùng chung. */
     private DemoAdminListingRepository() {
     }
 
-    /**
-     * Trả về repository dùng chung trong ứng dụng.
-     */
+    /** Trả về repository dùng chung. */
     public static DemoAdminListingRepository getInstance() {
         return INSTANCE;
     }
 
-    /**
-     * Lấy danh sách bài đăng theo trạng thái.
-     * Truyền null để lấy tất cả.
-     * Trả về danh sách trống nếu tài khoản không có quyền ADMIN.
-     */
+    /** Lấy danh sách kiểm duyệt theo trạng thái, chỉ dành cho admin. */
     @MainThread
     public List<AdminListing> getListings(
             @Nullable AdminListing.Status status
@@ -63,9 +63,7 @@ public final class DemoAdminListingRepository {
         return results;
     }
 
-    /**
-     * Lấy bài đăng theo mã sau khi kiểm tra quyền quản trị.
-     */
+    /** Lấy chi tiết bài đăng sau khi kiểm tra quyền admin. */
     @Nullable
     @MainThread
     public AdminListing getListingById(String listingId) {
@@ -86,9 +84,7 @@ public final class DemoAdminListingRepository {
         return null;
     }
 
-    /**
-     * Duyệt bài đăng đang chờ duyệt trong dữ liệu mẫu.
-     */
+    /** Duyệt bài đang chờ và chuyển sang trạng thái công khai. */
     @MainThread
     public AdminListing approveListing(String listingId) {
         return changeStatus(
@@ -99,14 +95,9 @@ public final class DemoAdminListingRepository {
         );
     }
 
-    /**
-     * Từ chối bài đăng đang chờ duyệt và yêu cầu nhập lý do.
-     */
+    /** Từ chối bài đang chờ, bắt buộc nhập lý do. */
     @MainThread
-    public AdminListing rejectListing(
-            String listingId,
-            String reason
-    ) {
+    public AdminListing rejectListing(String listingId, String reason) {
         return changeStatus(
                 listingId,
                 AdminListing.Status.PENDING,
@@ -115,14 +106,9 @@ public final class DemoAdminListingRepository {
         );
     }
 
-    /**
-     * Ẩn bài đăng đang hiển thị và yêu cầu nhập lý do.
-     */
+    /** Ẩn bài đang công khai, bắt buộc nhập lý do. */
     @MainThread
-    public AdminListing hideListing(
-            String listingId,
-            String reason
-    ) {
+    public AdminListing hideListing(String listingId, String reason) {
         return changeStatus(
                 listingId,
                 AdminListing.Status.PUBLISHED,
@@ -131,14 +117,9 @@ public final class DemoAdminListingRepository {
         );
     }
 
-    /**
-     * Khôi phục hiển thị bài đăng đã ẩn và yêu cầu nhập lý do.
-     */
+    /** Khôi phục bài đã ẩn, bắt buộc nhập lý do. */
     @MainThread
-    public AdminListing restoreListing(
-            String listingId,
-            String reason
-    ) {
+    public AdminListing restoreListing(String listingId, String reason) {
         return changeStatus(
                 listingId,
                 AdminListing.Status.HIDDEN,
@@ -147,10 +128,7 @@ public final class DemoAdminListingRepository {
         );
     }
 
-    /**
-     * Kiểm tra quyền và trạng thái hiện tại trước khi cập nhật.
-     * Không thay đổi thông tin phòng hoặc chủ sở hữu bài đăng.
-     */
+    /** Kiểm tra quyền và trạng thái mới nhất trước khi kiểm duyệt. */
     private AdminListing changeStatus(
             String listingId,
             AdminListing.Status expectedStatus,
@@ -163,28 +141,25 @@ public final class DemoAdminListingRepository {
             );
         }
 
-        AdminListing currentListing = getListingById(listingId);
+        AdminListing current = getListingById(listingId);
 
-        if (currentListing == null) {
-            throw new IllegalStateException(
-                    "Không tìm thấy bài đăng."
-            );
+        if (current == null) {
+            throw new IllegalStateException("Không tìm thấy bài đăng.");
         }
 
-        if (currentListing.getStatus() != expectedStatus) {
+        if (current.getStatus() != expectedStatus) {
             throw new IllegalStateException(
                     "Trạng thái bài đăng đã thay đổi. "
                             + "Hãy tải lại nội dung trước khi thao tác."
             );
         }
 
-        AdminListing updatedListing =
-                currentListing.withModeration(newStatus, reason);
+        AdminListing updated = current.withModeration(newStatus, reason);
 
         for (int index = 0; index < listings.size(); index++) {
             if (listings.get(index).getId().equals(listingId)) {
-                listings.set(index, updatedListing);
-                return updatedListing;
+                listings.set(index, updated);
+                return updated;
             }
         }
 
@@ -194,37 +169,218 @@ public final class DemoAdminListingRepository {
     }
 
     /**
-     * Kiểm tra phiên mới nhất có quyền ADMIN hay không.
+     * Nhận bản nháp của đúng chủ trọ vào hàng chờ.
+     * Giữ thông tin phòng để tạo dữ liệu công khai sau khi được duyệt.
      */
+    @MainThread
+    public AdminListing submitHostDraft(String listingId) {
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn()
+                || !session.hasRole(UserRole.HOST)
+                || !session.isEmailVerified()) {
+            throw new IllegalStateException(
+                    "Bạn cần quyền chủ trọ và email đã xác minh để gửi duyệt."
+            );
+        }
+
+        HostListing draft = DemoHostListingRepository.getInstance()
+                .getMyListingById(listingId);
+
+        if (draft == null) {
+            throw new IllegalStateException(
+                    "Không tìm thấy bản nháp thuộc tài khoản của bạn."
+            );
+        }
+
+        if (draft.getStatus() != HostListing.Status.DRAFT) {
+            throw new IllegalStateException(
+                    "Chỉ bản nháp mới có thể gửi duyệt."
+            );
+        }
+
+        HostRoom room = DemoHostRoomRepository.getInstance()
+                .getMyRoomById(draft.getRoomId());
+
+        if (room == null) {
+            throw new IllegalStateException(
+                    "Không tìm thấy phòng thuộc tài khoản của bạn."
+            );
+        }
+
+        if (!session.getUserId().equals(draft.getOwnerId())
+                || !draft.getOwnerId().equals(room.getOwnerId())) {
+            throw new IllegalStateException(
+                    "Chủ sở hữu bài đăng và phòng không khớp."
+            );
+        }
+
+        if (draft.getTitle() == null
+                || draft.getTitle().trim().isEmpty()
+                || draft.getMonthlyRent() <= 0
+                || draft.getDescription() == null
+                || draft.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Bạn cần hoàn thiện tiêu đề, giá thuê và nội dung."
+            );
+        }
+
+        initializeDemoData();
+
+        for (AdminListing existing : listings) {
+            if (existing.getId().equals(draft.getId())) {
+                throw new IllegalStateException(
+                        "Bài đăng này đã được gửi duyệt."
+                );
+            }
+        }
+
+        AdminListing submitted = new AdminListing(
+                draft.getId(),
+                draft.getOwnerId(),
+                draft.getRoomId(),
+                draft.getTitle(),
+                draft.getMonthlyRent(),
+                draft.getDescription(),
+                session.getFullName(),
+                room.getUnitCode(),
+                room.getAddress(),
+                room.getImageUri(),
+                AdminListing.Status.PENDING,
+                ""
+        );
+
+        submittedRooms.put(submitted.getId(), room);
+        listings.add(0, submitted);
+
+        return submitted;
+    }
+
+    /** Cho chủ trọ đọc kết quả kiểm duyệt của chính bài đăng mình. */
+    @Nullable
+    @MainThread
+    public AdminListing getMySubmittedListing(String listingId) {
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn()
+                || !session.hasRole(UserRole.HOST)
+                || listingId == null) {
+            return null;
+        }
+
+        for (AdminListing listing : listings) {
+            if (listingId.equals(listing.getId())
+                    && session.getUserId().equals(listing.getHostId())) {
+                return listing;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Trả về thông tin của các bài đang công khai.
+     * Không đưa lý do kiểm duyệt vào dữ liệu thẻ phòng.
+     */
+    @MainThread
+    public List<RoomCard> getPublishedRoomCards() {
+        initializeDemoData();
+
+        List<RoomCard> results = new ArrayList<>();
+
+        for (AdminListing listing : listings) {
+            if (listing.getStatus() == AdminListing.Status.PUBLISHED) {
+                results.add(toPublicRoomCard(listing));
+            }
+        }
+
+        return results;
+    }
+
+    /** Lấy một bài công khai theo ID mà không yêu cầu đăng nhập. */
+    @Nullable
+    @MainThread
+    public RoomCard getPublishedRoomCardById(String listingId) {
+        if (listingId == null || listingId.trim().isEmpty()) {
+            return null;
+        }
+
+        initializeDemoData();
+
+        for (AdminListing listing : listings) {
+            if (listingId.equals(listing.getId())
+                    && listing.getStatus()
+                    == AdminListing.Status.PUBLISHED) {
+                return toPublicRoomCard(listing);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Chuyển bài đã duyệt thành dữ liệu công khai.
+     * Diện tích lấy từ phòng đã lưu lúc gửi duyệt.
+     * Loại phòng sẽ được nối với biểu mẫu ở nhóm tiếp theo.
+     */
+    private RoomCard toPublicRoomCard(AdminListing listing) {
+        HostRoom room = submittedRooms.get(listing.getId());
+
+        String summary = room != null && room.getArea() != null
+                ? room.getFormattedArea()
+                : "Diện tích chưa cung cấp";
+
+        RoomCard card = new RoomCard(
+                listing.getTitle(),
+                listing.getFormattedPrice(),
+                listing.getAddress(),
+                summary,
+                0,
+                false,
+                RoomCard.RoomType.ROOM,
+                listing.getRoomId(),
+                listing.getHostId(),
+                listing.getUnitCode()
+        );
+
+        card.setListingId(listing.getId());
+        card.setImageUri(listing.getImageUri());
+        card.setMonthlyRent(listing.getMonthlyRent());
+        card.setDescription(listing.getDescription());
+        card.setHostName(listing.getHostName());
+
+        if (room != null) {
+            card.setArea(room.getArea());
+        }
+
+        return card;
+    }
+
+    /** Kiểm tra quyền admin từ phiên hiện tại. */
     private boolean hasAdminAccess() {
-        SessionState session =
-                SessionRepository.getInstance().getCurrentSession();
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
 
         return session.isLoggedIn()
                 && session.hasRole(UserRole.ADMIN);
     }
 
-    /**
-     * Kiểm tra lý do kiểm duyệt không được để trống.
-     */
+    /** Kiểm tra lý do kiểm duyệt không được để trống. */
     private String requireReason(@Nullable String reason) {
-        String cleanedReason = reason == null
-                ? ""
-                : reason.trim();
+        String cleaned = reason == null ? "" : reason.trim();
 
-        if (cleanedReason.isEmpty()) {
+        if (cleaned.isEmpty()) {
             throw new IllegalArgumentException(
                     "Bạn hãy nhập lý do kiểm duyệt."
             );
         }
 
-        return cleanedReason;
+        return cleaned;
     }
 
-    /**
-     * Tạo dữ liệu thử một lần trong bản debug.
-     * Tất cả tên, tài khoản và bài đăng bên dưới đều là dữ liệu mẫu.
-     */
+    /** Tạo các bài minh họa một lần trong bản debug. */
     private void initializeDemoData() {
         if (!BuildConfig.DEBUG || demoDataInitialized) {
             return;
@@ -235,7 +391,7 @@ public final class DemoAdminListingRepository {
                 "sample-host-01",
                 "sample-room-01",
                 "[Mẫu] Studio có ban công gần trường",
-                3500000L,
+                3_500_000L,
                 "Bài đăng mẫu để thử duyệt hoặc từ chối.\n"
                         + "Phòng có ban công, khu bếp và nội thất cơ bản.",
                 "Chủ trọ mẫu 01",
@@ -251,7 +407,7 @@ public final class DemoAdminListingRepository {
                 "sample-host-02",
                 "sample-room-02",
                 "[Mẫu] Phòng trọ đầy đủ nội thất",
-                2800000L,
+                2_800_000L,
                 "Bài đăng mẫu đang hiển thị để thử thao tác ẩn.\n"
                         + "Có điều hòa, chỗ để xe và khu vực giặt đồ.",
                 "Chủ trọ mẫu 02",
@@ -267,7 +423,7 @@ public final class DemoAdminListingRepository {
                 "sample-host-03",
                 "sample-room-03",
                 "[Mẫu] Căn hộ mini có bếp riêng",
-                4200000L,
+                4_200_000L,
                 "Bài đăng mẫu đã ẩn để thử khôi phục hiển thị.\n"
                         + "Có bếp riêng và khu vực sinh hoạt.",
                 "Chủ trọ mẫu 03",

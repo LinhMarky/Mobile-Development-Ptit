@@ -1,5 +1,6 @@
 package com.example.roomly.ui.explore;
 
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -15,83 +16,62 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Hiển thị danh sách thẻ phòng.
- * Gửi yêu cầu lưu hoặc bỏ lưu cho Fragment kiểm tra và xử lý.
+ * Hiển thị thẻ phòng và gửi yêu cầu lưu phòng cho Fragment xử lý.
  */
 public class RoomAdapter
         extends RecyclerView.Adapter<RoomAdapter.RoomViewHolder> {
 
-    // Danh sách hiển thị dùng chung các đối tượng phòng với repository.
     private final List<RoomCard> rooms = new ArrayList<>();
 
     private OnRoomClickListener onRoomClickListener;
     private OnSaveRequestListener onSaveRequestListener;
-
-    // Giữ tương thích với các màn hình đang đăng ký sự kiện này.
     private OnSaveChangedListener onSaveChangedListener;
 
     public interface OnRoomClickListener {
 
-        /**
-         * Thông báo phòng được chọn để mở màn hình chi tiết.
-         */
+        /** Thông báo phòng được chọn để mở chi tiết. */
         void onRoomClick(RoomCard room);
     }
 
     public interface OnSaveRequestListener {
 
-        /**
-         * Yêu cầu Fragment kiểm tra quyền và xử lý lưu hoặc bỏ lưu.
-         * Trạng thái của phòng chưa thay đổi khi hàm này được gọi.
-         */
+        /** Yêu cầu Fragment kiểm tra quyền trước khi đổi trạng thái lưu. */
         void onSaveRequest(RoomCard room);
     }
 
     public interface OnSaveChangedListener {
 
-        /**
-         * Thông báo trạng thái lưu đã được cập nhật.
-         */
+        /** Thông báo trạng thái lưu đã được cập nhật. */
         void onSaveChanged(RoomCard room);
     }
 
-    /**
-     * Sao chép danh sách ban đầu nhưng giữ chung các đối tượng phòng.
-     */
+    /** Sao chép danh sách nhưng giữ chung các đối tượng phòng. */
     public RoomAdapter(List<RoomCard> initialRooms) {
         rooms.addAll(initialRooms);
     }
 
-    /**
-     * Đăng ký xử lý thao tác bấm thẻ phòng.
-     */
+    /** Đăng ký thao tác mở chi tiết. */
     public void setOnRoomClickListener(
             @Nullable OnRoomClickListener listener
     ) {
         onRoomClickListener = listener;
     }
 
-    /**
-     * Đăng ký xử lý yêu cầu lưu hoặc bỏ lưu trước khi dữ liệu thay đổi.
-     */
+    /** Đăng ký xử lý yêu cầu lưu hoặc bỏ lưu. */
     public void setOnSaveRequestListener(
             @Nullable OnSaveRequestListener listener
     ) {
         onSaveRequestListener = listener;
     }
 
-    /**
-     * Đăng ký xử lý sau khi trạng thái lưu được cập nhật.
-     */
+    /** Đăng ký xử lý sau khi trạng thái lưu thay đổi. */
     public void setOnSaveChangedListener(
             @Nullable OnSaveChangedListener listener
     ) {
         onSaveChangedListener = listener;
     }
 
-    /**
-     * Tạo giao diện một thẻ phòng từ item_room.xml.
-     */
+    /** Tạo giao diện thẻ từ item_room.xml. */
     @NonNull
     @Override
     public RoomViewHolder onCreateViewHolder(
@@ -107,10 +87,7 @@ public class RoomAdapter
         return new RoomViewHolder(binding);
     }
 
-    /**
-     * Hiển thị phòng và đăng ký các thao tác trên thẻ.
-     * Luôn lấy vị trí hiện tại để tránh xử lý thẻ đã bị loại khỏi danh sách.
-     */
+    /** Hiển thị phòng và dùng vị trí hiện tại khi xử lý thao tác bấm. */
     @Override
     public void onBindViewHolder(
             @NonNull RoomViewHolder holder,
@@ -139,7 +116,6 @@ public class RoomAdapter
                 return;
             }
 
-            // Không tự đổi trạng thái lưu trong Adapter.
             if (onSaveRequestListener != null) {
                 onSaveRequestListener.onSaveRequest(
                         rooms.get(currentPosition)
@@ -148,31 +124,23 @@ public class RoomAdapter
         });
     }
 
-    /**
-     * Trả về số phòng đang hiển thị.
-     */
+    /** Trả về số phòng đang hiển thị. */
     @Override
     public int getItemCount() {
         return rooms.size();
     }
 
-    /**
-     * Cập nhật danh sách sau khi tìm kiếm hoặc lọc phòng.
-     * Sao chép danh sách đầu vào trước khi xóa dữ liệu hiện tại.
-     */
+    /** Cập nhật danh sách sau khi tìm kiếm hoặc lọc. */
     public void updateRooms(List<RoomCard> newRooms) {
-        List<RoomCard> updatedRooms = new ArrayList<>(newRooms);
+        List<RoomCard> updated = new ArrayList<>(newRooms);
 
         rooms.clear();
-        rooms.addAll(updatedRooms);
+        rooms.addAll(updated);
 
         notifyDataSetChanged();
     }
 
-    /**
-     * Cập nhật thẻ và thông báo sau khi Fragment đã đổi trạng thái lưu.
-     * Hàm này không tự lưu hoặc bỏ lưu phòng.
-     */
+    /** Cập nhật thẻ sau khi Fragment đã xử lý trạng thái lưu. */
     public void notifyRoomSaveChanged(RoomCard room) {
         int position = rooms.indexOf(room);
 
@@ -185,48 +153,70 @@ public class RoomAdapter
         }
     }
 
-    /**
-     * Gỡ sự kiện khi RecyclerView đưa thẻ vào vùng tái sử dụng.
-     */
+    /** Gỡ listener và ảnh khi thẻ được tái sử dụng. */
     @Override
     public void onViewRecycled(@NonNull RoomViewHolder holder) {
         holder.itemView.setOnClickListener(null);
         holder.binding.btnSaveRoom.setOnClickListener(null);
+        holder.binding.imgRoom.setImageDrawable(null);
 
         super.onViewRecycled(holder);
     }
 
-    /**
-     * Giữ các thành phần giao diện của một thẻ phòng.
-     */
+    /** Giữ các thành phần giao diện của một thẻ phòng. */
     static class RoomViewHolder extends RecyclerView.ViewHolder {
 
         private final ItemRoomBinding binding;
 
-        /**
-         * Khởi tạo ViewHolder bằng binding của thẻ phòng.
-         */
+        /** Khởi tạo ViewHolder bằng binding. */
         RoomViewHolder(ItemRoomBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
 
-        /**
-         * Hiển thị thông tin phòng và trạng thái trái tim hiện tại.
-         */
+        /** Hiển thị thông tin, ảnh và trạng thái trái tim. */
         void bind(RoomCard room) {
             binding.tvRoomTitle.setText(room.getTitle());
             binding.tvRoomPrice.setText(room.getPrice());
             binding.tvRoomAddress.setText(room.getAddress());
             binding.tvRoomAmenities.setText(room.getAmenities());
-            binding.imgRoom.setImageResource(room.getImageResId());
 
+            displayRoomImage(room);
             updateSaveButton(room);
         }
 
         /**
-         * Chọn icon và mô tả phù hợp với trạng thái lưu phòng.
+         * Ưu tiên ảnh URI và xóa ảnh thẻ cũ trước khi hiển thị.
+         * Nếu không có ảnh URI đọc được, dùng ảnh drawable khi có.
          */
+        private void displayRoomImage(RoomCard room) {
+            binding.imgRoom.setImageDrawable(null);
+
+            if (!room.getImageUri().trim().isEmpty()) {
+                try {
+                    binding.imgRoom.setImageURI(
+                            Uri.parse(room.getImageUri())
+                    );
+                } catch (
+                        SecurityException | IllegalArgumentException exception
+                ) {
+                    binding.imgRoom.setImageDrawable(null);
+                }
+            }
+
+            if (binding.imgRoom.getDrawable() == null
+                    && room.getImageResId() != 0) {
+                binding.imgRoom.setImageResource(room.getImageResId());
+            }
+
+            binding.imgRoom.setContentDescription(
+                    binding.imgRoom.getDrawable() == null
+                            ? "Phòng chưa có ảnh đọc được"
+                            : "Ảnh phòng " + room.getTitle()
+            );
+        }
+
+        /** Chọn icon và mô tả theo trạng thái lưu hiện tại. */
         private void updateSaveButton(RoomCard room) {
             binding.btnSaveRoom.setImageResource(
                     room.isSaved()
