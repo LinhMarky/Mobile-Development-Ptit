@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/roomly_background">
+
+    <LinearLayout
+        android:id="@+id/layout_handover_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/roomly_surface"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/btn_handover_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Quay lại"
+            android:padding="12dp"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/roomly_text_primary" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="Bàn giao phòng"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/layout_handover_header"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/tv_handover_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:accessibilityLiveRegion="polite"
+                android:padding="16dp"
+                android:textColor="@color/roomly_text_primary"
+                android:textSize="15sp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/layout_handover_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/roomly_primary_light"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:text="Bàn giao demo để kiểm tra giao diện. Các xác nhận chỉ lưu trong app, không thay thế biên bản bàn giao thực tế."
+                        android:textColor="@color/roomly_primary"
+                        android:textSize="13sp" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="@color/roomly_surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/roomly_border"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/tv_handover_booking_code"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/roomly_text_secondary"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tv_handover_room_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:textColor="@color/roomly_text_primary"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_handover_room_address"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textColor="@color/roomly_text_secondary"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tv_handover_move_in"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:textColor="@color/roomly_text_secondary"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="@color/roomly_surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/roomly_border"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Trạng thái bàn giao"
+                            android:textColor="@color/roomly_text_primary"
+                            android:textSize="17sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_handover_status"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:accessibilityLiveRegion="polite"
+                            android:background="@color/roomly_primary_light"
+                            android:padding="12dp"
+                            android:textColor="@color/roomly_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_handover_host_confirmation"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:textColor="@color/roomly_text_secondary"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tv_handover_tenant_confirmation"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:textColor="@color/roomly_text_secondary"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tv_handover_description"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:textColor="@color/roomly_text_secondary"
+                            android:textSize="13sp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="Kiểm tra trước khi xác nhận"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="• Tình trạng phòng và thiết bị\n• Chìa khóa và quyền ra vào\n• Chỉ số điện, nước ban đầu\n• Các khoản tiền và điều kiện đã thỏa thuận"
+                    android:textColor="@color/roomly_text_secondary"
+                    android:textSize="14sp" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/check_handover_acknowledgement"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:minHeight="48dp"
+                    android:text="Tôi đã kiểm tra thông tin và muốn xác nhận bàn giao demo."
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="14sp"
+                    android:visibility="gone"
+                    app:buttonTint="@color/roomly_primary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_handover_confirm"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:enabled="false"
+                    android:minHeight="48dp"
+                    android:text="Xác nhận bàn giao demo"
+                    android:textAllCaps="false"
+                    android:textColor="@color/roomly_surface"
+                    android:visibility="gone"
+                    app:backgroundTint="@color/roomly_primary"
+                    app:cornerRadius="12dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

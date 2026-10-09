@@ -1,10 +1,14 @@
 package com.example.roomly.data.model;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 /**
- * Dữ liệu hiển thị phòng trên các màn hình công khai.
- * Giữ định danh để liên kết bài đăng, phòng và chủ trọ.
+ * Dữ liệu phòng dùng cho giao diện.
  */
 public class RoomCard {
 
@@ -12,6 +16,42 @@ public class RoomCard {
         ROOM,
         APARTMENT,
         STUDIO
+    }
+
+    public enum Availability {
+        UNKNOWN,
+        AVAILABLE,
+        HELD,
+        RENTED
+    }
+
+    /**
+     * Một khoản phí của phòng.
+     */
+    public static final class Fee {
+
+        public final String name;
+        public final long amountVnd;
+        public final String unit;
+
+        public Fee(String name, long amountVnd, String unit) {
+            if (name == null
+                    || name.trim().isEmpty()
+                    || amountVnd < 0) {
+                throw new IllegalArgumentException(
+                        "Khoản phí không hợp lệ."
+                );
+            }
+
+            this.name = name.trim();
+            this.amountVnd = amountVnd;
+            this.unit = unit == null ? "" : unit.trim();
+        }
+
+        public String getDisplayAmount() {
+            return formatVnd(amountVnd)
+                    + (unit.isEmpty() ? "" : "/" + unit);
+        }
     }
 
     private String title;
@@ -32,12 +72,21 @@ public class RoomCard {
 
     private long monthlyRent;
 
-    // null nghĩa là chưa có dữ liệu diện tích.
+    // null: chưa cung cấp; 0: không yêu cầu cọc.
+    private Long depositVnd;
+
+    private Availability availability = Availability.UNKNOWN;
+
+    private final List<Fee> fees = new ArrayList<>();
+
+    // Bộ ảnh cho màn hình chi tiết.
+    private final List<RoomImage> images = new ArrayList<>();
+
+    // null nghĩa là chưa cung cấp diện tích.
     private BigDecimal area;
 
     private boolean saved;
 
-    /** Giữ constructor cũ với loại phòng mặc định. */
     public RoomCard(
             String title,
             String price,
@@ -47,12 +96,16 @@ public class RoomCard {
             boolean saved
     ) {
         this(
-                title, price, address, amenities,
-                imageResId, saved, RoomType.ROOM
+                title,
+                price,
+                address,
+                amenities,
+                imageResId,
+                saved,
+                RoomType.ROOM
         );
     }
 
-    /** Giữ constructor cũ chưa có định danh phòng và chủ trọ. */
     public RoomCard(
             String title,
             String price,
@@ -63,13 +116,19 @@ public class RoomCard {
             RoomType roomType
     ) {
         this(
-                title, price, address, amenities,
-                imageResId, saved, roomType,
-                "", "", ""
+                title,
+                price,
+                address,
+                amenities,
+                imageResId,
+                saved,
+                roomType,
+                "",
+                "",
+                ""
         );
     }
 
-    /** Khởi tạo thông tin thẻ cùng định danh phòng và chủ trọ. */
     public RoomCard(
             String title,
             String price,
@@ -88,139 +147,243 @@ public class RoomCard {
         this.amenities = cleanText(amenities);
         this.imageResId = imageResId;
         this.saved = saved;
-        this.roomType = roomType == null ? RoomType.ROOM : roomType;
+
+        this.roomType = roomType == null
+                ? RoomType.ROOM
+                : roomType;
 
         this.roomId = cleanText(roomId);
         this.ownerId = cleanText(ownerId);
         this.unitCode = cleanText(unitCode);
     }
 
-    /** Trả về tiêu đề bài đăng hoặc tên phòng. */
     public String getTitle() {
         return title;
     }
 
-    /** Trả về giá thuê đã định dạng. */
     public String getPrice() {
         return price;
     }
 
-    /** Trả về địa chỉ phòng. */
     public String getAddress() {
         return address;
     }
 
-    /** Trả về thông tin ngắn hiển thị trên thẻ. */
     public String getAmenities() {
         return amenities;
     }
 
-    /** Trả về mã ảnh drawable; 0 nghĩa là không có ảnh drawable. */
     public int getImageResId() {
         return imageResId;
     }
 
-    /** Trả về loại phòng dùng cho bộ lọc hiện tại. */
     public RoomType getRoomType() {
         return roomType;
     }
 
-    /** Trả về mã định danh phòng. */
     public String getRoomId() {
         return roomId;
     }
 
-    /** Trả về mã tài khoản chủ trọ. */
     public String getOwnerId() {
         return ownerId;
     }
 
-    /** Trả về mã phòng do chủ trọ đặt. */
     public String getUnitCode() {
         return unitCode;
     }
 
-    /** Trả về mã bài đăng liên kết với thẻ. */
     public String getListingId() {
         return listingId;
     }
 
-    /** Gán mã bài đăng từ nguồn dữ liệu công khai. */
     public void setListingId(String listingId) {
         this.listingId = cleanText(listingId);
     }
 
-    /** Trả về URI ảnh hoặc chuỗi trống khi chưa có ảnh. */
     public String getImageUri() {
         return imageUri;
     }
 
-    /** Gán URI ảnh phòng. */
     public void setImageUri(String imageUri) {
         this.imageUri = cleanText(imageUri);
     }
 
-    /** Trả về nội dung mô tả bài đăng. */
+    /**
+     * Trả về bộ ảnh.
+     * Nếu chưa có bộ ảnh riêng, dùng ảnh đơn hiện có.
+     */
+    public List<RoomImage> getImages() {
+        if (!images.isEmpty()) {
+            return Collections.unmodifiableList(
+                    new ArrayList<>(images)
+            );
+        }
+
+        List<RoomImage> fallback = new ArrayList<>();
+
+        if (!imageUri.isEmpty()) {
+            fallback.add(
+                    RoomImage.fromUri(
+                            imageUri,
+                            "Ảnh phòng " + title
+                    )
+            );
+        } else if (imageResId > 0) {
+            fallback.add(
+                    RoomImage.fromDrawable(
+                            imageResId,
+                            "Ảnh phòng " + title
+                    )
+            );
+        }
+
+        return Collections.unmodifiableList(fallback);
+    }
+
+    /**
+     * Gán bộ ảnh mà không thay đổi ảnh bìa của thẻ phòng.
+     * Danh sách null hoặc rỗng sẽ dùng ảnh đơn dự phòng.
+     */
+    public void setImages(List<RoomImage> values) {
+        List<RoomImage> copy = values == null
+                ? new ArrayList<>()
+                : new ArrayList<>(values);
+
+        if (copy.contains(null)) {
+            throw new IllegalArgumentException(
+                    "Ảnh phòng không được null."
+            );
+        }
+
+        images.clear();
+        images.addAll(copy);
+    }
+
     public String getDescription() {
         return description;
     }
 
-    /** Gán nội dung mô tả từ bài đăng được công khai. */
     public void setDescription(String description) {
         this.description = cleanText(description);
     }
 
-    /** Trả về tên chủ trọ được lưu cùng bài đăng. */
     public String getHostName() {
         return hostName;
     }
 
-    /** Gán tên chủ trọ từ nguồn dữ liệu bài đăng. */
     public void setHostName(String hostName) {
         this.hostName = cleanText(hostName);
     }
 
-    /** Cho biết thẻ đang được lưu hay chưa. */
     public boolean isSaved() {
         return saved;
     }
 
-    /** Cập nhật trạng thái lưu của thẻ. */
     public void setSaved(boolean saved) {
         this.saved = saved;
     }
 
-    /** Trả về giá thuê theo tháng bằng đồng Việt Nam. */
     public long getMonthlyRent() {
         return monthlyRent;
     }
 
-    /** Gán giá thuê dạng số để bộ lọc sử dụng. */
     public void setMonthlyRent(long monthlyRent) {
         this.monthlyRent = monthlyRent;
     }
 
-    /**
-     * Giữ getter diện tích số nguyên cho code bộ lọc đang dùng.
-     * Phần thập phân vẫn được giữ trong getArea().
-     */
+    public Long getDepositVnd() {
+        return depositVnd;
+    }
+
+    public void setDepositVnd(Long depositVnd) {
+        if (depositVnd != null && depositVnd < 0) {
+            throw new IllegalArgumentException(
+                    "Tiền cọc không được âm."
+            );
+        }
+
+        this.depositVnd = depositVnd;
+    }
+
+    public String getDepositLabel() {
+        if (depositVnd == null) {
+            return "Chưa cung cấp";
+        }
+
+        if (depositVnd == 0) {
+            return "Không yêu cầu cọc";
+        }
+
+        return formatVnd(depositVnd);
+    }
+
+    public Availability getAvailability() {
+        return availability;
+    }
+
+    public void setAvailability(Availability availability) {
+        this.availability = availability == null
+                ? Availability.UNKNOWN
+                : availability;
+    }
+
+    public String getAvailabilityLabel() {
+        switch (availability) {
+            case AVAILABLE:
+                return "Còn trống";
+
+            case HELD:
+                return "Đang giữ phòng";
+
+            case RENTED:
+                return "Đã cho thuê";
+
+            case UNKNOWN:
+            default:
+                return "Chưa cập nhật tình trạng";
+        }
+    }
+
+    public List<Fee> getFees() {
+        return Collections.unmodifiableList(fees);
+    }
+
+    public void setFees(List<Fee> values) {
+        List<Fee> copy = values == null
+                ? new ArrayList<>()
+                : new ArrayList<>(values);
+
+        if (copy.contains(null)) {
+            throw new IllegalArgumentException(
+                    "Khoản phí không được null."
+            );
+        }
+
+        fees.clear();
+        fees.addAll(copy);
+    }
+
+    public static String formatVnd(long amount) {
+        return NumberFormat
+                .getIntegerInstance(new Locale("vi", "VN"))
+                .format(amount) + " ₫";
+    }
+
     public int getAreaSquareMeters() {
         return area == null ? 0 : area.intValue();
     }
 
-    /** Giữ setter cũ cho các phòng minh họa có diện tích số nguyên. */
     public void setAreaSquareMeters(int areaSquareMeters) {
         area = areaSquareMeters > 0
                 ? BigDecimal.valueOf(areaSquareMeters)
                 : null;
     }
 
-    /** Trả về diện tích chính xác; null nghĩa là chưa có dữ liệu. */
     public BigDecimal getArea() {
         return area;
     }
 
-    /** Gán diện tích chính xác, giữ phần thập phân. */
     public void setArea(BigDecimal area) {
         this.area = area != null
                 && area.compareTo(BigDecimal.ZERO) > 0
@@ -228,7 +391,6 @@ public class RoomCard {
                 : null;
     }
 
-    /** Định dạng diện tích để hiển thị, ví dụ 28,5 m². */
     public String getFormattedArea() {
         if (area == null) {
             return "Chưa cung cấp";
@@ -240,8 +402,8 @@ public class RoomCard {
     }
 
     /**
-     * Làm mới dữ liệu hiển thị của cùng một bài đăng.
-     * Giữ nguyên định danh và trạng thái lưu.
+     * Cập nhật dữ liệu cùng một bài đăng.
+     * Giữ nguyên định danh và trạng thái đã lưu.
      */
     public void updateDisplayFrom(RoomCard incoming) {
         if (incoming == null
@@ -254,6 +416,10 @@ public class RoomCard {
             );
         }
 
+        // Sao chép trước để xử lý được cả incoming == this.
+        List<RoomImage> incomingImages =
+                new ArrayList<>(incoming.images);
+
         title = incoming.getTitle();
         price = incoming.getPrice();
         address = incoming.getAddress();
@@ -265,9 +431,14 @@ public class RoomCard {
         hostName = incoming.getHostName();
         monthlyRent = incoming.getMonthlyRent();
         area = incoming.getArea();
+
+        depositVnd = incoming.getDepositVnd();
+        availability = incoming.getAvailability();
+
+        setFees(incoming.getFees());
+        setImages(incomingImages);
     }
 
-    /** Chuẩn hóa chuỗi và xử lý giá trị null. */
     private String cleanText(String text) {
         return text == null ? "" : text.trim();
     }

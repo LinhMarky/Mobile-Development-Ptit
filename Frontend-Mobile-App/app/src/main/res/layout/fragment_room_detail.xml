@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/roomly_background">
 
-    <!-- Nội dung cuộn kết thúc phía trên vùng nút thao tác. -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_room_detail"
         android:layout_width="0dp"
@@ -24,7 +23,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Ảnh được gán trong Java; không dùng ảnh phòng mặc định. -->
+            <!-- Khung ảnh phòng. -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="280dp"
@@ -38,7 +37,25 @@
                     android:scaleType="centerCrop"
                     android:contentDescription="Ảnh chi tiết phòng" />
 
-                <!-- Nút quay lại đặt trên vùng ảnh. -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_detail_images"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"
+                    android:overScrollMode="never"
+                    android:nestedScrollingEnabled="false" />
+
+                <TextView
+                    android:id="@+id/tv_detail_no_images"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:padding="24dp"
+                    android:text="Phòng chưa có ảnh"
+                    android:textColor="@color/roomly_text_secondary"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
                 <androidx.appcompat.widget.AppCompatImageButton
                     android:id="@+id/btn_back"
                     android:layout_width="48dp"
@@ -52,9 +69,24 @@
                     android:contentDescription="Quay lại"
                     app:backgroundTint="@null" />
 
+                <TextView
+                    android:id="@+id/tv_detail_image_counter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/bg_favorite_button"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
             </FrameLayout>
 
-            <!-- Dữ liệu phòng được cập nhật từ bài đăng công khai. -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -71,18 +103,28 @@
                     android:textStyle="bold"
                     android:accessibilityHeading="true" />
 
-                <!-- Giá thuê theo tháng. -->
                 <TextView
                     android:id="@+id/tv_detail_price"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text=""
                     android:textColor="@color/roomly_primary"
                     android:textSize="22sp"
                     android:textStyle="bold" />
 
-                <!-- Địa chỉ kèm biểu tượng vị trí. -->
+                <TextView
+                    android:id="@+id/tv_detail_availability"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:padding="12dp"
+                    android:background="@color/roomly_primary_light"
+                    android:text="Chưa cập nhật tình trạng"
+                    android:textColor="@color/roomly_text_primary"
+                    android:textStyle="bold"
+                    android:textSize="14sp" />
+
+                <!-- Địa chỉ dạng chữ. -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -102,24 +144,20 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="8dp"
-                        android:text=""
                         android:textColor="@color/roomly_text_secondary"
                         android:textSize="14sp" />
 
                 </LinearLayout>
 
-                <!-- Thông tin ngắn về phòng, diện tích và tiện ích. -->
                 <TextView
                     android:id="@+id/tv_detail_amenities"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text=""
                     android:textColor="@color/roomly_text_primary"
                     android:textSize="14sp"
                     android:lineSpacingExtra="4dp" />
 
-                <!-- Mô tả lấy từ bài đăng được chọn. -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -140,108 +178,41 @@
                     android:textSize="14sp"
                     android:lineSpacingExtra="6dp" />
 
-                <!-- Không tự gán giá khi chưa có dữ liệu chi phí. -->
+                <TextView
+                    android:id="@+id/tv_detail_deposit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="Tiền cọc: Chưa cung cấp"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/roomly_text_primary" />
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="28dp"
-                    android:text="Chi phí khác"
-                    android:textColor="@color/roomly_text_primary"
+                    android:layout_marginTop="24dp"
+                    android:text="Các khoản phí"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:accessibilityHeading="true" />
+                    android:accessibilityHeading="true"
+                    android:textColor="@color/roomly_text_primary" />
 
-                <!-- Chi phí điện. -->
                 <LinearLayout
+                    android:id="@+id/layout_detail_fees"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="12dp"
+                    android:orientation="vertical" />
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Tiền điện"
-                        android:textColor="@color/roomly_text_secondary"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/tv_detail_electricity"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:gravity="end"
-                        android:text="Chưa cung cấp"
-                        android:textColor="@color/roomly_text_primary"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <!-- Chi phí nước. -->
-                <LinearLayout
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="12dp"
+                    android:text="Các khoản phí được liệt kê riêng, chưa cộng vào giá thuê tháng."
+                    android:textColor="@color/roomly_text_secondary"
+                    android:textSize="13sp" />
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Tiền nước"
-                        android:textColor="@color/roomly_text_secondary"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/tv_detail_water"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:gravity="end"
-                        android:text="Chưa cung cấp"
-                        android:textColor="@color/roomly_text_primary"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <!-- Chi phí Internet. -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Internet"
-                        android:textColor="@color/roomly_text_secondary"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/tv_detail_internet"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:gravity="end"
-                        android:text="Chưa cung cấp"
-                        android:textColor="@color/roomly_text_primary"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <!-- Thông tin người đăng bài. -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -301,54 +272,80 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Các nút cố định ở cuối màn hình, không che nội dung cuộn. -->
+    <!-- Hai thao tác phụ và một thao tác chính. -->
     <LinearLayout
         android:id="@+id/layout_detail_actions"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/roomly_surface"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_detail_message"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="12dp"
-            android:minHeight="48dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:text="Nhắn tin"
-            android:textAllCaps="false"
-            android:textColor="@color/roomly_primary"
-            android:textSize="14sp"
-            app:backgroundTint="@color/roomly_surface"
-            app:cornerRadius="12dp"
-            app:strokeColor="@color/roomly_primary"
-            app:strokeWidth="1dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_detail_message"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="12dp"
+                android:minHeight="48dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="Nhắn tin"
+                android:textAllCaps="false"
+                android:textColor="@color/roomly_primary"
+                android:textSize="14sp"
+                app:backgroundTint="@color/roomly_surface"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/roomly_primary"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_detail_schedule"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="48dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="Hẹn xem phòng"
+                android:textAllCaps="false"
+                android:textColor="@color/roomly_primary"
+                android:textSize="14sp"
+                app:backgroundTint="@color/roomly_surface"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/roomly_primary"
+                app:strokeWidth="1dp" />
+
+        </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_detail_schedule"
-            android:layout_width="0dp"
+            android:id="@+id/btn_detail_request_booking"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1.5"
+            android:layout_marginTop="12dp"
             android:minHeight="48dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:text="Đặt lịch xem phòng"
+            android:text="Yêu cầu thuê"
             android:textAllCaps="false"
             android:textColor="@color/roomly_surface"
-            android:textSize="14sp"
+            android:textSize="16sp"
+            android:enabled="false"
             app:backgroundTint="@color/roomly_primary"
             app:cornerRadius="12dp" />
 

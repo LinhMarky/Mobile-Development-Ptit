@@ -44,6 +44,15 @@ import com.example.roomly.ui.admin.AdminReportsFragment;
 import com.example.roomly.ui.admin.AdminReportDetailFragment;
 import com.example.roomly.ui.admin.AdminAccountsFragment;
 import com.example.roomly.ui.admin.AdminMetricsFragment;
+import com.example.roomly.ui.booking.BookingCreateFragment;
+import com.example.roomly.ui.booking.BookingsFragment;
+import com.example.roomly.ui.booking.BookingDetailFragment;
+import com.example.roomly.ui.booking.BookingPaymentFragment;
+import com.example.roomly.ui.booking.BookingHandoverFragment;
+import com.example.roomly.ui.booking.BookingReviewFragment;
+import com.example.roomly.ui.booking.HostBookingsFragment;
+import com.example.roomly.ui.booking.HostBookingDetailFragment;
+import com.example.roomly.ui.notification.NotificationsFragment;
 
 /**
  * Điều khiển màn hình chính và thanh điều hướng theo chế độ sử dụng.
@@ -370,7 +379,16 @@ public class MainActivity extends AppCompatActivity {
                         || currentFragment instanceof AdminReportsFragment
                         || currentFragment instanceof AdminReportDetailFragment
                         || currentFragment instanceof AdminAccountsFragment
-                        || currentFragment instanceof AdminMetricsFragment;
+                        || currentFragment instanceof AdminMetricsFragment
+                        || currentFragment instanceof BookingCreateFragment
+                        || currentFragment instanceof BookingsFragment
+                        || currentFragment instanceof BookingDetailFragment
+                        || currentFragment instanceof BookingPaymentFragment
+                        || currentFragment instanceof BookingHandoverFragment
+                        || currentFragment instanceof BookingReviewFragment
+                        || currentFragment instanceof HostBookingsFragment
+                        || currentFragment instanceof HostBookingDetailFragment
+                        || currentFragment instanceof NotificationsFragment;
 
         binding.bottomNav.setVisibility(
                 hideBottomNav ? View.GONE : View.VISIBLE

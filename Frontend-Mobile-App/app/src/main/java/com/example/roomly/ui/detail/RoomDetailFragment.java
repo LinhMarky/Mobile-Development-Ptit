@@ -1,25 +1,30 @@
 package com.example.roomly.ui.detail;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.PagerSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.roomly.R;
 import com.example.roomly.data.model.Conversation;
 import com.example.roomly.data.model.HostViewingSlot;
 import com.example.roomly.data.model.RoomCard;
+import com.example.roomly.data.model.RoomImage;
 import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.model.UserRole;
 import com.example.roomly.data.repository.DemoAdminListingRepository;
@@ -32,20 +37,18 @@ import com.example.roomly.databinding.BottomSheetBookAppointmentBinding;
 import com.example.roomly.databinding.FragmentRoomDetailBinding;
 import com.example.roomly.ui.auth.LoginFragment;
 import com.example.roomly.ui.auth.VerifyEmailFragment;
+import com.example.roomly.ui.booking.BookingCreateFragment;
 import com.example.roomly.ui.messages.ChatFragment;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Hiển thị dữ liệu chi tiết của bài đăng công khai.
- * Đọc lại bài đăng trước khi hiển thị hoặc thực hiện thao tác.
- */
 public class RoomDetailFragment extends Fragment {
 
     private static final String ARG_TITLE = "room_title";
@@ -63,17 +66,27 @@ public class RoomDetailFragment extends Fragment {
     private static final String ARG_HOST_NAME = "room_host_name";
     private static final String ARG_AREA = "room_area";
     private static final String ARG_MONTHLY_RENT = "room_monthly_rent";
+    private static final String ARG_DEPOSIT = "room_deposit";
+    private static final String ARG_AVAILABILITY = "room_availability";
+    private static final String ARG_FEES = "room_fees";
+    private static final String ARG_IMAGES = "room_images";
+
+    private static final String STATE_IMAGE_POSITION = "image_position";
 
     private FragmentRoomDetailBinding binding;
+
+    private RoomImageAdapter imageAdapter;
+    private LinearLayoutManager imageLayoutManager;
+    private PagerSnapHelper imageSnapHelper;
+    private RecyclerView.OnScrollListener imageScrollListener;
+
+    private int imagePosition;
+    private List<RoomImage> displayedImages = new ArrayList<>();
 
     private BottomSheetDialog bookingDialog;
     private AlertDialog slotDialog;
     private String bookingUserId;
 
-    /**
-     * Truyền ID bài đăng và thông tin dự phòng qua Bundle.
-     * Thông tin dự phòng dùng cho phòng minh họa chưa có bài đăng.
-     */
     public static RoomDetailFragment newInstance(RoomCard room) {
         RoomDetailFragment fragment = new RoomDetailFragment();
         Bundle args = new Bundle();
@@ -99,11 +112,55 @@ public class RoomDetailFragment extends Fragment {
             args.putString(ARG_AREA, room.getArea().toPlainString());
         }
 
+        if (room.getDepositVnd() != null) {
+            args.putLong(ARG_DEPOSIT, room.getDepositVnd());
+        }
+
+        args.putString(
+                ARG_AVAILABILITY,
+                room.getAvailability().name()
+        );
+
+        ArrayList<Bundle> feeBundles = new ArrayList<>();
+
+        for (RoomCard.Fee fee : room.getFees()) {
+            Bundle item = new Bundle();
+            item.putString("name", fee.name);
+            item.putLong("amount", fee.amountVnd);
+            item.putString("unit", fee.unit);
+            feeBundles.add(item);
+        }
+
+        args.putParcelableArrayList(ARG_FEES, feeBundles);
+
+        ArrayList<Bundle> imageBundles = new ArrayList<>();
+
+        for (RoomImage image : room.getImages()) {
+            Bundle item = new Bundle();
+            item.putInt("drawable", image.getDrawableResId());
+            item.putString("uri", image.getUri());
+            item.putString("description", image.getDescription());
+            imageBundles.add(item);
+        }
+
+        args.putParcelableArrayList(ARG_IMAGES, imageBundles);
+
         fragment.setArguments(args);
         return fragment;
     }
 
-    /** Tạo giao diện chi tiết phòng bằng ViewBinding. */
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            imagePosition = savedInstanceState.getInt(
+                    STATE_IMAGE_POSITION,
+                    0
+            );
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(
@@ -112,18 +169,22 @@ public class RoomDetailFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         binding = FragmentRoomDetailBinding.inflate(
-                inflater, container, false
+                inflater,
+                container,
+                false
         );
+
         return binding.getRoot();
     }
 
-    /** Đăng ký thao tác và theo dõi phiên trong lúc bảng đặt lịch mở. */
     @Override
     public void onViewCreated(
             @NonNull View view,
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
+
+        setupImageGallery();
 
         binding.btnBack.setOnClickListener(
                 clicked -> getParentFragmentManager().popBackStack()
@@ -137,40 +198,189 @@ public class RoomDetailFragment extends Fragment {
                 clicked -> openConversation()
         );
 
-        SessionRepository.getInstance().getSessionState().observe(
-                getViewLifecycleOwner(),
-                session -> {
-                    if (bookingDialog == null) {
-                        return;
-                    }
-
-                    SessionState current = SessionRepository.getInstance()
-                            .getCurrentSession();
-
-                    if (!current.isLoggedIn()
-                            || !current.hasRole(UserRole.TENANT)
-                            || !current.isEmailVerified()
-                            || bookingUserId == null
-                            || !bookingUserId.equals(current.getUserId())) {
-                        closeBookingDialog();
-                    }
-                }
+        binding.btnDetailRequestBooking.setOnClickListener(
+                clicked -> openBookingForm()
         );
+
+        SessionRepository.getInstance()
+                .getSessionState()
+                .observe(getViewLifecycleOwner(), session -> {
+                    if (bookingDialog != null) {
+                        SessionState current = SessionRepository
+                                .getInstance()
+                                .getCurrentSession();
+
+                        if (!current.isLoggedIn()
+                                || !current.hasRole(UserRole.TENANT)
+                                || !current.isEmailVerified()
+                                || bookingUserId == null
+                                || !bookingUserId.equals(current.getUserId())) {
+                            closeBookingDialog();
+                        }
+                    }
+
+                    displayRoomDetails();
+                });
 
         displayRoomDetails();
     }
 
-    /** Đọc lại bài đăng khi trở về từ một màn hình khác. */
     @Override
     public void onResume() {
         super.onResume();
         displayRoomDetails();
     }
 
-    /**
-     * Đọc dữ liệu mới nhất nếu phòng có ID bài đăng.
-     * Không dùng dữ liệu cũ khi bài đăng đã bị ẩn hoặc không còn tồn tại.
-     */
+    private void setupImageGallery() {
+        imageAdapter = new RoomImageAdapter();
+
+        imageLayoutManager = new LinearLayoutManager(
+                requireContext(),
+                LinearLayoutManager.HORIZONTAL,
+                false
+        );
+
+        binding.rvDetailImages.setLayoutManager(imageLayoutManager);
+        binding.rvDetailImages.setAdapter(imageAdapter);
+        binding.rvDetailImages.setItemAnimator(null);
+
+        imageSnapHelper = new PagerSnapHelper();
+        imageSnapHelper.attachToRecyclerView(binding.rvDetailImages);
+
+        imageScrollListener = new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(
+                    @NonNull RecyclerView recyclerView,
+                    int newState
+            ) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    rememberImagePosition();
+                    updateImageCounter();
+                }
+            }
+        };
+
+        binding.rvDetailImages.addOnScrollListener(
+                imageScrollListener
+        );
+    }
+
+    private void rememberImagePosition() {
+        if (imageLayoutManager == null || imageSnapHelper == null) {
+            return;
+        }
+
+        View snappedView = imageSnapHelper.findSnapView(
+                imageLayoutManager
+        );
+
+        if (snappedView != null) {
+            int position = imageLayoutManager.getPosition(
+                    snappedView
+            );
+
+            if (position != RecyclerView.NO_POSITION) {
+                imagePosition = position;
+            }
+        }
+    }
+
+    private void updateImageCounter() {
+        if (binding == null || imageAdapter == null) {
+            return;
+        }
+
+        int count = imageAdapter.getItemCount();
+
+        if (count == 0) {
+            binding.tvDetailImageCounter.setVisibility(View.GONE);
+            binding.tvDetailImageCounter.setText("");
+            return;
+        }
+
+        imagePosition = Math.max(
+                0,
+                Math.min(imagePosition, count - 1)
+        );
+
+        binding.tvDetailImageCounter.setText(
+                (imagePosition + 1) + "/" + count
+        );
+
+        binding.tvDetailImageCounter.setContentDescription(
+                "Ảnh " + (imagePosition + 1) + " trên " + count
+        );
+
+        binding.tvDetailImageCounter.setVisibility(View.VISIBLE);
+    }
+
+    private boolean sameImages(
+            List<RoomImage> first,
+            List<RoomImage> second
+    ) {
+        if (first.size() != second.size()) {
+            return false;
+        }
+
+        for (int index = 0; index < first.size(); index++) {
+            RoomImage a = first.get(index);
+            RoomImage b = second.get(index);
+
+            if (a.getDrawableResId() != b.getDrawableResId()
+                    || !a.getUri().equals(b.getUri())
+                    || !a.getDescription().equals(b.getDescription())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void displayRoomImages(RoomCard room) {
+        List<RoomImage> images = room.getImages();
+
+        binding.imgRoomDetail.setImageDrawable(null);
+        binding.imgRoomDetail.setVisibility(View.GONE);
+
+        boolean hasImages = !images.isEmpty();
+
+        binding.rvDetailImages.setVisibility(
+                hasImages ? View.VISIBLE : View.GONE
+        );
+
+        binding.tvDetailNoImages.setVisibility(
+                hasImages ? View.GONE : View.VISIBLE
+        );
+
+        binding.tvDetailNoImages.setText("Phòng chưa có ảnh");
+
+        if (!sameImages(displayedImages, images)) {
+            displayedImages = new ArrayList<>(images);
+            imageAdapter.submitImages(images);
+
+            imagePosition = images.isEmpty()
+                    ? 0
+                    : Math.max(
+                    0,
+                    Math.min(imagePosition, images.size() - 1)
+            );
+
+            imageLayoutManager.scrollToPositionWithOffset(
+                    imagePosition,
+                    0
+            );
+        }
+
+        updateImageCounter();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        rememberImagePosition();
+        outState.putInt(STATE_IMAGE_POSITION, imagePosition);
+        super.onSaveInstanceState(outState);
+    }
+
     @Nullable
     private RoomCard getCurrentRoom() {
         Bundle args = getArguments();
@@ -193,7 +403,7 @@ public class RoomDetailFragment extends Fragment {
                     args.getString(ARG_ROOM_TYPE, "ROOM")
             );
         } catch (IllegalArgumentException ignored) {
-            // Giữ loại phòng mặc định nếu Bundle có giá trị không hợp lệ.
+            // Giữ loại phòng mặc định.
         }
 
         RoomCard room = new RoomCard(
@@ -214,20 +424,95 @@ public class RoomDetailFragment extends Fragment {
         room.setHostName(args.getString(ARG_HOST_NAME, ""));
         room.setMonthlyRent(args.getLong(ARG_MONTHLY_RENT, 0));
 
+        if (args.containsKey(ARG_DEPOSIT)) {
+            room.setDepositVnd(args.getLong(ARG_DEPOSIT));
+        }
+
+        try {
+            room.setAvailability(
+                    RoomCard.Availability.valueOf(
+                            args.getString(ARG_AVAILABILITY, "UNKNOWN")
+                    )
+            );
+        } catch (IllegalArgumentException ignored) {
+            room.setAvailability(RoomCard.Availability.UNKNOWN);
+        }
+
+        ArrayList<Bundle> feeBundles =
+                args.getParcelableArrayList(ARG_FEES);
+
+        List<RoomCard.Fee> restoredFees = new ArrayList<>();
+
+        if (feeBundles != null) {
+            for (Bundle item : feeBundles) {
+                restoredFees.add(
+                        new RoomCard.Fee(
+                                item.getString("name", "Phí khác"),
+                                item.getLong("amount"),
+                                item.getString("unit", "")
+                        )
+                );
+            }
+        }
+
+        room.setFees(restoredFees);
+
+        ArrayList<Bundle> imageBundles =
+                args.getParcelableArrayList(ARG_IMAGES);
+
+        List<RoomImage> restoredImages = new ArrayList<>();
+
+        if (imageBundles != null) {
+            for (Bundle item : imageBundles) {
+                int drawable = item.getInt("drawable", 0);
+                String uri = item.getString("uri", "");
+                String description = item.getString(
+                        "description",
+                        "Ảnh phòng"
+                );
+
+                if (drawable > 0) {
+                    restoredImages.add(
+                            RoomImage.fromDrawable(
+                                    drawable,
+                                    description
+                            )
+                    );
+                } else if (!uri.isEmpty()) {
+                    restoredImages.add(
+                            RoomImage.fromUri(
+                                    uri,
+                                    description
+                            )
+                    );
+                }
+            }
+        }
+
+        room.setImages(restoredImages);
+
         String areaText = args.getString(ARG_AREA, "");
 
         if (!areaText.isEmpty()) {
             try {
                 room.setArea(new BigDecimal(areaText));
             } catch (NumberFormatException ignored) {
-                // Không tự tạo diện tích khi dữ liệu dự phòng không hợp lệ.
+                // Không tự tạo diện tích.
             }
         }
 
         return room;
     }
 
-    /** Hiển thị thông tin đúng theo bài đăng và xóa nội dung mẫu cố định. */
+    private boolean isOwnRoom(RoomCard room) {
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        return session.isLoggedIn()
+                && !room.getOwnerId().isEmpty()
+                && session.getUserId().equals(room.getOwnerId());
+    }
+
     private void displayRoomDetails() {
         if (binding == null) {
             return;
@@ -239,9 +524,6 @@ public class RoomDetailFragment extends Fragment {
             showUnavailableRoom();
             return;
         }
-
-        binding.btnDetailMessage.setEnabled(true);
-        binding.btnDetailSchedule.setEnabled(true);
 
         binding.tvDetailTitle.setText(room.getTitle());
         binding.tvDetailPrice.setText(room.getPrice());
@@ -265,46 +547,135 @@ public class RoomDetailFragment extends Fragment {
                         : room.getHostName()
         );
 
-        // Nguồn dữ liệu hiện chưa có các khoản phí này.
-        binding.tvDetailElectricity.setText("Chưa cung cấp");
-        binding.tvDetailWater.setText("Chưa cung cấp");
-        binding.tvDetailInternet.setText("Chưa cung cấp");
-
-        displayRoomImage(room);
-    }
-
-    /** Hiển thị ảnh phòng và dùng ảnh drawable nếu có. */
-    private void displayRoomImage(RoomCard room) {
-        binding.imgRoomDetail.setImageDrawable(null);
-
-        String imageUri = room.getImageUri();
-
-        if (!imageUri.isEmpty()) {
-            try {
-                binding.imgRoomDetail.setImageURI(Uri.parse(imageUri));
-            } catch (SecurityException | IllegalArgumentException ignored) {
-                binding.imgRoomDetail.setImageDrawable(null);
-            }
-        }
-
-        if (binding.imgRoomDetail.getDrawable() == null
-                && room.getImageResId() != 0) {
-            binding.imgRoomDetail.setImageResource(room.getImageResId());
-        }
-
-        binding.imgRoomDetail.setContentDescription(
-                binding.imgRoomDetail.getDrawable() == null
-                        ? "Phòng chưa có ảnh"
-                        : "Ảnh phòng " + room.getTitle()
+        binding.tvDetailAvailability.setText(
+                room.getAvailabilityLabel()
         );
+
+        binding.tvDetailDeposit.setText(
+                "Tiền cọc: " + room.getDepositLabel()
+        );
+
+        renderFees(room);
+        displayRoomImages(room);
+
+        boolean blocked = isViewingBlocked(room);
+        boolean ownRoom = isOwnRoom(room);
+
+        binding.btnDetailMessage.setEnabled(!ownRoom);
+        binding.btnDetailSchedule.setEnabled(!blocked && !ownRoom);
+
+        binding.btnDetailSchedule.setText(
+                blocked
+                        ? room.getAvailabilityLabel()
+                        : "Hẹn xem phòng"
+        );
+
+        boolean canRequest =
+                room.getAvailability() == RoomCard.Availability.AVAILABLE
+                        && !ownRoom;
+
+        binding.btnDetailRequestBooking.setEnabled(canRequest);
+
+        if (ownRoom) {
+            binding.btnDetailRequestBooking.setText(
+                    "Đây là phòng của bạn"
+            );
+        } else if (canRequest) {
+            binding.btnDetailRequestBooking.setText("Yêu cầu thuê");
+        } else {
+            binding.btnDetailRequestBooking.setText(
+                    room.getAvailabilityLabel()
+            );
+        }
+
+        if (blocked || ownRoom) {
+            closeBookingDialog();
+        }
     }
 
-    /** Xóa dữ liệu cũ và khóa thao tác khi bài đăng không còn công khai. */
+    /**
+     * Mở biểu mẫu xem trước.
+     * Chưa gửi booking nên cho phép khách thử giao diện.
+     */
+    private void openBookingForm() {
+        RoomCard room = getCurrentRoom();
+
+        if (room == null) {
+            displayRoomDetails();
+            return;
+        }
+
+        if (room.getAvailability() != RoomCard.Availability.AVAILABLE) {
+            showMessage(
+                    "Phòng chưa ở trạng thái còn trống."
+            );
+            displayRoomDetails();
+            return;
+        }
+
+        if (isOwnRoom(room)) {
+            showMessage(
+                    "Bạn không thể yêu cầu thuê phòng của mình."
+            );
+            return;
+        }
+
+        openScreen(BookingCreateFragment.newInstance(room));
+    }
+
+    private boolean isViewingBlocked(RoomCard room) {
+        return room.getAvailability() == RoomCard.Availability.HELD
+                || room.getAvailability() == RoomCard.Availability.RENTED;
+    }
+
+    private void renderFees(RoomCard room) {
+        binding.layoutDetailFees.removeAllViews();
+
+        if (room.getFees().isEmpty()) {
+            addFeeLine(
+                    "Chủ trọ chưa cung cấp thông tin các khoản phí."
+            );
+            return;
+        }
+
+        for (RoomCard.Fee fee : room.getFees()) {
+            addFeeLine(fee.name + ": " + fee.getDisplayAmount());
+        }
+    }
+
+    private void addFeeLine(String text) {
+        TextView line = new TextView(requireContext());
+
+        line.setText(text);
+        line.setTextSize(14);
+        line.setTextColor(
+                ContextCompat.getColor(
+                        requireContext(),
+                        R.color.roomly_text_primary
+                )
+        );
+
+        int padding = Math.round(
+                8 * getResources().getDisplayMetrics().density
+        );
+
+        line.setPadding(0, padding, 0, padding);
+        binding.layoutDetailFees.addView(line);
+    }
+
     private void showUnavailableRoom() {
         closeBookingDialog();
 
         binding.imgRoomDetail.setImageDrawable(null);
-        binding.imgRoomDetail.setContentDescription("Không có ảnh phòng");
+        binding.imgRoomDetail.setVisibility(View.GONE);
+        binding.rvDetailImages.setVisibility(View.GONE);
+        binding.tvDetailImageCounter.setVisibility(View.GONE);
+        binding.tvDetailNoImages.setVisibility(View.VISIBLE);
+        binding.tvDetailNoImages.setText("Bài đăng không còn hiển thị");
+
+        imageAdapter.submitImages(null);
+        displayedImages.clear();
+        imagePosition = 0;
 
         binding.tvDetailTitle.setText("Bài đăng không còn hiển thị");
         binding.tvDetailPrice.setText("");
@@ -317,15 +688,20 @@ public class RoomDetailFragment extends Fragment {
         );
 
         binding.tvDetailLandlordName.setText("Chưa cung cấp");
-        binding.tvDetailElectricity.setText("Chưa cung cấp");
-        binding.tvDetailWater.setText("Chưa cung cấp");
-        binding.tvDetailInternet.setText("Chưa cung cấp");
+        binding.tvDetailAvailability.setText(
+                "Bài đăng không còn hiển thị"
+        );
+        binding.tvDetailDeposit.setText("Tiền cọc: Chưa cung cấp");
+        binding.layoutDetailFees.removeAllViews();
 
+        binding.btnDetailSchedule.setText("Không thể đặt lịch");
         binding.btnDetailMessage.setEnabled(false);
         binding.btnDetailSchedule.setEnabled(false);
+
+        binding.btnDetailRequestBooking.setText("Không thể yêu cầu thuê");
+        binding.btnDetailRequestBooking.setEnabled(false);
     }
 
-    /** Kiểm tra đăng nhập, quyền người thuê và xác minh email. */
     private boolean checkViewingPermission() {
         SessionAccess.Result result =
                 SessionAccess.requireRole(UserRole.TENANT, true);
@@ -345,10 +721,13 @@ public class RoomDetailFragment extends Fragment {
         ) {
             showMessage("Bạn cần xác minh email để hẹn xem phòng.");
 
-            openScreen(VerifyEmailFragment.newInstance(
-                    SessionRepository.getInstance()
-                            .getCurrentSession().getEmail()
-            ));
+            openScreen(
+                    VerifyEmailFragment.newInstance(
+                            SessionRepository.getInstance()
+                                    .getCurrentSession()
+                                    .getEmail()
+                    )
+            );
 
         } else {
             showMessage("Tài khoản chưa có quyền người thuê.");
@@ -357,9 +736,9 @@ public class RoomDetailFragment extends Fragment {
         return false;
     }
 
-    /** Mở bảng gửi yêu cầu xem phòng theo khung giờ có sẵn. */
     private void showBookingDialog() {
-        if (binding == null || bookingDialog != null
+        if (binding == null
+                || bookingDialog != null
                 || !checkViewingPermission()) {
             return;
         }
@@ -368,6 +747,16 @@ public class RoomDetailFragment extends Fragment {
 
         if (room == null) {
             displayRoomDetails();
+            return;
+        }
+
+        if (isViewingBlocked(room)) {
+            showMessage(room.getAvailabilityLabel());
+            return;
+        }
+
+        if (isOwnRoom(room)) {
+            showMessage("Bạn không thể đặt lịch xem phòng của mình.");
             return;
         }
 
@@ -381,11 +770,6 @@ public class RoomDetailFragment extends Fragment {
 
         SessionState session = SessionRepository.getInstance()
                 .getCurrentSession();
-
-        if (session.getUserId().equals(room.getOwnerId())) {
-            showMessage("Bạn không thể đặt lịch xem phòng của mình.");
-            return;
-        }
 
         BottomSheetBookAppointmentBinding sheet =
                 BottomSheetBookAppointmentBinding.inflate(
@@ -415,6 +799,7 @@ public class RoomDetailFragment extends Fragment {
                         | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
                         | InputType.TYPE_TEXT_FLAG_MULTI_LINE
         );
+
         sheet.edtBookingNote.setImeOptions(EditorInfo.IME_ACTION_DONE);
 
         sheet.edtBookingNote.setOnEditorActionListener(
@@ -432,9 +817,8 @@ public class RoomDetailFragment extends Fragment {
             showSlotPicker(room, sheet, selectedSlotId);
         });
 
-        sheet.btnConfirmBooking.setOnClickListener(clicked ->
-                confirmBooking(
-                        room,
+        sheet.btnConfirmBooking.setOnClickListener(
+                clicked -> confirmBooking(
                         sheet,
                         dialog,
                         selectedSlotId[0],
@@ -458,13 +842,13 @@ public class RoomDetailFragment extends Fragment {
         dialog.show();
     }
 
-    /** Đọc khung giờ đang mở trước mỗi lần chọn. */
     private void showSlotPicker(
             RoomCard room,
             BottomSheetBookAppointmentBinding sheet,
             String[] selectedSlotId
     ) {
-        if (slotDialog != null || bookingDialog == null
+        if (slotDialog != null
+                || bookingDialog == null
                 || !bookingDialog.isShowing()) {
             return;
         }
@@ -492,9 +876,11 @@ public class RoomDetailFragment extends Fragment {
             HostViewingSlot slot = slots.get(index);
 
             labels[index] = formatTime(
-                    slot.getStartTimeMillis(), "dd/MM/yyyy HH:mm"
+                    slot.getStartTimeMillis(),
+                    "dd/MM/yyyy HH:mm"
             ) + " → " + formatTime(
-                    slot.getEndTimeMillis(), "dd/MM/yyyy HH:mm"
+                    slot.getEndTimeMillis(),
+                    "dd/MM/yyyy HH:mm"
             );
         }
 
@@ -510,10 +896,12 @@ public class RoomDetailFragment extends Fragment {
                             HostViewingSlot slot = slots.get(which);
                             selectedSlotId[0] = slot.getId();
 
-                            sheet.btnChooseDate.setText(formatTime(
-                                    slot.getStartTimeMillis(),
-                                    "dd/MM/yyyy"
-                            ));
+                            sheet.btnChooseDate.setText(
+                                    formatTime(
+                                            slot.getStartTimeMillis(),
+                                            "dd/MM/yyyy"
+                                    )
+                            );
 
                             sheet.btnChooseTime.setText(
                                     formatTime(
@@ -541,9 +929,7 @@ public class RoomDetailFragment extends Fragment {
         dialog.show();
     }
 
-    /** Kiểm tra lại tài khoản và gửi yêu cầu qua repository dùng chung. */
     private void confirmBooking(
-            RoomCard room,
             BottomSheetBookAppointmentBinding sheet,
             BottomSheetDialog dialog,
             @Nullable String slotId,
@@ -556,18 +942,33 @@ public class RoomDetailFragment extends Fragment {
         }
 
         String currentUserId = SessionRepository.getInstance()
-                .getCurrentSession().getUserId();
+                .getCurrentSession()
+                .getUserId();
 
         if (!requestingUserId.equals(currentUserId)) {
             closeBookingDialog();
-            showMessage("Tài khoản đã thay đổi. Hãy mở lại bảng đặt lịch.");
+            showMessage(
+                    "Tài khoản đã thay đổi. Hãy mở lại bảng đặt lịch."
+            );
+            return;
+        }
+
+        RoomCard room = getCurrentRoom();
+
+        if (room == null || isViewingBlocked(room) || isOwnRoom(room)) {
+            dialog.dismiss();
+            displayRoomDetails();
+            showMessage("Phòng không còn phù hợp để đặt lịch.");
             return;
         }
 
         hideBookingKeyboard(dialog, sheet.edtBookingNote);
 
         if (slotId == null || slotId.trim().isEmpty()) {
-            showBookingError(sheet, "Bạn hãy chọn khung giờ xem phòng.");
+            showBookingError(
+                    sheet,
+                    "Bạn hãy chọn khung giờ xem phòng."
+            );
             return;
         }
 
@@ -586,9 +987,12 @@ public class RoomDetailFragment extends Fragment {
         sheet.btnConfirmBooking.setEnabled(false);
 
         try {
-            DemoAppointmentRepository.getInstance().createRequest(
-                    room.getListingId(), slotId, note
-            );
+            DemoAppointmentRepository.getInstance()
+                    .createRequest(
+                            room.getListingId(),
+                            slotId,
+                            note
+                    );
 
             dialog.dismiss();
 
@@ -603,7 +1007,6 @@ public class RoomDetailFragment extends Fragment {
         }
     }
 
-    /** Hiển thị lý do chưa thể gửi yêu cầu xem phòng. */
     private void showBookingError(
             BottomSheetBookAppointmentBinding sheet,
             @Nullable String message
@@ -614,14 +1017,13 @@ public class RoomDetailFragment extends Fragment {
         sheet.tvBookingError.setVisibility(View.VISIBLE);
     }
 
-    /** Định dạng thời gian theo múi giờ hiện tại của thiết bị. */
     private String formatTime(long timeMillis, String pattern) {
         return new SimpleDateFormat(
-                pattern, new Locale("vi", "VN")
+                pattern,
+                new Locale("vi", "VN")
         ).format(new Date(timeMillis));
     }
 
-    /** Kiểm tra đăng nhập, bài đăng và chủ sở hữu trước khi mở chat. */
     private void openConversation() {
         if (SessionAccess.requireLogin()
                 != SessionAccess.Result.ALLOWED) {
@@ -637,26 +1039,25 @@ public class RoomDetailFragment extends Fragment {
             return;
         }
 
-        String userId = SessionRepository.getInstance()
-                .getCurrentSession().getUserId();
-
-        if (userId.equals(room.getOwnerId())) {
+        if (isOwnRoom(room)) {
             showMessage("Bạn không thể nhắn tin với chính mình.");
             return;
         }
 
         try {
-            Conversation conversation = DemoChatRepository.getInstance()
-                    .getOrCreateConversation(room);
+            Conversation conversation =
+                    DemoChatRepository.getInstance()
+                            .getOrCreateConversation(room);
 
-            openScreen(ChatFragment.newInstance(conversation.getId()));
+            openScreen(
+                    ChatFragment.newInstance(conversation.getId())
+            );
 
         } catch (IllegalArgumentException | IllegalStateException exception) {
             showMessage(exception.getMessage());
         }
     }
 
-    /** Mở màn hình mới và giữ chi tiết phòng trong back stack. */
     private void openScreen(Fragment fragment) {
         if (binding == null
                 || getParentFragmentManager().isStateSaved()) {
@@ -665,14 +1066,14 @@ public class RoomDetailFragment extends Fragment {
 
         closeBookingDialog();
 
-        getParentFragmentManager().beginTransaction()
+        getParentFragmentManager()
+                .beginTransaction()
                 .setReorderingAllowed(true)
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
     }
 
-    /** Đóng bàn phím của bảng đặt lịch và bỏ focus ô nhập. */
     private void hideBookingKeyboard(
             BottomSheetDialog dialog,
             View view
@@ -688,11 +1089,11 @@ public class RoomDetailFragment extends Fragment {
         }
 
         new WindowInsetsControllerCompat(
-                dialog.getWindow(), view
+                dialog.getWindow(),
+                view
         ).hide(WindowInsetsCompat.Type.ime());
     }
 
-    /** Đóng hộp thoại chọn khung giờ và gỡ listener. */
     private void closeSlotDialog() {
         if (slotDialog != null) {
             AlertDialog dialog = slotDialog;
@@ -702,7 +1103,6 @@ public class RoomDetailFragment extends Fragment {
         }
     }
 
-    /** Đóng bảng gửi yêu cầu cùng hộp thoại chọn khung giờ. */
     private void closeBookingDialog() {
         closeSlotDialog();
 
@@ -723,30 +1123,50 @@ public class RoomDetailFragment extends Fragment {
         bookingUserId = null;
     }
 
-    /** Hiển thị thông báo khi Fragment còn được gắn. */
     private void showMessage(@Nullable String message) {
         if (isAdded()) {
             Toast.makeText(
                     requireContext(),
-                    message == null ? "Không thể thực hiện thao tác." : message,
+                    message == null
+                            ? "Không thể thực hiện thao tác."
+                            : message,
                     Toast.LENGTH_LONG
             ).show();
         }
     }
 
-    /** Đóng hộp thoại và giải phóng tham chiếu giao diện. */
     @Override
     public void onDestroyView() {
         closeBookingDialog();
+        rememberImagePosition();
 
         if (binding != null) {
             binding.btnBack.setOnClickListener(null);
             binding.btnDetailSchedule.setOnClickListener(null);
             binding.btnDetailMessage.setOnClickListener(null);
+            binding.btnDetailRequestBooking.setOnClickListener(null);
+
+            if (imageScrollListener != null) {
+                binding.rvDetailImages.removeOnScrollListener(
+                        imageScrollListener
+                );
+            }
+
+            if (imageSnapHelper != null) {
+                imageSnapHelper.attachToRecyclerView(null);
+            }
+
+            binding.rvDetailImages.setAdapter(null);
             binding.imgRoomDetail.setImageDrawable(null);
         }
 
+        imageAdapter = null;
+        imageLayoutManager = null;
+        imageSnapHelper = null;
+        imageScrollListener = null;
+        displayedImages.clear();
         binding = null;
+
         super.onDestroyView();
     }
 }

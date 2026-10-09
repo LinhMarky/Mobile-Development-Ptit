@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/roomly_background">
+
+    <!-- Tiêu đề màn hình. -->
+    <LinearLayout
+        android:id="@+id/layout_bookings_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/roomly_surface"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/btn_bookings_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:padding="12dp"
+            android:contentDescription="Quay lại" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Yêu cầu thuê của tôi"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:accessibilityHeading="true" />
+
+    </LinearLayout>
+
+    <!-- Mô tả ngắn. -->
+    <TextView
+        android:id="@+id/tv_bookings_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="16dp"
+        android:text="Theo dõi yêu cầu thuê, giữ phòng và bàn giao. Lịch hẹn xem phòng được quản lý riêng."
+        android:textColor="@color/roomly_text_secondary"
+        android:textSize="14sp"
+        android:lineSpacingExtra="4dp"
+        app:layout_constraintTop_toBottomOf="@id/layout_bookings_header"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Danh sách yêu cầu thuê. -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_bookings"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:clipToPadding="false"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="20dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tv_bookings_description"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Trạng thái đang tải. -->
+    <ProgressBar
+        android:id="@+id/progress_bookings"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tv_bookings_description"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Trạng thái chưa có yêu cầu. -->
+    <LinearLayout
+        android:id="@+id/layout_bookings_empty"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/tv_bookings_description"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_calendar"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="Chưa có yêu cầu thuê"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Các yêu cầu thuê sẽ xuất hiện tại đây sau khi bạn tạo yêu cầu."
+            android:textColor="@color/roomly_text_secondary"
+            android:textSize="14sp"
+            android:lineSpacingExtra="4dp" />
+
+    </LinearLayout>
+
+    <!-- Trạng thái lỗi, dùng khi nối dữ liệu sau này. -->
+    <LinearLayout
+        android:id="@+id/layout_bookings_error"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tv_bookings_description"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tv_bookings_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Không thể tải danh sách yêu cầu thuê."
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="16sp"
+            android:accessibilityLiveRegion="polite" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_bookings_retry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:minHeight="48dp"
+            android:text="Thử lại"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_surface"
+            app:backgroundTint="@color/roomly_primary"
+            app:cornerRadius="12dp" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
