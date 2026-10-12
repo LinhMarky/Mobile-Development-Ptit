@@ -105,14 +105,25 @@ public final class BookingCaseDialogFragment extends DialogFragment {
                 "Loại vấn đề: " + bookingCase.getTypeLabel()
                         + "\nTrạng thái: " + bookingCase.getStatusLabel()
                         + "\nĐã gửi: " + bookingCase.getCreatedAtLabel()
-                        + "\n\n" + bookingCase.getDescription();
+                        + "\n\nMô tả:\n" + bookingCase.getDescription();
 
-        if (!bookingCase.getResolutionNote().isEmpty()) {
-            message += "\n\nKết quả xử lý: "
-                    + bookingCase.getResolutionNote();
+        if (!bookingCase.isOpen()) {
+            message += "\n\nKết luận: "
+                    + bookingCase.getDecisionLabel();
+
+            if (!bookingCase.getResolutionNote().isEmpty()) {
+                message += "\n\nGhi chú xử lý:\n"
+                        + bookingCase.getResolutionNote();
+            }
+
+            if (!bookingCase.getResolvedAtLabel().isEmpty()) {
+                message += "\n\nĐã xử lý: "
+                        + bookingCase.getResolvedAtLabel();
+            }
         }
 
-        message += "\n\nĐây là dữ liệu demo, chưa kết nối backend.";
+        message += "\n\nĐây là dữ liệu demo. "
+                + "Kết luận chưa thực hiện hoàn hoặc chuyển tiền cọc.";
 
         return new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Yêu cầu hỗ trợ hiện tại")
@@ -120,7 +131,6 @@ public final class BookingCaseDialogFragment extends DialogFragment {
                 .setPositiveButton("Đóng", null)
                 .create();
     }
-
     private Dialog createFormDialog(
             Booking booking,
             @Nullable Bundle savedInstanceState

@@ -316,9 +316,9 @@ public final class BookingReviewFragment extends Fragment {
                 ? ""
                 : binding.edtReviewComment.getText().toString().trim();
 
-        if (comment.codePointCount(0, comment.length()) > 1000) {
+        if (comment.codePointCount(0, comment.length()) > 2000) {
             binding.inputReviewComment.setError(
-                    "Nhận xét tối đa 1.000 ký tự."
+                    "Nhận xét tối đa 2.000 ký tự."
             );
             binding.edtReviewComment.requestFocus();
             return;

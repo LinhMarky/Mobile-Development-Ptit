@@ -15,6 +15,7 @@ import com.example.roomly.data.model.AppNotification;
 import com.example.roomly.data.repository.DemoNotificationRepository;
 import com.example.roomly.databinding.FragmentNotificationsBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.example.roomly.data.repository.SessionRepository;
 
 import java.util.List;
 
@@ -127,6 +128,10 @@ public final class NotificationsFragment extends Fragment {
             return;
         }
 
+        if (!checkNotificationAccess()) {
+            return;
+        }
+
         binding.progressNotifications.setVisibility(View.VISIBLE);
         binding.layoutNotificationsError.setVisibility(View.GONE);
         binding.layoutNotificationsEmpty.setVisibility(View.GONE);
@@ -178,9 +183,12 @@ public final class NotificationsFragment extends Fragment {
             }
         }
     }
-
     private void markAllAsRead() {
         if (binding == null) {
+            return;
+        }
+
+        if (!checkNotificationAccess()) {
             return;
         }
 
@@ -191,9 +199,12 @@ public final class NotificationsFragment extends Fragment {
             showError(exception);
         }
     }
-
     private void openNotification(AppNotification notification) {
         if (binding == null || !isAdded()) {
+            return;
+        }
+
+        if (!checkNotificationAccess()) {
             return;
         }
 
@@ -233,7 +244,6 @@ public final class NotificationsFragment extends Fragment {
             showError(exception);
         }
     }
-
     private void showError(RuntimeException exception) {
         if (binding == null) {
             return;
@@ -252,6 +262,44 @@ public final class NotificationsFragment extends Fragment {
 
         binding.tvNotificationsError.setText(message);
         binding.btnNotificationsMarkAllRead.setEnabled(false);
+    }
+
+    private boolean checkNotificationAccess() {
+        if (binding == null) {
+            return false;
+        }
+
+        boolean loggedIn = SessionRepository.getInstance()
+                .getCurrentSession()
+                .isLoggedIn();
+
+        if (loggedIn) {
+            return true;
+        }
+
+        if (notificationDialog != null) {
+            notificationDialog.setOnDismissListener(null);
+            notificationDialog.dismiss();
+            notificationDialog = null;
+        }
+
+        if (adapter != null) {
+            adapter.submitNotifications(java.util.Collections.emptyList());
+        }
+
+        binding.tvNotificationsUnreadCount.setText("Chưa đọc: 0");
+
+        showError(new IllegalStateException(
+                "Bạn cần đăng nhập để xem thông báo."
+        ));
+
+        return false;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadNotifications();
     }
 
     @Override

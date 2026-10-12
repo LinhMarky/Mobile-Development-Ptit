@@ -39,9 +39,9 @@ public final class BookingReview {
 
         if (normalizedComment.codePointCount(
                 0, normalizedComment.length()
-        ) > 1000) {
+        ) > 2000) {
             throw new IllegalArgumentException(
-                    "Nhận xét tối đa 1.000 ký tự."
+                    "Nhận xét tối đa 2.000 ký tự."
             );
         }
 

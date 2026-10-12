@@ -15,6 +15,9 @@ import com.example.roomly.data.model.BookingPayment;
 import com.example.roomly.data.repository.DemoBookingPaymentRepository;
 import com.example.roomly.data.repository.DemoBookingRepository;
 import com.example.roomly.databinding.FragmentBookingPaymentBinding;
+import com.example.roomly.data.model.SessionState;
+import com.example.roomly.data.model.UserRole;
+import com.example.roomly.data.repository.SessionRepository;
 
 public final class BookingPaymentFragment extends Fragment {
 
@@ -100,6 +103,10 @@ public final class BookingPaymentFragment extends Fragment {
             return;
         }
 
+        if (!checkPaymentAccess()) {
+            return;
+        }
+
         String bookingId = getBookingId();
 
         if (bookingId == null || bookingId.trim().isEmpty()) {
@@ -179,6 +186,10 @@ public final class BookingPaymentFragment extends Fragment {
             return;
         }
 
+        if (!checkPaymentAccess()) {
+            return;
+        }
+
         processing = true;
         updateProcessingUi();
 
@@ -200,6 +211,10 @@ public final class BookingPaymentFragment extends Fragment {
         if (!canPerformAction()
                 || currentPayment == null
                 || !currentPayment.canRetryDemo()) {
+            return;
+        }
+
+        if (!checkPaymentAccess()) {
             return;
         }
 
@@ -282,6 +297,35 @@ public final class BookingPaymentFragment extends Fragment {
                     Toast.LENGTH_LONG
             ).show();
         }
+    }
+
+    private boolean checkPaymentAccess() {
+        SessionState session =
+                SessionRepository.getInstance().getCurrentSession();
+
+        if (session.isLoggedIn()
+                && session.hasRole(UserRole.TENANT)) {
+            return true;
+        }
+
+        processing = false;
+
+        showError(
+                "Bạn cần đăng nhập bằng tài khoản Người thuê "
+                        + "để sử dụng thanh toán."
+        );
+
+        if (binding != null) {
+            binding.progressPayment.setVisibility(View.GONE);
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadPayment();
     }
 
     @Override

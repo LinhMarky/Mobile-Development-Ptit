@@ -196,7 +196,7 @@
                             app:boxCornerRadiusBottomStart="12dp"
                             app:boxCornerRadiusBottomEnd="12dp"
                             app:counterEnabled="true"
-                            app:counterMaxLength="1000"
+                            app:counterMaxLength="2000"
                             app:helperText="Chia sẻ về tình trạng phòng, tiện nghi và quá trình bàn giao.">
 
                             <com.google.android.material.textfield.TextInputEditText
