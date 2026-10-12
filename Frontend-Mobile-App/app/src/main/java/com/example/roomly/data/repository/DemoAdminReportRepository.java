@@ -10,12 +10,11 @@ import com.example.roomly.data.model.UserRole;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-/**
- * Quản lý báo cáo vi phạm mẫu cho giao diện admin.
- * Không thay đổi nội dung thật hoặc gửi dữ liệu đến backend.
- */
 public final class DemoAdminReportRepository {
 
     private static final DemoAdminReportRepository INSTANCE =
@@ -23,25 +22,114 @@ public final class DemoAdminReportRepository {
 
     private final List<AdminReport> reports = new ArrayList<>();
 
+    private final Map<String, String> reporterIds = new HashMap<>();
+
     private boolean initialized;
 
-    /**
-     * Khởi tạo repository, chưa tạo dữ liệu khi chưa truy cập.
-     */
     private DemoAdminReportRepository() {
     }
 
-    /**
-     * Trả về repository dùng chung.
-     */
     public static DemoAdminReportRepository getInstance() {
         return INSTANCE;
     }
 
-    /**
-     * Lấy báo cáo theo nhóm trạng thái.
-     * Null: tất cả; false: chưa xử lý; true: đã xử lý.
-     */
+    @MainThread
+    public AdminReport createListingReport(
+            String expectedUserId,
+            String listingId,
+            String listingTitle,
+            String contentPreview,
+            String reason,
+            String description
+    ) {
+        if (!BuildConfig.DEBUG) {
+            throw new IllegalStateException(
+                    "Chức năng báo cáo demo chỉ dùng trong bản debug."
+            );
+        }
+
+        SessionState session =
+                SessionRepository.getInstance().getCurrentSession();
+
+        if (!session.isLoggedIn()
+                || !normalize(session.getUserId()).equals(
+                requireText(expectedUserId, "Mã người gửi")
+        )) {
+            throw new IllegalStateException(
+                    "Phiên đăng nhập đã thay đổi. Vui lòng mở lại báo cáo."
+            );
+        }
+
+        if (!session.isEmailVerified()) {
+            throw new IllegalStateException(
+                    "Bạn cần xác minh email trước khi gửi báo cáo."
+            );
+        }
+
+        String targetId = requireText(listingId, "Mã bài đăng");
+        String title = requireText(listingTitle, "Tiêu đề bài đăng");
+        String cleanedReason = requireText(reason, "Lý do báo cáo");
+        String cleanedDescription = normalize(description);
+
+        if (cleanedDescription.codePointCount(
+                0, cleanedDescription.length()
+        ) > 2000) {
+            throw new IllegalArgumentException(
+                    "Mô tả không được vượt quá 2000 ký tự."
+            );
+        }
+
+        initializeDemoData();
+
+        String reportReason = cleanedReason;
+
+        if (!cleanedDescription.isEmpty()) {
+            reportReason += "\n\nMô tả: " + cleanedDescription;
+        }
+
+        AdminReport report = new AdminReport(
+                "DEMO-REPORT-" + UUID.randomUUID(),
+                AdminReport.ContentType.LISTING,
+                targetId,
+                title,
+                normalize(contentPreview),
+                session.getFullName(),
+                reportReason,
+                System.currentTimeMillis(),
+                AdminReport.Status.OPEN,
+                ""
+        );
+
+        reports.add(report);
+        reporterIds.put(report.getId(), session.getUserId());
+
+        return report;
+    }
+
+    @MainThread
+    public List<AdminReport> getMyReports() {
+        List<AdminReport> results = new ArrayList<>();
+
+        SessionState session =
+                SessionRepository.getInstance().getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            return results;
+        }
+
+        for (AdminReport report : reports) {
+            String reporterId = reporterIds.get(report.getId());
+
+            if (session.getUserId().equals(reporterId)) {
+                results.add(report);
+            }
+        }
+
+        sortNewestFirst(results);
+        return results;
+    }
+
+    // closed: null = tất cả, false = chưa xử lý, true = đã xử lý.
     @MainThread
     public List<AdminReport> getReports(@Nullable Boolean closed) {
         List<AdminReport> results = new ArrayList<>();
@@ -53,26 +141,18 @@ public final class DemoAdminReportRepository {
         initializeDemoData();
 
         for (AdminReport report : reports) {
-            boolean isClosed = report.getStatus()
-                    != AdminReport.Status.OPEN;
+            boolean isClosed =
+                    report.getStatus() != AdminReport.Status.OPEN;
 
             if (closed == null || closed.booleanValue() == isClosed) {
                 results.add(report);
             }
         }
 
-        results.sort(
-                Comparator.comparingLong(
-                        AdminReport::getCreatedAtMillis
-                ).reversed()
-        );
-
+        sortNewestFirst(results);
         return results;
     }
 
-    /**
-     * Lấy báo cáo theo mã sau khi kiểm tra quyền ADMIN.
-     */
     @Nullable
     @MainThread
     public AdminReport getReportById(String reportId) {
@@ -91,10 +171,6 @@ public final class DemoAdminReportRepository {
         return null;
     }
 
-    /**
-     * Ghi nhận kết quả xử lý báo cáo mẫu kèm ghi chú bắt buộc.
-     * Việc đóng báo cáo không tự động ẩn bài đăng, đánh giá hoặc tin nhắn.
-     */
     @MainThread
     public AdminReport resolveReport(
             String reportId,
@@ -121,13 +197,10 @@ public final class DemoAdminReportRepository {
             );
         }
 
-        String cleanedNote = note == null ? "" : note.trim();
-
-        if (cleanedNote.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Bạn hãy nhập ghi chú kết quả xử lý."
-            );
-        }
+        String cleanedNote = requireText(
+                note,
+                "Ghi chú kết quả xử lý"
+        );
 
         AdminReport.Status status = violationFound
                 ? AdminReport.Status.RESOLVED
@@ -148,9 +221,6 @@ public final class DemoAdminReportRepository {
         );
     }
 
-    /**
-     * Kiểm tra phiên mới nhất có quyền ADMIN hay không.
-     */
     private boolean hasAdminAccess() {
         SessionState session =
                 SessionRepository.getInstance().getCurrentSession();
@@ -159,10 +229,14 @@ public final class DemoAdminReportRepository {
                 && session.hasRole(UserRole.ADMIN);
     }
 
-    /**
-     * Tạo báo cáo thử một lần trong bản debug.
-     * Nội dung và người gửi đều là dữ liệu mẫu.
-     */
+    private void sortNewestFirst(List<AdminReport> items) {
+        items.sort(
+                Comparator.comparingLong(
+                        AdminReport::getCreatedAtMillis
+                ).reversed()
+        );
+    }
+
     private void initializeDemoData() {
         if (!BuildConfig.DEBUG || initialized) {
             return;
@@ -212,5 +286,21 @@ public final class DemoAdminReportRepository {
         ));
 
         initialized = true;
+    }
+
+    private static String requireText(String value, String fieldName) {
+        String cleaned = normalize(value);
+
+        if (cleaned.isEmpty()) {
+            throw new IllegalArgumentException(
+                    fieldName + " không được để trống."
+            );
+        }
+
+        return cleaned;
+    }
+
+    private static String normalize(String value) {
+        return value == null ? "" : value.trim();
     }
 }

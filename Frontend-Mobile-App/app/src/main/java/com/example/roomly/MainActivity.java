@@ -53,6 +53,8 @@ import com.example.roomly.ui.booking.BookingReviewFragment;
 import com.example.roomly.ui.booking.HostBookingsFragment;
 import com.example.roomly.ui.booking.HostBookingDetailFragment;
 import com.example.roomly.ui.notification.NotificationsFragment;
+import com.example.roomly.ui.report.MyReportsFragment;
+import com.example.roomly.ui.admin.AdminBookingCasesFragment;
 
 /**
  * Điều khiển màn hình chính và thanh điều hướng theo chế độ sử dụng.
@@ -388,7 +390,9 @@ public class MainActivity extends AppCompatActivity {
                         || currentFragment instanceof BookingReviewFragment
                         || currentFragment instanceof HostBookingsFragment
                         || currentFragment instanceof HostBookingDetailFragment
-                        || currentFragment instanceof NotificationsFragment;
+                        || currentFragment instanceof NotificationsFragment
+                        || currentFragment instanceof MyReportsFragment
+                        || currentFragment instanceof AdminBookingCasesFragment;
 
         binding.bottomNav.setVisibility(
                 hideBottomNav ? View.GONE : View.VISIBLE

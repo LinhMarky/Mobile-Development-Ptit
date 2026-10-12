@@ -282,6 +282,23 @@
                     app:backgroundTint="@color/roomly_primary"
                     app:cornerRadius="12dp" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_host_booking_case"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:minHeight="48dp"
+                    android:text="Yêu cầu hỗ trợ / Xem trạng thái"
+                    android:textAllCaps="false"
+                    android:textColor="@color/roomly_primary"
+                    android:textSize="14sp"
+                    android:visibility="gone"
+                    app:backgroundTint="@color/roomly_surface"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="@color/roomly_primary"
+                    app:strokeWidth="1dp" />
+
                 <LinearLayout
                     android:id="@+id/layout_host_booking_detail_actions"
                     android:layout_width="match_parent"

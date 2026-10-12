@@ -84,6 +84,10 @@ public final class HostBookingDetailFragment extends Fragment {
                 clickedView -> openHandover()
         );
 
+        binding.btnHostBookingCase.setOnClickListener(
+                clickedView -> openBookingCase()
+        );
+
         loadBooking();
     }
 
@@ -240,11 +244,56 @@ public final class HostBookingDetailFragment extends Fragment {
         binding.btnHostBookingHandover.setEnabled(
                 canOpenHandover && !processing && !openingHandover
         );
+
+        boolean canOpenCase = hasHostAccess() && booking.isDemo();
+
+        binding.btnHostBookingCase.setVisibility(
+                canOpenCase ? View.VISIBLE : View.GONE
+        );
+
+        binding.btnHostBookingCase.setEnabled(
+                canOpenCase && !processing && !openingHandover
+        );
     }
 
     private boolean isHandoverStatus(Booking booking) {
         return booking.getStatus() == Booking.Status.CONFIRMED
                 || booking.getStatus() == Booking.Status.COMPLETED;
+    }
+
+    private void openBookingCase() {
+        if (!canPerformAction() || reviewDialog != null) {
+            return;
+        }
+
+        if (!hasHostAccess()) {
+            loadBooking();
+            return;
+        }
+
+        Booking booking = DemoBookingRepository.getInstance()
+                .getBookingById(getBookingId());
+
+        if (booking == null || !booking.isDemo()) {
+            showError("Không tìm thấy yêu cầu thuê demo.");
+            return;
+        }
+
+        androidx.fragment.app.FragmentManager fragmentManager =
+                getChildFragmentManager();
+
+        if (fragmentManager.isStateSaved()
+                || fragmentManager.findFragmentByTag(
+                BookingCaseDialogFragment.TAG
+        ) != null) {
+            return;
+        }
+
+        BookingCaseDialogFragment.newInstance(booking.getId())
+                .showNow(
+                        fragmentManager,
+                        BookingCaseDialogFragment.TAG
+                );
     }
 
     private void openHandover() {
@@ -277,6 +326,7 @@ public final class HostBookingDetailFragment extends Fragment {
 
         openingHandover = true;
         binding.btnHostBookingHandover.setEnabled(false);
+        binding.btnHostBookingCase.setEnabled(false);
 
         getParentFragmentManager().beginTransaction()
                 .setReorderingAllowed(true)
@@ -394,6 +444,7 @@ public final class HostBookingDetailFragment extends Fragment {
 
         binding.btnHostBookingApprove.setEnabled(false);
         binding.btnHostBookingReject.setEnabled(false);
+        binding.btnHostBookingCase.setEnabled(false);
 
         if (reviewDialog != null) {
             reviewDialog.getButton(AlertDialog.BUTTON_POSITIVE)
@@ -475,6 +526,7 @@ public final class HostBookingDetailFragment extends Fragment {
             binding.btnHostBookingApprove.setOnClickListener(null);
             binding.btnHostBookingReject.setOnClickListener(null);
             binding.btnHostBookingHandover.setOnClickListener(null);
+            binding.btnHostBookingCase.setOnClickListener(null);
         }
 
         processing = false;

@@ -69,6 +69,9 @@ public class AdminDashboardFragment extends Fragment {
         binding.btnAdminMetrics.setOnClickListener(
                 clickedView -> openMetricsScreen()
         );
+        binding.btnAdminBookingCases.setOnClickListener(
+                clickedView -> openBookingCasesScreen()
+        );
         SessionRepository.getInstance()
                 .getSessionState()
                 .observe(
@@ -237,6 +240,43 @@ public class AdminDashboardFragment extends Fragment {
                 .commit();
     }
 
+    private void openBookingCasesScreen() {
+        if (binding == null
+                || !isAdded()
+                || getParentFragmentManager().isStateSaved()) {
+            return;
+        }
+
+        SessionState session =
+                SessionRepository.getInstance().getCurrentSession();
+
+        if (!session.isLoggedIn()
+                || !session.hasRole(UserRole.ADMIN)) {
+            renderSession(session);
+            return;
+        }
+
+        binding.btnAdminBookingCases.setEnabled(false);
+
+        getParentFragmentManager().beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(
+                        R.id.fragment_container,
+                        new AdminBookingCasesFragment()
+                )
+                .addToBackStack(null)
+                .commit();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (binding != null) {
+            binding.btnAdminBookingCases.setEnabled(true);
+        }
+    }
+
     /**
      * Gỡ các sự kiện và giải phóng binding khi giao diện bị hủy.
      */
@@ -248,6 +288,7 @@ public class AdminDashboardFragment extends Fragment {
             binding.btnAdminReports.setOnClickListener(null);
             binding.btnAdminAccounts.setOnClickListener(null);
             binding.btnAdminMetrics.setOnClickListener(null);
+            binding.btnAdminBookingCases.setOnClickListener(null);
         }
 
         binding = null;

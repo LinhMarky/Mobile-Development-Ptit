@@ -213,6 +213,20 @@
                     android:textColor="@color/roomly_text_secondary"
                     android:textSize="13sp" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_detail_report"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:layout_gravity="start"
+                    android:minHeight="48dp"
+                    android:text="Báo cáo bài đăng"
+                    android:textAllCaps="false"
+                    android:textColor="@color/roomly_text_secondary"
+                    android:textSize="14sp"
+                    app:cornerRadius="12dp" />
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

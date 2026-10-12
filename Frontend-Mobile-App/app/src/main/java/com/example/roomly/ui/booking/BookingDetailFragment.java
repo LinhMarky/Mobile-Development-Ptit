@@ -89,6 +89,10 @@ public final class BookingDetailFragment extends Fragment {
                 clickedView -> openReview()
         );
 
+        binding.btnBookingDetailCase.setOnClickListener(
+                clickedView -> openBookingCase()
+        );
+
         loadBooking();
     }
 
@@ -214,6 +218,20 @@ public final class BookingDetailFragment extends Fragment {
         renderPaymentSummary(booking);
         renderHandoverButton(booking);
         renderReviewButton(booking);
+
+        boolean canOpenCase = booking.isDemo() && hasTenantAccess();
+
+        binding.btnBookingDetailCase.setVisibility(
+                canOpenCase ? View.VISIBLE : View.GONE
+        );
+
+        binding.btnBookingDetailCase.setText(
+                "Yêu cầu hỗ trợ / Xem trạng thái"
+        );
+
+        binding.btnBookingDetailCase.setEnabled(
+                canOpenCase && !processing && !openingScreen
+        );
     }
 
     private void renderPaymentSummary(Booking booking) {
@@ -523,6 +541,7 @@ public final class BookingDetailFragment extends Fragment {
         binding.btnBookingDetailHandover.setEnabled(false);
         binding.btnBookingDetailReview.setEnabled(false);
         binding.btnBookingDetailCancel.setEnabled(false);
+        binding.btnBookingDetailCase.setEnabled(false);
 
         getParentFragmentManager().beginTransaction()
                 .setReorderingAllowed(true)
@@ -630,6 +649,7 @@ public final class BookingDetailFragment extends Fragment {
         }
 
         processing = true;
+        binding.btnBookingDetailCase.setEnabled(false);
 
         binding.btnBookingDetailCancel.setEnabled(false);
         binding.btnBookingDetailPayment.setEnabled(false);
@@ -714,6 +734,42 @@ public final class BookingDetailFragment extends Fragment {
         }
     }
 
+    private void openBookingCase() {
+        if (!canPerformAction()
+                || actionDialog != null
+                || !checkTenantAccess()) {
+            return;
+        }
+
+        Booking booking = getCurrentBooking();
+
+        if (booking == null) {
+            showError("Yêu cầu thuê không tồn tại.");
+            return;
+        }
+
+        if (!booking.isDemo()) {
+            showMessage("Chức năng hỗ trợ hiện chỉ dùng cho dữ liệu demo.");
+            return;
+        }
+
+        androidx.fragment.app.FragmentManager fragmentManager =
+                getChildFragmentManager();
+
+        if (fragmentManager.isStateSaved()
+                || fragmentManager.findFragmentByTag(
+                BookingCaseDialogFragment.TAG
+        ) != null) {
+            return;
+        }
+
+        BookingCaseDialogFragment.newInstance(booking.getId())
+                .showNow(
+                        fragmentManager,
+                        BookingCaseDialogFragment.TAG
+                );
+    }
+
     @Override
     public void onDestroyView() {
         closeActionDialog();
@@ -724,6 +780,7 @@ public final class BookingDetailFragment extends Fragment {
             binding.btnBookingDetailPayment.setOnClickListener(null);
             binding.btnBookingDetailHandover.setOnClickListener(null);
             binding.btnBookingDetailReview.setOnClickListener(null);
+            binding.btnBookingDetailCase.setOnClickListener(null);
         }
 
         processing = false;

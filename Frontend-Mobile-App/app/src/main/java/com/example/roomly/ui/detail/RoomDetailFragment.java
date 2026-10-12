@@ -41,6 +41,7 @@ import com.example.roomly.ui.booking.BookingCreateFragment;
 import com.example.roomly.ui.messages.ChatFragment;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.example.roomly.ui.report.ReportListingDialogFragment;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -200,6 +201,10 @@ public class RoomDetailFragment extends Fragment {
 
         binding.btnDetailRequestBooking.setOnClickListener(
                 clicked -> openBookingForm()
+        );
+
+        binding.btnDetailReport.setOnClickListener(
+                clicked -> openReportListingDialog()
         );
 
         SessionRepository.getInstance()
@@ -1135,6 +1140,78 @@ public class RoomDetailFragment extends Fragment {
         }
     }
 
+    private void openReportListingDialog() {
+        if (binding == null || !isAdded()) {
+            return;
+        }
+
+        SessionState session =
+                SessionRepository.getInstance().getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            openScreen(new LoginFragment());
+            return;
+        }
+
+        if (!session.isEmailVerified()) {
+            openScreen(
+                    VerifyEmailFragment.newInstance(session.getEmail())
+            );
+            return;
+        }
+
+        RoomCard room = getCurrentRoom();
+
+        if (room == null) {
+            Toast.makeText(
+                    requireContext(),
+                    "Không tìm thấy bài đăng.",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
+
+        String listingId = room.getListingId();
+
+        if (listingId == null || listingId.trim().isEmpty()) {
+            Toast.makeText(
+                    requireContext(),
+                    "Phòng minh họa này chưa có mã bài đăng. "
+                            + "Hãy thử với một bài đăng đã xuất bản.",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
+        androidx.fragment.app.FragmentManager fragmentManager =
+                getChildFragmentManager();
+
+        if (fragmentManager.isStateSaved()
+                || fragmentManager.findFragmentByTag(
+                ReportListingDialogFragment.TAG
+        ) != null) {
+            return;
+        }
+
+        String preview = room.getAddress() == null
+                ? ""
+                : room.getAddress();
+
+        if (room.getDescription() != null
+                && !room.getDescription().trim().isEmpty()) {
+            preview += "\n\n" + room.getDescription().trim();
+        }
+
+        ReportListingDialogFragment.newInstance(
+                listingId.trim(),
+                room.getTitle(),
+                preview.trim()
+        ).showNow(
+                fragmentManager,
+                ReportListingDialogFragment.TAG
+        );
+    }
+
     @Override
     public void onDestroyView() {
         closeBookingDialog();
@@ -1145,6 +1222,7 @@ public class RoomDetailFragment extends Fragment {
             binding.btnDetailSchedule.setOnClickListener(null);
             binding.btnDetailMessage.setOnClickListener(null);
             binding.btnDetailRequestBooking.setOnClickListener(null);
+            binding.btnDetailReport.setOnClickListener(null);
 
             if (imageScrollListener != null) {
                 binding.rvDetailImages.removeOnScrollListener(

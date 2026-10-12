@@ -31,6 +31,7 @@ import com.example.roomly.ui.booking.HostBookingsFragment;
 import com.example.roomly.ui.notification.NotificationsFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.example.roomly.ui.report.MyReportsFragment;
 
 public class ProfileFragment extends Fragment {
 
@@ -132,6 +133,10 @@ public class ProfileFragment extends Fragment {
 
         binding.btnEnableDemoSession.setOnClickListener(
                 view -> showDemoAccountDialog()
+        );
+
+        binding.btnProfileReports.setOnClickListener(
+                view -> openMyReportsScreen()
         );
 
         binding.btnEnableDemoAdminSession.setOnClickListener(view -> {
@@ -529,6 +534,18 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    private void openMyReportsScreen() {
+        SessionState session =
+                SessionRepository.getInstance().getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            openLoginScreen();
+            return;
+        }
+
+        openScreen(new MyReportsFragment());
+    }
+
     @Override
     public void onDestroyView() {
         closeDemoDialog();
@@ -545,6 +562,7 @@ public class ProfileFragment extends Fragment {
             binding.btnEnableDemoSession.setOnClickListener(null);
             binding.btnEnableDemoAdminSession.setOnClickListener(null);
             binding.btnDisableDemoSession.setOnClickListener(null);
+            binding.btnProfileReports.setOnClickListener(null);
         }
 
         binding = null;
