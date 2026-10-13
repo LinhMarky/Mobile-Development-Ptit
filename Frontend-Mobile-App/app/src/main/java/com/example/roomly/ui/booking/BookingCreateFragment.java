@@ -41,6 +41,7 @@ public final class BookingCreateFragment extends Fragment {
     private static final String ARG_DEPOSIT_VND = "booking_deposit_vnd";
     private static final String ARG_AVAILABILITY = "booking_availability";
     private static final String ARG_FEES = "booking_fees";
+    private static final String ARG_LISTING_ID = "booking_listing_id";
 
     private static final String STATE_MOVE_IN = "booking_move_in";
 
@@ -81,6 +82,7 @@ public final class BookingCreateFragment extends Fragment {
         }
 
         arguments.putString(ARG_ROOM_ID, roomId);
+        arguments.putString(ARG_LISTING_ID, room.getListingId());
         arguments.putString(ARG_OWNER_ID, room.getOwnerId());
         arguments.putString(ARG_TITLE, room.getTitle());
         arguments.putString(ARG_ADDRESS, room.getAddress());
@@ -143,6 +145,81 @@ public final class BookingCreateFragment extends Fragment {
     ) {
         super.onViewCreated(view, savedInstanceState);
 
+        final int initialPaddingLeft = view.getPaddingLeft();
+        final int initialPaddingTop = view.getPaddingTop();
+        final int initialPaddingRight = view.getPaddingRight();
+        final int initialPaddingBottom = view.getPaddingBottom();
+
+        final int[] previousKeyboardPadding = {-1};
+
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (root, insets) -> {
+                    int keyboardHeight = insets.getInsets(
+                            androidx.core.view.WindowInsetsCompat.Type.ime()
+                    ).bottom;
+
+                    int systemBarHeight = insets.getInsets(
+                            androidx.core.view.WindowInsetsCompat.Type.systemBars()
+                    ).bottom;
+
+                    boolean keyboardVisible = insets.isVisible(
+                            androidx.core.view.WindowInsetsCompat.Type.ime()
+                    );
+
+                    // Activity đã xử lý khoảng trống của thanh hệ thống.
+                    int keyboardPadding = keyboardVisible
+                            ? Math.max(0, keyboardHeight - systemBarHeight)
+                            : 0;
+
+                    root.setPadding(
+                            initialPaddingLeft,
+                            initialPaddingTop,
+                            initialPaddingRight,
+                            initialPaddingBottom + keyboardPadding
+                    );
+
+                    if (previousKeyboardPadding[0] != keyboardPadding) {
+                        previousKeyboardPadding[0] = keyboardPadding;
+
+                        if (keyboardVisible) {
+                            root.post(() -> {
+                                if (getView() != root) {
+                                    return;
+                                }
+
+                                View focusedView = root.findFocus();
+
+                                if (focusedView == null) {
+                                    return;
+                                }
+
+                                android.graphics.Rect rectangle =
+                                        new android.graphics.Rect();
+
+                                focusedView.getDrawingRect(rectangle);
+
+                                int extraSpace = Math.round(
+                                        24 * root.getResources()
+                                                .getDisplayMetrics().density
+                                );
+
+                                rectangle.bottom += extraSpace;
+
+                                focusedView.requestRectangleOnScreen(
+                                        rectangle,
+                                        true
+                                );
+                            });
+                        }
+                    }
+
+                    return insets;
+                }
+        );
+
+        androidx.core.view.ViewCompat.requestApplyInsets(view);
+
         binding.btnBookingBack.setOnClickListener(
                 clickedView ->
                         getParentFragmentManager().popBackStack()
@@ -164,7 +241,6 @@ public final class BookingCreateFragment extends Fragment {
         renderSummary();
         updateDateButton();
     }
-
     private void renderSummary() {
         Bundle arguments = getArguments();
 
@@ -311,6 +387,10 @@ public final class BookingCreateFragment extends Fragment {
             return;
         }
 
+        if (!checkCurrentListing()) {
+            return;
+        }
+
         binding.tvBookingError.setVisibility(View.GONE);
         binding.inputBookingOccupants.setError(null);
         binding.inputBookingNote.setError(null);
@@ -414,6 +494,103 @@ public final class BookingCreateFragment extends Fragment {
                 );
     }
 
+    private boolean checkCurrentListing() {
+        Bundle arguments = getArguments();
+
+        if (arguments == null) {
+            showFormError("Không tìm thấy thông tin phòng.");
+            return false;
+        }
+
+        String listingId = arguments.getString(ARG_LISTING_ID, "");
+
+        // Phòng demo có sẵn không có bài đăng kiểm duyệt liên kết.
+        if (listingId == null || listingId.trim().isEmpty()) {
+            return true;
+        }
+
+        RoomCard current =
+                com.example.roomly.data.repository
+                        .DemoAdminListingRepository.getInstance()
+                        .getPublishedRoomCardById(listingId);
+
+        String error = null;
+
+        if (current == null) {
+            error = "Bài đăng không còn hiển thị. "
+                    + "Bạn hãy quay lại Khám phá.";
+        } else if (
+                current.getAvailability() != RoomCard.Availability.AVAILABLE
+        ) {
+            error = "Phòng không còn ở trạng thái còn trống. "
+                    + "Bạn hãy quay lại chi tiết phòng.";
+        } else {
+            Long originalDeposit = arguments.containsKey(ARG_DEPOSIT_VND)
+                    ? arguments.getLong(ARG_DEPOSIT_VND)
+                    : null;
+
+            ArrayList<String> currentFees = new ArrayList<>();
+
+            for (RoomCard.Fee fee : current.getFees()) {
+                currentFees.add(
+                        fee.name + ": " + fee.getDisplayAmount()
+                );
+            }
+
+            ArrayList<String> originalFees =
+                    arguments.getStringArrayList(ARG_FEES);
+
+            if (originalFees == null) {
+                originalFees = new ArrayList<>();
+            }
+
+            boolean changed =
+                    !java.util.Objects.equals(
+                            current.getRoomId(),
+                            arguments.getString(ARG_ROOM_ID, "")
+                    )
+                            || !java.util.Objects.equals(
+                            current.getOwnerId(),
+                            arguments.getString(ARG_OWNER_ID, "")
+                    )
+                            || !java.util.Objects.equals(
+                            current.getTitle(),
+                            arguments.getString(ARG_TITLE, "")
+                    )
+                            || !java.util.Objects.equals(
+                            current.getAddress(),
+                            arguments.getString(ARG_ADDRESS, "")
+                    )
+                            || current.getMonthlyRent()
+                            != arguments.getLong(ARG_RENT_VND, 0)
+                            || !java.util.Objects.equals(
+                            current.getDepositVnd(),
+                            originalDeposit
+                    )
+                            || !currentFees.equals(originalFees);
+
+            if (changed) {
+                error = "Thông tin phòng hoặc chi phí thuê đã thay đổi. "
+                        + "Bạn hãy quay lại chi tiết phòng và mở yêu cầu mới.";
+            }
+        }
+
+        if (error == null) {
+            return true;
+        }
+
+        if (previewDialog != null) {
+            previewDialog.dismiss();
+            previewDialog = null;
+        }
+
+        setFormEnabled(false);
+        showFormError(error);
+        showMessage(error);
+
+        return false;
+    }
+
     private void createDemoRequest(
             long moveInMillis,
             int occupants,
@@ -423,6 +600,10 @@ public final class BookingCreateFragment extends Fragment {
                 || !isAdded()
                 || submitting
                 || getParentFragmentManager().isStateSaved()) {
+            return;
+        }
+
+        if (!checkCurrentListing()) {
             return;
         }
 

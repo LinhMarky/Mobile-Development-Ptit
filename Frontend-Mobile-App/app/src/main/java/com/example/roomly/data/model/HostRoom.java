@@ -7,10 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Thông tin phòng dùng cho giao diện chủ trọ.
- * Đây là mô hình giao diện, chưa phải DTO của API.
- */
 public class HostRoom {
 
     private final String id;
@@ -21,18 +17,11 @@ public class HostRoom {
     private final BigDecimal area;
     private final String description;
     private final String imageUri;
-
     private final RoomType roomType;
-
-    // Giá trị 0 nghĩa là dữ liệu cũ chưa cung cấp số người tối đa.
     private final int maxOccupants;
-
-    // Tên tiện ích dùng để thử giao diện, không phải amenity_ids của API.
     private final List<String> amenities;
+    private final RoomCard.Availability availability;
 
-    /**
-     * Giữ tương thích với cách tạo phòng chưa có ảnh.
-     */
     public HostRoom(
             String id,
             String ownerId,
@@ -43,21 +32,11 @@ public class HostRoom {
             String description
     ) {
         this(
-                id,
-                ownerId,
-                unitCode,
-                name,
-                address,
-                area,
-                description,
-                null
+                id, ownerId, unitCode, name, address,
+                area, description, null
         );
     }
 
-    /**
-     * Giữ tương thích với dữ liệu phòng cũ có ảnh.
-     * Số người tối đa chưa được cung cấp sẽ có giá trị 0.
-     */
     public HostRoom(
             String id,
             String ownerId,
@@ -69,24 +48,12 @@ public class HostRoom {
             String imageUri
     ) {
         this(
-                id,
-                ownerId,
-                unitCode,
-                name,
-                address,
-                area,
-                description,
-                imageUri,
-                RoomType.ROOM,
-                0,
-                Collections.emptyList()
+                id, ownerId, unitCode, name, address,
+                area, description, imageUri,
+                RoomType.ROOM, 0, Collections.emptyList()
         );
     }
 
-    /**
-     * Khởi tạo phòng với loại phòng, sức chứa và tiện ích.
-     * Sao chép danh sách để dữ liệu không bị đổi từ bên ngoài.
-     */
     public HostRoom(
             String id,
             String ownerId,
@@ -100,6 +67,28 @@ public class HostRoom {
             int maxOccupants,
             List<String> amenities
     ) {
+        this(
+                id, ownerId, unitCode, name, address,
+                area, description, imageUri,
+                roomType, maxOccupants, amenities,
+                RoomCard.Availability.AVAILABLE
+        );
+    }
+
+    public HostRoom(
+            String id,
+            String ownerId,
+            String unitCode,
+            String name,
+            String address,
+            BigDecimal area,
+            String description,
+            String imageUri,
+            RoomType roomType,
+            int maxOccupants,
+            List<String> amenities,
+            RoomCard.Availability availability
+    ) {
         this.id = id;
         this.ownerId = ownerId;
         this.unitCode = unitCode;
@@ -108,12 +97,13 @@ public class HostRoom {
         this.area = area;
         this.description = description == null ? "" : description;
         this.imageUri = imageUri;
-
-        this.roomType = roomType == null
-                ? RoomType.ROOM
-                : roomType;
-
+        this.roomType = roomType == null ? RoomType.ROOM : roomType;
         this.maxOccupants = maxOccupants;
+
+        // Không coi trạng thái chưa xác định là phòng còn trống.
+        this.availability = availability == null
+                ? RoomCard.Availability.UNKNOWN
+                : availability;
 
         List<String> copiedAmenities = new ArrayList<>();
 
@@ -135,51 +125,30 @@ public class HostRoom {
         this.amenities = Collections.unmodifiableList(copiedAmenities);
     }
 
-    /**
-     * Trả về mã định danh phòng.
-     */
     public String getId() {
         return id;
     }
 
-    /**
-     * Trả về mã tài khoản sở hữu phòng.
-     */
     public String getOwnerId() {
         return ownerId;
     }
 
-    /**
-     * Trả về mã phòng do chủ trọ nhập.
-     */
     public String getUnitCode() {
         return unitCode;
     }
 
-    /**
-     * Trả về tên phòng.
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * Trả về địa chỉ phòng.
-     */
     public String getAddress() {
         return address;
     }
 
-    /**
-     * Trả về diện tích theo mét vuông.
-     */
     public BigDecimal getArea() {
         return area;
     }
 
-    /**
-     * Định dạng diện tích mà vẫn giữ phần thập phân.
-     */
     public String getFormattedArea() {
         if (area == null) {
             return "Chưa cung cấp";
@@ -190,30 +159,18 @@ public class HostRoom {
                 .replace('.', ',') + " m²";
     }
 
-    /**
-     * Trả về mô tả phòng.
-     */
     public String getDescription() {
         return description;
     }
 
-    /**
-     * Trả về URI ảnh, hoặc null nếu chưa có ảnh.
-     */
     public String getImageUri() {
         return imageUri;
     }
 
-    /**
-     * Trả về loại phòng dùng cho giao diện và bộ lọc.
-     */
     public RoomType getRoomType() {
         return roomType;
     }
 
-    /**
-     * Chuyển loại phòng thành tên tiếng Việt.
-     */
     public String getRoomTypeLabel() {
         switch (roomType) {
             case APARTMENT:
@@ -228,17 +185,10 @@ public class HostRoom {
         }
     }
 
-    /**
-     * Trả về số người tối đa.
-     * Giá trị 0 nghĩa là dữ liệu cũ chưa cung cấp.
-     */
     public int getMaxOccupants() {
         return maxOccupants;
     }
 
-    /**
-     * Định dạng số người tối đa để hiển thị.
-     */
     public String getMaxOccupantsLabel() {
         if (maxOccupants <= 0) {
             return "Số người tối đa chưa cung cấp";
@@ -247,16 +197,10 @@ public class HostRoom {
         return "Tối đa " + maxOccupants + " người";
     }
 
-    /**
-     * Trả về danh sách tiện ích không cho phép sửa trực tiếp.
-     */
     public List<String> getAmenities() {
         return amenities;
     }
 
-    /**
-     * Ghép các tiện ích thành nội dung để hiển thị.
-     */
     public String getFormattedAmenities() {
         if (amenities.isEmpty()) {
             return "Chưa cung cấp tiện ích";
@@ -275,9 +219,6 @@ public class HostRoom {
         return result.toString();
     }
 
-    /**
-     * Tạo nội dung tóm tắt dùng trên thẻ phòng công khai.
-     */
     public String getDisplaySummary() {
         String summary = getRoomTypeLabel()
                 + " • " + getFormattedArea()
@@ -288,5 +229,26 @@ public class HostRoom {
         }
 
         return summary;
+    }
+
+    public RoomCard.Availability getAvailability() {
+        return availability;
+    }
+
+    public String getAvailabilityLabel() {
+        switch (availability) {
+            case AVAILABLE:
+                return "Còn trống";
+
+            case HELD:
+                return "Đang giữ chỗ";
+
+            case RENTED:
+                return "Đã cho thuê";
+
+            case UNKNOWN:
+            default:
+                return "Chưa xác định";
+        }
     }
 }

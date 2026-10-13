@@ -281,6 +281,11 @@ public class AdminListingDetailFragment extends Fragment {
 
         EditText reasonInput = new EditText(requireContext());
         reasonInput.setHint("Nhập lý do");
+        reasonInput.setFilters(
+                new android.text.InputFilter[]{
+                        new android.text.InputFilter.LengthFilter(500)
+                }
+        );
         reasonInput.setMinLines(3);
         reasonInput.setGravity(android.view.Gravity.TOP);
         reasonInput.setInputType(
@@ -337,8 +342,34 @@ public class AdminListingDetailFragment extends Fragment {
                     if (performModeration(action, reason)) {
                         dialog.dismiss();
                     } else {
-                        dialog.getButton(DialogInterface.BUTTON_POSITIVE)
-                                .setEnabled(true);
+                        String errorMessage = "Không thể thực hiện thao tác.";
+
+                        if (binding != null) {
+                            String displayedError = binding.tvAdminDetailError
+                                    .getText()
+                                    .toString()
+                                    .trim();
+
+                            if (!displayedError.isEmpty()) {
+                                errorMessage = displayedError;
+                            }
+                        }
+
+                        if (dialog.isShowing()) {
+                            dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+                                    .setEnabled(true);
+
+                            if (needsReason) {
+                                reasonInput.setError(errorMessage);
+                                reasonInput.requestFocus();
+                            }
+                        }
+
+                        Toast.makeText(
+                                requireContext(),
+                                errorMessage,
+                                Toast.LENGTH_LONG
+                        ).show();
                     }
                 });
     }

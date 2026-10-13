@@ -33,6 +33,31 @@ public final class DemoBookingRepository {
         );
     }
 
+    public synchronized boolean hasActiveBookingForRoom(String roomId) {
+        if (roomId == null || roomId.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Mã phòng không được để trống."
+            );
+        }
+
+        String normalizedRoomId = roomId.trim();
+
+        for (Booking booking : bookings) {
+            if (!normalizedRoomId.equals(booking.getRoomId())) {
+                continue;
+            }
+
+            Booking.Status status = booking.getStatus();
+
+            if (status == Booking.Status.APPROVED
+                    || status == Booking.Status.CONFIRMED) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public synchronized Booking getBookingById(String bookingId) {
         if (bookingId == null) {
             return null;
@@ -155,6 +180,23 @@ public final class DemoBookingRepository {
         );
     }
 
+    public synchronized boolean isRoomRented(String roomId) {
+        if (roomId == null || roomId.trim().isEmpty()) {
+            return false;
+        }
+
+        String normalizedRoomId = roomId.trim();
+
+        for (Booking booking : bookings) {
+            if (normalizedRoomId.equals(booking.getRoomId())
+                    && booking.getStatus() == Booking.Status.COMPLETED) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public Booking confirmDemoRequest(String bookingId) {
         String normalizedId = requireBookingId(bookingId);
 
@@ -243,12 +285,17 @@ public final class DemoBookingRepository {
 
                 requireDemoBooking(current);
 
+                Booking completed;
+
                 if (current.getStatus() == Booking.Status.COMPLETED) {
-                    return current;
+                    completed = current;
+                } else {
+                    completed = current.completeDemo();
+                    bookings.set(index, completed);
                 }
 
-                Booking completed = current.completeDemo();
-                bookings.set(index, completed);
+                DemoHostRoomRepository.getInstance()
+                        .markCompletedRoomAsRented(completed.getRoomId());
 
                 return completed;
             }

@@ -172,7 +172,19 @@ public class DemoRoomRepository {
      * Giữ trạng thái đã lưu khi cập nhật thẻ phòng.
      */
     public List<RoomCard> getRooms() {
-        List<RoomCard> results = new ArrayList<>(rooms);
+        List<RoomCard> results = new ArrayList<>();
+
+        // Xử lý cả các phòng demo có sẵn.
+        for (RoomCard room : rooms) {
+            if (DemoBookingRepository.getInstance()
+                    .isRoomRented(room.getRoomId())) {
+                room.setAvailability(RoomCard.Availability.RENTED);
+            }
+
+            if (room.getAvailability() != RoomCard.Availability.RENTED) {
+                results.add(room);
+            }
+        }
 
         List<RoomCard> published =
                 DemoAdminListingRepository.getInstance()

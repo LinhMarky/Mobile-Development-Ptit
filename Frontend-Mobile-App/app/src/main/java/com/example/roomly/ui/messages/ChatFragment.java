@@ -48,6 +48,8 @@ public class ChatFragment extends Fragment {
 
     // Giữ bản nháp khi chuyển sang đăng nhập hoặc xác minh email.
     private String messageDraft = "";
+    private String draftOwnerId = "";
+    private static final String STATE_DRAFT_OWNER = "chat_draft_owner";
 
     /**
      * Tạo màn hình chat với mã của hội thoại cần mở.
@@ -79,6 +81,10 @@ public class ChatFragment extends Fragment {
         if (savedInstanceState != null) {
             messageDraft = savedInstanceState.getString(
                     STATE_DRAFT,
+                    ""
+            );
+            draftOwnerId = savedInstanceState.getString(
+                    STATE_DRAFT_OWNER,
                     ""
             );
         }
@@ -117,7 +123,42 @@ public class ChatFragment extends Fragment {
         setupKeyboardInsets();
         setupActionButtons();
 
+        SessionRepository.getInstance()
+                .getSessionState()
+                .observe(
+                        getViewLifecycleOwner(),
+                        session -> displayConversation()
+                );
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
         displayConversation();
+    }
+
+    private void syncDraftOwner() {
+        if (binding == null) {
+            return;
+        }
+
+        com.example.roomly.data.model.SessionState session =
+                SessionRepository.getInstance().getCurrentSession();
+
+        String currentUserId = session.isLoggedIn()
+                ? session.getUserId()
+                : "";
+
+        if (currentUserId == null) {
+            currentUserId = "";
+        }
+
+        if (!currentUserId.equals(draftOwnerId)) {
+            messageDraft = "";
+            binding.edtChatMessage.setText("");
+            draftOwnerId = currentUserId;
+        }
     }
 
     /**
@@ -134,6 +175,8 @@ public class ChatFragment extends Fragment {
             return;
         }
 
+        syncDraftOwner();
+
         binding.edtChatMessage.setText(messageDraft);
         binding.edtChatMessage.setSelection(
                 binding.edtChatMessage.length()
@@ -146,12 +189,15 @@ public class ChatFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         if (binding != null) {
-            messageDraft = binding.edtChatMessage
-                    .getText()
-                    .toString();
+            syncDraftOwner();
+
+            messageDraft = binding.edtChatMessage.getText() == null
+                    ? ""
+                    : binding.edtChatMessage.getText().toString();
         }
 
         outState.putString(STATE_DRAFT, messageDraft);
+        outState.putString(STATE_DRAFT_OWNER, draftOwnerId);
 
         super.onSaveInstanceState(outState);
     }
@@ -252,32 +298,43 @@ public class ChatFragment extends Fragment {
             return;
         }
 
+        syncDraftOwner();
+
         Conversation conversation = conversationId == null
                 ? null
                 : DemoChatRepository.getInstance()
                 .getConversation(conversationId);
 
         if (conversation == null) {
+            messageDraft = "";
+            binding.edtChatMessage.setText("");
+
+            if (isAdded()) {
+                hideKeyboard();
+            }
+
             binding.tvChatContactName.setText("Hội thoại");
             binding.tvChatRoomTitle.setText("");
 
             binding.tvChatEmpty.setText(
-                    "Hội thoại mẫu không còn dữ liệu. "
-                            + "Bạn quay lại và mở Nhắn tin từ phòng nhé."
+                    "Hội thoại không còn dữ liệu hoặc tài khoản hiện tại "
+                            + "không có quyền truy cập."
             );
-
             binding.tvChatEmpty.setVisibility(View.VISIBLE);
 
             binding.edtChatMessage.setEnabled(false);
             binding.btnSendMessage.setEnabled(false);
 
             messageAdapter.updateMessages(new ArrayList<>());
-
             return;
         }
 
+        String currentUserId = SessionRepository.getInstance()
+                .getCurrentSession()
+                .getUserId();
+
         binding.tvChatContactName.setText(
-                conversation.getContactName()
+                conversation.getContactName(currentUserId)
         );
 
         binding.tvChatRoomTitle.setText(
@@ -304,9 +361,7 @@ public class ChatFragment extends Fragment {
                     messages.size() - 1
             );
         }
-    }
-
-    /**
+    }    /**
      * Kiểm tra quyền rồi lưu tin nhắn vào repository mẫu.
      * Chỉ xóa bản nháp khi lưu thành công và không gửi nội dung trống.
      */
@@ -344,6 +399,7 @@ public class ChatFragment extends Fragment {
 
         messageDraft = "";
         binding.edtChatMessage.setText("");
+
 
         displayConversation();
     }

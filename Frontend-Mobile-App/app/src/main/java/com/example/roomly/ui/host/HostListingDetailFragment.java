@@ -184,15 +184,25 @@ public class HostListingDetailFragment extends Fragment {
         );
 
         boolean draft = listing.getStatus() == HostListing.Status.DRAFT;
+        boolean rejected = listing.getStatus() == HostListing.Status.REJECTED;
+        boolean editable = draft || rejected;
+
+        binding.btnListingDetailEdit.setText(
+                rejected ? "Chỉnh sửa và gửi lại" : "Chỉnh sửa"
+        );
 
         binding.btnListingDetailEdit.setVisibility(
-                draft ? View.VISIBLE : View.GONE
+                editable ? View.VISIBLE : View.GONE
         );
+
         binding.btnListingDetailSubmit.setVisibility(
                 draft ? View.VISIBLE : View.GONE
         );
 
-        binding.btnListingDetailEdit.setEnabled(draft && room != null);
+        binding.btnListingDetailEdit.setEnabled(
+                editable && room != null && submitDialog == null
+        );
+
         binding.btnListingDetailSubmit.setEnabled(
                 draft && room != null && submitDialog == null
         );
@@ -276,13 +286,154 @@ public class HostListingDetailFragment extends Fragment {
 
     /** Mở chỉnh sửa sau khi kiểm tra lại bản nháp hiện tại. */
     private void handleEditListing() {
-        HostListing listing = requireEditableDraft();
+        if (binding == null
+                || submitDialog != null
+                || !isAdded()
+                || getParentFragmentManager().isStateSaved()) {
+            return;
+        }
 
-        if (listing != null) {
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            openScreen(new LoginFragment());
+            return;
+        }
+
+        if (!session.hasRole(UserRole.HOST)) {
+            displayListing();
+            showMessage("Tài khoản chưa có quyền chủ trọ.");
+            return;
+        }
+
+        HostListing listing = DemoHostListingRepository.getInstance()
+                .getMyListingById(listingId);
+
+        if (listing == null) {
+            displayListing();
+            return;
+        }
+
+        if (!session.isEmailVerified()) {
             openScreen(
-                    HostEditListingFragment.newInstance(listing.getId())
+                    VerifyEmailFragment.newInstance(session.getEmail())
+            );
+            return;
+        }
+
+        if (listing.getStatus() == HostListing.Status.REJECTED) {
+            showReopenRejectedDialog(listing);
+            return;
+        }
+
+        HostListing draft = requireEditableDraft();
+
+        if (draft != null) {
+            openScreen(
+                    HostEditListingFragment.newInstance(draft.getId())
             );
         }
+    }
+
+    private void showReopenRejectedDialog(HostListing listing) {
+        if (binding == null
+                || submitDialog != null
+                || !isAdded()
+                || getParentFragmentManager().isStateSaved()) {
+            return;
+        }
+
+        AlertDialog dialog =
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Chỉnh sửa bài bị từ chối?")
+                        .setMessage(
+                                "Bài đăng sẽ chuyển về Bản nháp, giữ nguyên "
+                                        + "nội dung và tiền cọc.\n\n"
+                                        + "Kết quả từ chối cũ sẽ được gỡ. "
+                                        + "Sau khi chỉnh sửa và lưu, bạn cần "
+                                        + "bấm Gửi duyệt để admin xem lại."
+                        )
+                        .setNegativeButton("Quay lại", null)
+                        .setPositiveButton("Chỉnh sửa", null)
+                        .create();
+
+        submitDialog = dialog;
+        submitDialogOwnerId = listing.getOwnerId();
+
+        dialog.setOnDismissListener(dismissedDialog -> {
+            if (submitDialog == dialog) {
+                submitDialog = null;
+                submitDialogOwnerId = null;
+
+                if (binding != null) {
+                    displayListing();
+                }
+            }
+        });
+
+        dialog.show();
+        displayListing();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setOnClickListener(clickedView -> {
+                    if (binding == null
+                            || submitDialog != dialog
+                            || !dialog.isShowing()
+                            || !dialog.getButton(
+                            AlertDialog.BUTTON_POSITIVE
+                    ).isEnabled()) {
+                        return;
+                    }
+
+                    SessionState session = SessionRepository.getInstance()
+                            .getCurrentSession();
+
+                    if (!session.isLoggedIn()
+                            || !session.hasRole(UserRole.HOST)
+                            || !session.isEmailVerified()
+                            || !session.getUserId().equals(submitDialogOwnerId)) {
+                        closeSubmitDialog();
+                        displayListing();
+                        showMessage("Phiên tài khoản đã thay đổi.");
+                        return;
+                    }
+
+                    if (getParentFragmentManager().isStateSaved()) {
+                        closeSubmitDialog();
+                        displayListing();
+                        return;
+                    }
+
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                            .setEnabled(false);
+
+                    try {
+                        HostListing draft =
+                                DemoHostListingRepository.getInstance()
+                                        .reopenRejectedListing(listingId);
+
+                        closeSubmitDialog();
+                        displayListing();
+
+                        if (draft != null
+                                && draft.getStatus() == HostListing.Status.DRAFT) {
+                            openScreen(
+                                    HostEditListingFragment.newInstance(
+                                            draft.getId()
+                                    )
+                            );
+                        } else {
+                            showMessage("Không thể mở bản nháp.");
+                        }
+                    } catch (
+                            IllegalArgumentException | IllegalStateException exception
+                    ) {
+                        closeSubmitDialog();
+                        displayListing();
+                        showMessage(exception.getMessage());
+                    }
+                });
     }
 
     /** Hỏi xác nhận trước khi chuyển bản nháp sang hàng chờ admin. */

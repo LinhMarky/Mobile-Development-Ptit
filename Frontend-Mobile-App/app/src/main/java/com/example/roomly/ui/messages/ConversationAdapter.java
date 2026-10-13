@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.roomly.data.model.Conversation;
+import com.example.roomly.data.model.SessionState;
+import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.ItemConversationBinding;
 
 import java.text.SimpleDateFormat;
@@ -15,9 +17,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Hiển thị danh sách hội thoại bằng item_conversation.xml.
- */
 public class ConversationAdapter
         extends RecyclerView.Adapter<
         ConversationAdapter.ConversationViewHolder> {
@@ -26,37 +25,37 @@ public class ConversationAdapter
             new ArrayList<>();
 
     private OnConversationClickListener clickListener;
+    private String currentUserId = "";
 
-    /**
-     * Nhận sự kiện người dùng chọn một hội thoại.
-     */
     public interface OnConversationClickListener {
-
-        /**
-         * Báo hội thoại được chọn cho màn hình danh sách.
-         */
         void onConversationClick(Conversation conversation);
     }
 
-    /**
-     * Nhận danh sách hội thoại ban đầu.
-     */
     public ConversationAdapter(List<Conversation> initialItems) {
-        conversations.addAll(initialItems);
+        refreshCurrentUser();
+
+        if (initialItems != null) {
+            conversations.addAll(initialItems);
+        }
     }
 
-    /**
-     * Đăng ký xử lý thao tác bấm vào hội thoại.
-     */
+    private void refreshCurrentUser() {
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        String userId = session.getUserId();
+
+        currentUserId = session.isLoggedIn() && userId != null
+                ? userId.trim()
+                : "";
+    }
+
     public void setOnConversationClickListener(
             OnConversationClickListener listener
     ) {
         clickListener = listener;
     }
 
-    /**
-     * Tạo giao diện cho một dòng hội thoại bằng ViewBinding.
-     */
     @NonNull
     @Override
     public ConversationViewHolder onCreateViewHolder(
@@ -73,9 +72,6 @@ public class ConversationAdapter
         return new ConversationViewHolder(binding);
     }
 
-    /**
-     * Hiển thị hội thoại và gắn thao tác mở cuộc trò chuyện.
-     */
     @Override
     public void onBindViewHolder(
             @NonNull ConversationViewHolder holder,
@@ -83,28 +79,31 @@ public class ConversationAdapter
     ) {
         Conversation conversation = conversations.get(position);
 
-        holder.bind(conversation);
+        holder.bind(conversation, currentUserId);
 
         holder.itemView.setOnClickListener(view -> {
-            if (clickListener != null) {
-                clickListener.onConversationClick(conversation);
+            int currentPosition = holder.getBindingAdapterPosition();
+
+            if (currentPosition != RecyclerView.NO_POSITION
+                    && clickListener != null) {
+                clickListener.onConversationClick(
+                        conversations.get(currentPosition)
+                );
             }
         });
     }
 
-    /**
-     * Trả về số hội thoại trong danh sách.
-     */
     @Override
     public int getItemCount() {
         return conversations.size();
     }
 
-    /**
-     * Thay danh sách và cập nhật giao diện.
-     */
     public void updateConversations(List<Conversation> newItems) {
-        List<Conversation> copy = new ArrayList<>(newItems);
+        List<Conversation> copy = newItems == null
+                ? new ArrayList<>()
+                : new ArrayList<>(newItems);
+
+        refreshCurrentUser();
 
         conversations.clear();
         conversations.addAll(copy);
@@ -112,9 +111,6 @@ public class ConversationAdapter
         notifyDataSetChanged();
     }
 
-    /**
-     * Giữ các thành phần giao diện của một dòng hội thoại.
-     */
     static class ConversationViewHolder
             extends RecyclerView.ViewHolder {
 
@@ -126,24 +122,21 @@ public class ConversationAdapter
                         new Locale("vi", "VN")
                 );
 
-        /**
-         * Khởi tạo ViewHolder với binding của dòng hội thoại.
-         */
         ConversationViewHolder(ItemConversationBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
 
-        /**
-         * Hiển thị ảnh phòng, người liên hệ và tin nhắn gần nhất.
-         */
-        void bind(Conversation conversation) {
+        void bind(
+                Conversation conversation,
+                String currentUserId
+        ) {
             binding.imgConversationRoom.setImageResource(
                     conversation.getRoomImageResId()
             );
 
             binding.tvConversationName.setText(
-                    conversation.getContactName()
+                    conversation.getContactName(currentUserId)
             );
 
             binding.tvConversationRoomTitle.setText(
@@ -151,7 +144,7 @@ public class ConversationAdapter
             );
 
             binding.tvConversationLastMessage.setText(
-                    conversation.getLastMessagePreview()
+                    conversation.getLastMessagePreview(currentUserId)
             );
 
             binding.tvConversationTime.setText(

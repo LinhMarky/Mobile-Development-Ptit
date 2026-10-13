@@ -212,6 +212,7 @@ public class HostCreateListingFragment extends Fragment {
         }
 
         clearErrors();
+        binding.inputListingDeposit.setError(null);
 
         SessionState session = SessionRepository.getInstance()
                 .getCurrentSession();
@@ -236,6 +237,29 @@ public class HostCreateListingFragment extends Fragment {
             return;
         }
 
+        String depositText = readText(binding.edtListingDeposit).trim();
+        Long depositVnd = null;
+
+        if (!depositText.isEmpty()) {
+            if (!depositText.matches("[0-9]+")) {
+                binding.inputListingDeposit.setError(
+                        "Tiền cọc phải là số nguyên không âm."
+                );
+                binding.edtListingDeposit.requestFocus();
+                return;
+            }
+
+            try {
+                depositVnd = Long.parseLong(depositText);
+            } catch (NumberFormatException exception) {
+                binding.inputListingDeposit.setError(
+                        "Số tiền cọc quá lớn. Bạn hãy nhập lại."
+                );
+                binding.edtListingDeposit.requestFocus();
+                return;
+            }
+        }
+
         hideKeyboard();
         binding.btnSaveListing.setEnabled(false);
 
@@ -248,6 +272,7 @@ public class HostCreateListingFragment extends Fragment {
                     roomId,
                     readText(binding.edtListingTitle),
                     monthlyRent,
+                    depositVnd,
                     readText(binding.edtListingDescription)
             );
 
@@ -267,9 +292,7 @@ public class HostCreateListingFragment extends Fragment {
                 binding.btnSaveListing.setEnabled(true);
             }
         }
-    }
-
-    /**
+    }    /**
      * Kiểm tra tiêu đề, giá thuê và nội dung bài đăng.
      * Xử lý cả trường hợp số nhập vượt phạm vi kiểu long.
      */

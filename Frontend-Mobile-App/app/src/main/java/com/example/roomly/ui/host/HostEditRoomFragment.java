@@ -624,9 +624,11 @@ public class HostEditRoomFragment extends Fragment {
         SessionState session = SessionRepository.getInstance()
                 .getCurrentSession();
 
+        HostRoom currentRoom = getAccessibleRoom();
+
         if (!session.isLoggedIn()
                 || !session.hasRole(UserRole.HOST)
-                || getAccessibleRoom() == null) {
+                || currentRoom == null) {
             renderAccess();
             return;
         }
@@ -648,42 +650,67 @@ public class HostEditRoomFragment extends Fragment {
         binding.progressEditRoom.setVisibility(View.VISIBLE);
 
         try {
+            boolean hasListing = false;
+
+            for (com.example.roomly.data.model.HostListing listing :
+                    com.example.roomly.data.repository
+                            .DemoHostListingRepository.getInstance()
+                            .getMyListings()) {
+                if (currentRoom.getId().equals(listing.getRoomId())) {
+                    hasListing = true;
+                    break;
+                }
+            }
+
             BigDecimal area = new BigDecimal(
                     readText(binding.edtEditRoomArea).replace(',', '.')
             );
 
-            DemoHostRoomRepository.getInstance().updateRoom(
-                    roomId,
-                    readText(binding.edtEditRoomName),
-                    readText(binding.edtEditRoomAddress),
-                    area,
-                    readText(binding.edtEditRoomDescription),
-                    selectedImageUri,
-                    selectedRoomType,
-                    Integer.parseInt(
-                            readText(binding.edtEditRoomMaxOccupants)
-                    ),
-                    new ArrayList<>(selectedAmenities)
-            );
+            HostRoom updatedRoom =
+                    DemoHostRoomRepository.getInstance().updateRoom(
+                            roomId,
+                            readText(binding.edtEditRoomName),
+                            readText(binding.edtEditRoomAddress),
+                            area,
+                            readText(binding.edtEditRoomDescription),
+                            selectedImageUri,
+                            selectedRoomType,
+                            Integer.parseInt(
+                                    readText(binding.edtEditRoomMaxOccupants)
+                            ),
+                            new ArrayList<>(selectedAmenities)
+                    );
+
+            String message;
+
+            // Repository trả lại đối tượng cũ nếu thông tin không đổi.
+            if (updatedRoom == currentRoom) {
+                message = "Thông tin phòng không thay đổi.";
+            } else if (hasListing) {
+                message = "Đã cập nhật phòng. Bài đăng ở trạng thái Bản nháp; "
+                        + "bạn cần gửi duyệt để hiển thị công khai.";
+            } else {
+                message = "Đã cập nhật phòng mẫu.";
+            }
 
             Toast.makeText(
                     requireContext(),
-                    "Đã cập nhật phòng mẫu.",
-                    Toast.LENGTH_SHORT
+                    message,
+                    Toast.LENGTH_LONG
             ).show();
 
             getParentFragmentManager().popBackStack();
+
         } catch (IllegalArgumentException | IllegalStateException exception) {
             showError(exception.getMessage());
+
         } finally {
             if (binding != null) {
                 binding.btnEditRoomSave.setEnabled(true);
                 binding.progressEditRoom.setVisibility(View.GONE);
             }
         }
-    }
-
-    /**
+    }    /**
      * Kiểm tra dữ liệu và đưa focus đến ô sai đầu tiên.
      */
     private boolean validateForm() {

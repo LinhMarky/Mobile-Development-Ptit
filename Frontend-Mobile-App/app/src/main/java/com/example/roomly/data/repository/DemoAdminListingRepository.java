@@ -216,13 +216,37 @@ public final class DemoAdminListingRepository {
             );
         }
 
-        if (draft.getTitle() == null
-                || draft.getTitle().trim().isEmpty()
-                || draft.getMonthlyRent() <= 0
-                || draft.getDescription() == null
-                || draft.getDescription().trim().isEmpty()) {
+        String title = draft.getTitle() == null
+                ? ""
+                : draft.getTitle().trim();
+
+        String description = draft.getDescription() == null
+                ? ""
+                : draft.getDescription().trim();
+
+        if (title.isEmpty() || title.length() > 150) {
             throw new IllegalArgumentException(
-                    "Bạn cần hoàn thiện tiêu đề, giá thuê và nội dung."
+                    "Tiêu đề phải có từ 1 đến 150 ký tự."
+            );
+        }
+
+        if (draft.getMonthlyRent() <= 0) {
+            throw new IllegalArgumentException(
+                    "Giá thuê phải lớn hơn 0."
+            );
+        }
+
+        if (description.isEmpty() || description.length() > 5000) {
+            throw new IllegalArgumentException(
+                    "Nội dung bài đăng phải có từ 1 đến 5000 ký tự."
+            );
+        }
+
+        Long depositVnd = draft.getDepositVnd();
+
+        if (depositVnd != null && depositVnd < 0) {
+            throw new IllegalArgumentException(
+                    "Tiền cọc không được nhỏ hơn 0."
             );
         }
 
@@ -234,15 +258,22 @@ public final class DemoAdminListingRepository {
                         "Bài đăng này đã được gửi duyệt."
                 );
             }
+
+            if (draft.getRoomId().equals(existing.getRoomId())) {
+                throw new IllegalStateException(
+                        "Phòng này đã có bài đăng trong dữ liệu kiểm duyệt."
+                );
+            }
         }
 
         AdminListing submitted = new AdminListing(
                 draft.getId(),
                 draft.getOwnerId(),
                 draft.getRoomId(),
-                draft.getTitle(),
+                title,
                 draft.getMonthlyRent(),
-                draft.getDescription(),
+                depositVnd,
+                description,
                 session.getFullName(),
                 room.getUnitCode(),
                 room.getAddress(),
@@ -255,6 +286,122 @@ public final class DemoAdminListingRepository {
         listings.add(0, submitted);
 
         return submitted;
+    }
+
+    @MainThread
+    public void returnRejectedListingToDraft(String listingId) {
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn()
+                || !session.hasRole(UserRole.HOST)
+                || !session.isEmailVerified()) {
+            throw new IllegalStateException(
+                    "Bạn cần quyền chủ trọ và email đã xác minh "
+                            + "để chỉnh sửa bài bị từ chối."
+            );
+        }
+
+        AdminListing submitted = getMySubmittedListing(listingId);
+
+        if (submitted == null) {
+            throw new IllegalStateException(
+                    "Không tìm thấy bài đăng thuộc tài khoản của bạn."
+            );
+        }
+
+        if (submitted.getStatus() != AdminListing.Status.REJECTED) {
+            throw new IllegalStateException(
+                    "Chỉ bài bị từ chối mới có thể chuyển về bản nháp."
+            );
+        }
+
+        HostListing listing = DemoHostListingRepository.getInstance()
+                .getMyListingById(listingId);
+
+        if (listing == null) {
+            throw new IllegalStateException(
+                    "Không tìm thấy dữ liệu bài đăng để chỉnh sửa."
+            );
+        }
+
+        HostRoom room = DemoHostRoomRepository.getInstance()
+                .getMyRoomById(listing.getRoomId());
+
+        if (room == null
+                || !session.getUserId().equals(room.getOwnerId())
+                || !room.getId().equals(submitted.getRoomId())) {
+            throw new IllegalStateException(
+                    "Phòng liên kết không còn thuộc tài khoản của bạn."
+            );
+        }
+
+        for (int index = 0; index < listings.size(); index++) {
+            if (submitted.getId().equals(listings.get(index).getId())) {
+                // Bản nháp gốc vẫn nằm trong repository của chủ trọ.
+                // Gỡ kết quả từ chối để có thể chỉnh sửa và gửi lại.
+                listings.remove(index);
+                submittedRooms.remove(submitted.getId());
+                return;
+            }
+        }
+
+        throw new IllegalStateException(
+                "Dữ liệu kiểm duyệt đã thay đổi. Bạn hãy mở lại bài đăng."
+        );
+    }
+
+    @MainThread
+    public void returnRoomListingsToDraft(String roomId) {
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn()
+                || !session.hasRole(UserRole.HOST)
+                || !session.isEmailVerified()) {
+            throw new IllegalStateException(
+                    "Bạn cần quyền chủ trọ và email đã xác minh "
+                            + "để cập nhật bài đăng liên quan."
+            );
+        }
+
+        HostRoom room = DemoHostRoomRepository.getInstance()
+                .getMyRoomById(roomId);
+
+        if (room == null) {
+            throw new IllegalStateException(
+                    "Không tìm thấy phòng thuộc tài khoản của bạn."
+            );
+        }
+
+        if (DemoBookingRepository.getInstance()
+                .hasActiveBookingForRoom(room.getId())) {
+            throw new IllegalStateException(
+                    "Không thể cập nhật bài đăng khi phòng có yêu cầu thuê "
+                            + "đã được duyệt hoặc xác nhận."
+            );
+        }
+
+        // Kiểm tra trước khi thay đổi dữ liệu.
+        for (AdminListing listing : listings) {
+            if (room.getId().equals(listing.getRoomId())
+                    && !session.getUserId().equals(listing.getHostId())) {
+                throw new IllegalStateException(
+                        "Chủ sở hữu bài đăng và phòng không khớp."
+                );
+            }
+        }
+
+        // Bản nháp gốc và tiền cọc vẫn ở repository của chủ trọ.
+        // Gỡ bản kiểm duyệt cũ để bài ngừng hiển thị công khai.
+        for (int index = listings.size() - 1; index >= 0; index--) {
+            AdminListing listing = listings.get(index);
+
+            if (room.getId().equals(listing.getRoomId())) {
+                submittedRooms.remove(listing.getId());
+                listings.remove(index);
+            }
+        }
     }
 
     /** Cho chủ trọ đọc kết quả kiểm duyệt của chính bài đăng mình. */
@@ -291,7 +438,9 @@ public final class DemoAdminListingRepository {
         List<RoomCard> results = new ArrayList<>();
 
         for (AdminListing listing : listings) {
-            if (listing.getStatus() == AdminListing.Status.PUBLISHED) {
+            if (listing.getStatus() == AdminListing.Status.PUBLISHED
+                    && !DemoBookingRepository.getInstance()
+                    .isRoomRented(listing.getRoomId())) {
                 results.add(toPublicRoomCard(listing));
             }
         }
@@ -311,15 +460,15 @@ public final class DemoAdminListingRepository {
 
         for (AdminListing listing : listings) {
             if (listingId.equals(listing.getId())
-                    && listing.getStatus()
-                    == AdminListing.Status.PUBLISHED) {
+                    && listing.getStatus() == AdminListing.Status.PUBLISHED
+                    && !DemoBookingRepository.getInstance()
+                    .isRoomRented(listing.getRoomId())) {
                 return toPublicRoomCard(listing);
             }
         }
 
         return null;
     }
-
     /**
      * Chuyển bài đã duyệt thành dữ liệu công khai.
      * Diện tích lấy từ phòng đã lưu lúc gửi duyệt.
@@ -328,9 +477,13 @@ public final class DemoAdminListingRepository {
     private RoomCard toPublicRoomCard(AdminListing listing) {
         HostRoom room = submittedRooms.get(listing.getId());
 
-        String summary = room != null && room.getArea() != null
-                ? room.getFormattedArea()
-                : "Diện tích chưa cung cấp";
+        RoomCard.RoomType roomType = room == null
+                ? RoomCard.RoomType.ROOM
+                : room.getRoomType();
+
+        String summary = room == null
+                ? "Thông tin phòng chưa cung cấp"
+                : room.getDisplaySummary();
 
         RoomCard card = new RoomCard(
                 listing.getTitle(),
@@ -339,7 +492,7 @@ public final class DemoAdminListingRepository {
                 summary,
                 0,
                 false,
-                RoomCard.RoomType.ROOM,
+                roomType,
                 listing.getRoomId(),
                 listing.getHostId(),
                 listing.getUnitCode()
@@ -348,16 +501,20 @@ public final class DemoAdminListingRepository {
         card.setListingId(listing.getId());
         card.setImageUri(listing.getImageUri());
         card.setMonthlyRent(listing.getMonthlyRent());
+        card.setDepositVnd(listing.getDepositVnd());
         card.setDescription(listing.getDescription());
         card.setHostName(listing.getHostName());
 
+
         if (room != null) {
             card.setArea(room.getArea());
+            card.setAvailability(room.getAvailability());
+        } else {
+            card.setAvailability(RoomCard.Availability.UNKNOWN);
         }
 
         return card;
     }
-
     /** Kiểm tra quyền admin từ phiên hiện tại. */
     private boolean hasAdminAccess() {
         SessionState session = SessionRepository.getInstance()
@@ -377,9 +534,14 @@ public final class DemoAdminListingRepository {
             );
         }
 
+        if (cleaned.length() > 500) {
+            throw new IllegalArgumentException(
+                    "Lý do kiểm duyệt không được vượt quá 500 ký tự."
+            );
+        }
+
         return cleaned;
     }
-
     /** Tạo các bài minh họa một lần trong bản debug. */
     private void initializeDemoData() {
         if (!BuildConfig.DEBUG || demoDataInitialized) {

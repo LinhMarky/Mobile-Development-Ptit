@@ -141,6 +141,10 @@ public class HostEditListingFragment extends Fragment {
             return;
         }
 
+        String savedDeposit = listing.getDepositVnd() == null
+                ? ""
+                : String.valueOf(listing.getDepositVnd());
+
         if (draft != null) {
             binding.edtEditListingTitle.setText(
                     draft.getString("title", "")
@@ -150,14 +154,24 @@ public class HostEditListingFragment extends Fragment {
                     draft.getString("price", "")
             );
 
+            binding.edtEditListingDeposit.setText(
+                    draft.getString("deposit", savedDeposit)
+            );
+
             binding.edtEditListingDescription.setText(
                     draft.getString("description", "")
             );
         } else {
-            binding.edtEditListingTitle.setText(listing.getTitle());
+            binding.edtEditListingTitle.setText(
+                    listing.getTitle()
+            );
 
             binding.edtEditListingPrice.setText(
                     String.valueOf(listing.getMonthlyRent())
+            );
+
+            binding.edtEditListingDeposit.setText(
+                    savedDeposit
             );
 
             binding.edtEditListingDescription.setText(
@@ -167,7 +181,6 @@ public class HostEditListingFragment extends Fragment {
 
         renderAccess();
     }
-
     /**
      * Lấy bản nháp thuộc tài khoản có quyền chủ trọ hiện tại.
      */
@@ -217,11 +230,12 @@ public class HostEditListingFragment extends Fragment {
      * Repository kiểm tra lại quyền sở hữu trước khi cập nhật.
      */
     private void saveChanges() {
-        if (binding == null) {
+        if (binding == null || !binding.btnEditListingSave.isEnabled()) {
             return;
         }
 
         clearErrors();
+        binding.inputEditListingDeposit.setError(null);
 
         SessionState session =
                 SessionRepository.getInstance().getCurrentSession();
@@ -247,14 +261,15 @@ public class HostEditListingFragment extends Fragment {
             return;
         }
 
-        String title = readText(binding.edtEditListingTitle);
-        String priceText = readText(binding.edtEditListingPrice);
+        String title = readText(binding.edtEditListingTitle).trim();
+        String priceText = readText(binding.edtEditListingPrice).trim();
+        String depositText = readText(binding.edtEditListingDeposit).trim();
         String description =
-                readText(binding.edtEditListingDescription);
+                readText(binding.edtEditListingDescription).trim();
 
-        if (title.isEmpty()) {
+        if (title.isEmpty() || title.length() > 150) {
             binding.inputEditListingTitle.setError(
-                    "Bạn hãy nhập tiêu đề."
+                    "Tiêu đề phải có từ 1 đến 150 ký tự."
             );
             binding.edtEditListingTitle.requestFocus();
             return;
@@ -263,7 +278,6 @@ public class HostEditListingFragment extends Fragment {
         long monthlyRent;
 
         try {
-            // Chỉ nhận số nguyên, không có dấu phân cách.
             if (!priceText.matches("[0-9]+")) {
                 throw new NumberFormatException();
             }
@@ -281,9 +295,31 @@ public class HostEditListingFragment extends Fragment {
             return;
         }
 
-        if (description.isEmpty()) {
+        Long depositVnd = null;
+
+        if (!depositText.isEmpty()) {
+            if (!depositText.matches("[0-9]+")) {
+                binding.inputEditListingDeposit.setError(
+                        "Tiền cọc phải là số nguyên không âm."
+                );
+                binding.edtEditListingDeposit.requestFocus();
+                return;
+            }
+
+            try {
+                depositVnd = Long.parseLong(depositText);
+            } catch (NumberFormatException exception) {
+                binding.inputEditListingDeposit.setError(
+                        "Số tiền cọc quá lớn. Bạn hãy nhập lại."
+                );
+                binding.edtEditListingDeposit.requestFocus();
+                return;
+            }
+        }
+
+        if (description.isEmpty() || description.length() > 5000) {
             binding.inputEditListingDescription.setError(
-                    "Bạn hãy nhập nội dung bài đăng."
+                    "Nội dung bài đăng phải có từ 1 đến 5000 ký tự."
             );
             binding.edtEditListingDescription.requestFocus();
             return;
@@ -297,6 +333,7 @@ public class HostEditListingFragment extends Fragment {
                     listingId,
                     title,
                     monthlyRent,
+                    depositVnd,
                     description
             );
 
@@ -307,10 +344,14 @@ public class HostEditListingFragment extends Fragment {
             ).show();
 
             getParentFragmentManager().popBackStack();
+
         } catch (IllegalArgumentException | IllegalStateException exception) {
             showError(exception.getMessage());
+
         } finally {
-            setSaving(false);
+            if (binding != null) {
+                setSaving(false);
+            }
         }
     }
 
@@ -452,11 +493,15 @@ public class HostEditListingFragment extends Fragment {
         );
 
         draft.putString(
+                "deposit",
+                readText(binding.edtEditListingDeposit)
+        );
+
+        draft.putString(
                 "description",
                 readText(binding.edtEditListingDescription)
         );
     }
-
     /**
      * Lưu nội dung đang nhập khi Android cần khôi phục Fragment.
      */

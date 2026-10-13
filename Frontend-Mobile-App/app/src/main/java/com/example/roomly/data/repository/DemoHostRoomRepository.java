@@ -309,17 +309,53 @@ public class DemoHostRoomRepository {
     ) {
         String cleanName = cleanText(name);
         String cleanAddress = cleanText(address);
+        String cleanDescription = cleanText(description);
+        String cleanedImageUri = cleanImageUri(imageUri);
 
         validateRoomInformation(cleanName, cleanAddress, area);
 
-        List<String> cleanAmenities = cleanAmenities(amenities);
+        List<String> cleanedAmenities = cleanAmenities(amenities);
 
         validateRoomOptions(
                 roomType,
                 maxOccupants,
-                cleanAmenities,
+                cleanedAmenities,
                 requireOccupants
         );
+
+        boolean sameArea = currentRoom.getArea() != null
+                && currentRoom.getArea().compareTo(area) == 0;
+
+        boolean changed =
+                !java.util.Objects.equals(
+                        currentRoom.getName(), cleanName
+                )
+                        || !java.util.Objects.equals(
+                        currentRoom.getAddress(), cleanAddress
+                )
+                        || !sameArea
+                        || !java.util.Objects.equals(
+                        currentRoom.getDescription(), cleanDescription
+                )
+                        || !java.util.Objects.equals(
+                        currentRoom.getImageUri(), cleanedImageUri
+                )
+                        || currentRoom.getRoomType() != roomType
+                        || currentRoom.getMaxOccupants() != maxOccupants
+                        || !currentRoom.getAmenities().equals(cleanedAmenities);
+
+        // Bấm lưu mà không đổi thông tin thì giữ nguyên bài đăng.
+        if (!changed) {
+            return currentRoom;
+        }
+
+        if (DemoBookingRepository.getInstance()
+                .hasActiveBookingForRoom(currentRoom.getId())) {
+            throw new IllegalStateException(
+                    "Không thể chỉnh sửa thông tin phòng khi có yêu cầu thuê "
+                            + "đã được duyệt hoặc xác nhận."
+            );
+        }
 
         HostRoom updatedRoom = new HostRoom(
                 currentRoom.getId(),
@@ -328,15 +364,20 @@ public class DemoHostRoomRepository {
                 cleanName,
                 cleanAddress,
                 area,
-                cleanText(description),
-                cleanImageUri(imageUri),
+                cleanDescription,
+                cleanedImageUri,
                 roomType,
                 maxOccupants,
-                cleanAmenities
+                cleanedAmenities,
+                currentRoom.getAvailability()
         );
 
         for (int index = 0; index < rooms.size(); index++) {
             if (rooms.get(index).getId().equals(currentRoom.getId())) {
+                // Kiểm tra và gỡ dữ liệu kiểm duyệt cũ trước khi lưu phòng.
+                DemoAdminListingRepository.getInstance()
+                        .returnRoomListingsToDraft(currentRoom.getId());
+
                 rooms.set(index, updatedRoom);
                 return updatedRoom;
             }
@@ -478,6 +519,49 @@ public class DemoHostRoomRepository {
         }
 
         return false;
+    }
+
+    @MainThread
+    public void markCompletedRoomAsRented(String roomId) {
+        // Chỉ cập nhật khi đã có booking hoàn tất của đúng phòng.
+        if (!DemoBookingRepository.getInstance().isRoomRented(roomId)) {
+            throw new IllegalStateException(
+                    "Phòng chưa có yêu cầu thuê hoàn tất."
+            );
+        }
+
+        for (int index = 0; index < rooms.size(); index++) {
+            HostRoom room = rooms.get(index);
+
+            if (!room.getId().equals(roomId)) {
+                continue;
+            }
+
+            if (room.getAvailability()
+                    == com.example.roomly.data.model.RoomCard.Availability.RENTED) {
+                return;
+            }
+
+            HostRoom rentedRoom = new HostRoom(
+                    room.getId(),
+                    room.getOwnerId(),
+                    room.getUnitCode(),
+                    room.getName(),
+                    room.getAddress(),
+                    room.getArea(),
+                    room.getDescription(),
+                    room.getImageUri(),
+                    room.getRoomType(),
+                    room.getMaxOccupants(),
+                    room.getAmenities(),
+                    com.example.roomly.data.model.RoomCard.Availability.RENTED
+            );
+
+            rooms.set(index, rentedRoom);
+            return;
+        }
+
+        // Phòng demo có sẵn có thể không nằm trong danh sách của chủ trọ.
     }
 
     /**

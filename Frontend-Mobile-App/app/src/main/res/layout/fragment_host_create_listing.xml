@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Biểu mẫu tạo bài đăng cho thuê từ phòng đã có. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,7 +8,6 @@
     android:background="@color/roomly_background"
     android:focusableInTouchMode="true">
 
-    <!-- Thanh tiêu đề và nút quay lại. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,7 +41,6 @@
 
     </LinearLayout>
 
-    <!-- Nội dung cuộn khi bàn phím mở hoặc màn hình nhỏ. -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_create_listing"
         android:layout_width="match_parent"
@@ -60,7 +57,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Thông báo lỗi của màn hình hoặc thao tác lưu. -->
             <TextView
                 android:id="@+id/tv_create_listing_error"
                 android:layout_width="match_parent"
@@ -72,7 +68,6 @@
                 android:textSize="14sp"
                 android:visibility="gone" />
 
-            <!-- Chỉ hiện khi phòng và quyền truy cập hợp lệ. -->
             <LinearLayout
                 android:id="@+id/layout_create_listing_form"
                 android:layout_width="match_parent"
@@ -80,7 +75,6 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <!-- Thông tin phòng được chọn, không nhập lại mã phòng. -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -95,7 +89,6 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical">
 
-                        <!-- Ảnh xem trước lấy từ phòng đã chọn. -->
                         <ImageView
                             android:id="@+id/img_listing_room"
                             android:layout_width="match_parent"
@@ -151,7 +144,6 @@
 
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Tiêu đề bài đăng khác với tên phòng trong quản lý. -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/input_listing_title"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -174,11 +166,11 @@
                         android:maxLines="1"
                         android:imeOptions="actionNext"
                         android:textColor="@color/roomly_text_primary"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:maxLength="150" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Giá thuê nhập bằng đồng Việt Nam, không có dấu phân cách. -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/input_listing_price"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -206,7 +198,34 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Nội dung giới thiệu và điều kiện thuê. -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/input_listing_deposit"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:hint="Tiền cọc"
+                    app:suffixText="₫"
+                    app:helperText="Nhập 0 nếu không yêu cầu cọc; để trống nếu chưa cung cấp."
+                    app:boxBackgroundColor="@color/roomly_surface"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edt_listing_deposit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:imeOptions="actionNext"
+                        android:singleLine="true"
+                        android:maxLength="19"
+                        android:textColor="@color/roomly_text_primary"
+                        android:textSize="16sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/input_listing_description"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -230,11 +249,11 @@
                         android:inputType="textCapSentences|textMultiLine"
                         android:imeOptions="actionDone"
                         android:textColor="@color/roomly_text_primary"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:maxLength="5000" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Trạng thái xử lý sẽ được điều khiển bằng Java. -->
                 <ProgressBar
                     android:id="@+id/progress_create_listing"
                     android:layout_width="32dp"
