@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="48dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
+
+    <!-- Bấm từ khóa để tìm lại. -->
+    <TextView
+        android:id="@+id/tv_history_keyword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:minHeight="48dp"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textColor="@color/roomly_text_primary"
+        android:textSize="14sp" />
+
+    <!-- Xóa riêng từ khóa này. -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_delete_history"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:minWidth="48dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:text="Xóa"
+        android:textAllCaps="false"
+        android:textColor="@color/roomly_text_secondary"
+        android:textSize="13sp" />
+
+</LinearLayout>

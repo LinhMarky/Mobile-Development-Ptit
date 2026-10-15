@@ -1,6 +1,11 @@
 package com.example.roomly.ui.messages;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +23,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.roomly.R;
 import com.example.roomly.data.model.ChatMessage;
 import com.example.roomly.data.model.Conversation;
+import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.repository.DemoChatRepository;
+import com.example.roomly.data.repository.LocalMessageDraftRepository;
 import com.example.roomly.data.repository.SessionAccess;
 import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentChatBinding;
@@ -27,55 +34,71 @@ import com.example.roomly.ui.auth.VerifyEmailFragment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
- * Hiển thị hội thoại và gửi tin nhắn bằng dữ liệu mẫu.
- * Kiểm tra đăng nhập, xác minh email và giữ nội dung đang soạn.
+ * Hiển thị hội thoại mẫu.
+ * Nội dung chưa gửi được lưu cục bộ bằng SQLite.
  */
 public class ChatFragment extends Fragment {
 
-    // Khóa truyền mã hội thoại qua Bundle.
     private static final String ARG_CONVERSATION_ID =
             "conversation_id";
 
-    // Khóa lưu bản nháp khi Android tạo lại Fragment.
     private static final String STATE_DRAFT = "chat_draft";
+    private static final String STATE_DRAFT_OWNER = "chat_draft_owner";
+    private static final String TAG = "ROOMLY_MESSAGE_DRAFT";
+
+    private static final ExecutorService DRAFT_EXECUTOR =
+            Executors.newSingleThreadExecutor();
+
+    private final Handler mainHandler =
+            new Handler(Looper.getMainLooper());
+
+    private final Runnable saveDraftRunnable =
+            this::saveLocalDraftNow;
 
     private FragmentChatBinding binding;
     private ChatMessageAdapter messageAdapter;
+    private LocalMessageDraftRepository localDraftRepository;
+    private TextWatcher draftTextWatcher;
 
     private String conversationId;
-
-    // Giữ bản nháp khi chuyển sang đăng nhập hoặc xác minh email.
     private String messageDraft = "";
     private String draftOwnerId = "";
-    private static final String STATE_DRAFT_OWNER = "chat_draft_owner";
 
-    /**
-     * Tạo màn hình chat với mã của hội thoại cần mở.
-     */
+    private boolean hasMemoryDraft = false;
+    private boolean viewStateReady = false;
+    private boolean draftReady = false;
+    private boolean draftLoading = false;
+    private boolean draftDirty = false;
+    private boolean applyingDraft = false;
+
+    private int draftLoadVersion = 0;
+
     public static ChatFragment newInstance(String conversationId) {
         ChatFragment fragment = new ChatFragment();
 
         Bundle args = new Bundle();
         args.putString(ARG_CONVERSATION_ID, conversationId);
-
         fragment.setArguments(args);
 
         return fragment;
     }
 
-    /**
-     * Đọc mã hội thoại và khôi phục bản nháp khi Fragment được tạo lại.
-     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Bundle args = getArguments();
+        localDraftRepository = new LocalMessageDraftRepository(
+                requireContext().getApplicationContext()
+        );
 
-        if (args != null) {
-            conversationId = args.getString(ARG_CONVERSATION_ID);
+        if (getArguments() != null) {
+            conversationId = getArguments().getString(
+                    ARG_CONVERSATION_ID
+            );
         }
 
         if (savedInstanceState != null) {
@@ -83,16 +106,18 @@ public class ChatFragment extends Fragment {
                     STATE_DRAFT,
                     ""
             );
+
             draftOwnerId = savedInstanceState.getString(
                     STATE_DRAFT_OWNER,
                     ""
             );
+
+            hasMemoryDraft = savedInstanceState.containsKey(
+                    STATE_DRAFT
+            );
         }
     }
 
-    /**
-     * Tạo giao diện trò chuyện bằng ViewBinding.
-     */
     @Nullable
     @Override
     public View onCreateView(
@@ -106,12 +131,14 @@ public class ChatFragment extends Fragment {
                 false
         );
 
+        viewStateReady = false;
+        draftReady = false;
+        draftLoading = false;
+        draftDirty = false;
+
         return binding.getRoot();
     }
 
-    /**
-     * Thiết lập danh sách tin nhắn, bàn phím và các nút thao tác.
-     */
     @Override
     public void onViewCreated(
             @NonNull View view,
@@ -122,6 +149,7 @@ public class ChatFragment extends Fragment {
         setupMessageList();
         setupKeyboardInsets();
         setupActionButtons();
+        setComposerEnabled(false);
 
         SessionRepository.getInstance()
                 .getSessionState()
@@ -132,102 +160,64 @@ public class ChatFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        displayConversation();
-    }
-
-    private void syncDraftOwner() {
-        if (binding == null) {
-            return;
-        }
-
-        com.example.roomly.data.model.SessionState session =
-                SessionRepository.getInstance().getCurrentSession();
-
-        String currentUserId = session.isLoggedIn()
-                ? session.getUserId()
-                : "";
-
-        if (currentUserId == null) {
-            currentUserId = "";
-        }
-
-        if (!currentUserId.equals(draftOwnerId)) {
-            messageDraft = "";
-            binding.edtChatMessage.setText("");
-            draftOwnerId = currentUserId;
-        }
-    }
-
-    /**
-     * Khôi phục bản nháp sau khi Android khôi phục trạng thái giao diện.
-     * Người dùng cần tự bấm Gửi sau khi đăng nhập hoặc xác minh email.
-     */
-    @Override
     public void onViewStateRestored(
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewStateRestored(savedInstanceState);
 
-        if (binding == null) {
-            return;
-        }
+        // Không dùng trực tiếp nội dung View do Android khôi phục.
+        // Nội dung phải được kiểm tra đúng tài khoản trước.
+        setDraftText("");
 
-        syncDraftOwner();
-
-        binding.edtChatMessage.setText(messageDraft);
-        binding.edtChatMessage.setSelection(
-                binding.edtChatMessage.length()
-        );
+        setupDraftTracking();
+        viewStateReady = true;
+        displayConversation();
     }
 
-    /**
-     * Lưu nội dung đang soạn khi Android lưu trạng thái Fragment.
-     */
     @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        if (binding != null) {
-            syncDraftOwner();
-
-            messageDraft = binding.edtChatMessage.getText() == null
-                    ? ""
-                    : binding.edtChatMessage.getText().toString();
-        }
-
-        outState.putString(STATE_DRAFT, messageDraft);
-        outState.putString(STATE_DRAFT_OWNER, draftOwnerId);
-
-        super.onSaveInstanceState(outState);
+    public void onResume() {
+        super.onResume();
+        displayConversation();
     }
 
-    /**
-     * Thiết lập danh sách tin nhắn, ưu tiên hiển thị phía cuối.
-     */
+    private String getCurrentUserId() {
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn() || session.getUserId() == null) {
+            return "";
+        }
+
+        return session.getUserId().trim();
+    }
+
+    @Nullable
+    private Conversation getAccessibleConversation() {
+        if (conversationId == null
+                || conversationId.trim().isEmpty()) {
+            return null;
+        }
+
+        // Repository hiện tại kiểm tra thành viên hội thoại.
+        return DemoChatRepository.getInstance()
+                .getConversation(conversationId);
+    }
+
     private void setupMessageList() {
         LinearLayoutManager layoutManager =
                 new LinearLayoutManager(requireContext());
 
         layoutManager.setStackFromEnd(true);
-
         binding.rvChatMessages.setLayoutManager(layoutManager);
 
-        messageAdapter = new ChatMessageAdapter(
-                new ArrayList<>()
-        );
-
+        messageAdapter = new ChatMessageAdapter(new ArrayList<>());
         binding.rvChatMessages.setAdapter(messageAdapter);
     }
 
-    /**
-     * Đăng ký thao tác quay lại và gửi tin nhắn.
-     * Nút Gửi trên bàn phím dùng chung xử lý với nút trên giao diện.
-     */
     private void setupActionButtons() {
         binding.btnChatBack.setOnClickListener(view -> {
+            saveLocalDraftNow();
             hideKeyboard();
-
             getParentFragmentManager().popBackStack();
         });
 
@@ -247,71 +237,84 @@ public class ChatFragment extends Fragment {
         );
     }
 
-    /**
-     * Thêm khoảng trống khi bàn phím mở để ô nhập không bị che.
-     * Giữ padding ban đầu và trừ phần hệ thống MainActivity đã xử lý.
-     */
-    private void setupKeyboardInsets() {
-        View root = binding.getRoot();
+    private void setupDraftTracking() {
+        draftTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(
+                    CharSequence text,
+                    int start,
+                    int count,
+                    int after
+            ) {
+            }
 
-        int initialLeft = root.getPaddingLeft();
-        int initialTop = root.getPaddingTop();
-        int initialRight = root.getPaddingRight();
-        int initialBottom = root.getPaddingBottom();
-
-        ViewCompat.setOnApplyWindowInsetsListener(
-                root,
-                (view, insets) -> {
-                    int keyboardBottom = insets.getInsets(
-                            WindowInsetsCompat.Type.ime()
-                    ).bottom;
-
-                    int systemBottom = insets.getInsets(
-                            WindowInsetsCompat.Type.systemBars()
-                    ).bottom;
-
-                    int extraBottom = Math.max(
-                            0,
-                            keyboardBottom - systemBottom
-                    );
-
-                    view.setPadding(
-                            initialLeft,
-                            initialTop,
-                            initialRight,
-                            initialBottom + extraBottom
-                    );
-
-                    return insets;
+            @Override
+            public void onTextChanged(
+                    CharSequence text,
+                    int start,
+                    int before,
+                    int count
+            ) {
+                if (applyingDraft || !draftReady) {
+                    return;
                 }
-        );
 
-        ViewCompat.requestApplyInsets(root);
+                messageDraft = text.toString();
+                hasMemoryDraft = true;
+                draftDirty = true;
+            }
+
+            @Override
+            public void afterTextChanged(Editable text) {
+                if (!applyingDraft && draftReady) {
+                    scheduleDraftSave();
+                }
+            }
+        };
+
+        binding.edtChatMessage.addTextChangedListener(
+                draftTextWatcher
+        );
     }
 
-    /**
-     * Hiển thị tên người liên hệ, tên phòng và danh sách tin nhắn.
-     * Vô hiệu hóa thao tác gửi nếu hội thoại mẫu không còn dữ liệu.
-     */
     private void displayConversation() {
-        if (binding == null || messageAdapter == null) {
+        if (binding == null
+                || messageAdapter == null
+                || !viewStateReady) {
             return;
         }
 
-        syncDraftOwner();
+        String currentUserId = getCurrentUserId();
 
-        Conversation conversation = conversationId == null
-                ? null
-                : DemoChatRepository.getInstance()
-                .getConversation(conversationId);
+        if (!currentUserId.equals(draftOwnerId)) {
+            mainHandler.removeCallbacks(saveDraftRunnable);
+            draftLoadVersion++;
 
-        if (conversation == null) {
             messageDraft = "";
-            binding.edtChatMessage.setText("");
+            draftOwnerId = currentUserId;
+            hasMemoryDraft = false;
+            draftReady = false;
+            draftLoading = false;
+            draftDirty = false;
 
-            if (isAdded()) {
-                hideKeyboard();
-            }
+            setDraftText("");
+        }
+
+        Conversation conversation = getAccessibleConversation();
+
+        if (currentUserId.isEmpty() || conversation == null) {
+            mainHandler.removeCallbacks(saveDraftRunnable);
+            draftLoadVersion++;
+
+            draftReady = false;
+            draftLoading = false;
+            draftDirty = false;
+            hasMemoryDraft = false;
+            messageDraft = "";
+
+            setDraftText("");
+            setComposerEnabled(false);
+            hideKeyboard();
 
             binding.tvChatContactName.setText("Hội thoại");
             binding.tvChatRoomTitle.setText("");
@@ -322,36 +325,23 @@ public class ChatFragment extends Fragment {
             );
             binding.tvChatEmpty.setVisibility(View.VISIBLE);
 
-            binding.edtChatMessage.setEnabled(false);
-            binding.btnSendMessage.setEnabled(false);
-
             messageAdapter.updateMessages(new ArrayList<>());
             return;
         }
 
-        String currentUserId = SessionRepository.getInstance()
-                .getCurrentSession()
-                .getUserId();
-
         binding.tvChatContactName.setText(
                 conversation.getContactName(currentUserId)
         );
-
         binding.tvChatRoomTitle.setText(
                 conversation.getRoomTitle()
         );
 
-        binding.edtChatMessage.setEnabled(true);
-        binding.btnSendMessage.setEnabled(true);
-
         List<ChatMessage> messages = conversation.getMessages();
-
         messageAdapter.updateMessages(messages);
 
         binding.tvChatEmpty.setText(
                 "Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện."
         );
-
         binding.tvChatEmpty.setVisibility(
                 messages.isEmpty() ? View.VISIBLE : View.GONE
         );
@@ -361,22 +351,226 @@ public class ChatFragment extends Fragment {
                     messages.size() - 1
             );
         }
-    }    /**
-     * Kiểm tra quyền rồi lưu tin nhắn vào repository mẫu.
-     * Chỉ xóa bản nháp khi lưu thành công và không gửi nội dung trống.
-     */
+
+        if (!draftReady && !draftLoading) {
+            restoreLocalDraft();
+        }
+
+        setComposerEnabled(draftReady);
+    }
+
+    private void restoreLocalDraft() {
+        if (binding == null || draftOwnerId.isEmpty()) {
+            return;
+        }
+
+        draftLoading = true;
+        setComposerEnabled(false);
+
+        final String ownerId = draftOwnerId;
+        final String selectedConversationId = conversationId;
+        final int loadVersion = ++draftLoadVersion;
+        final View originalRoot = binding.getRoot();
+
+        final boolean keepMemoryDraft = hasMemoryDraft;
+        final String memoryContent = messageDraft;
+
+        final LocalMessageDraftRepository repository =
+                localDraftRepository;
+
+        DRAFT_EXECUTOR.execute(() -> {
+            try {
+                String storedContent = repository.getDraft(
+                        ownerId,
+                        selectedConversationId
+                );
+
+                mainHandler.post(() -> {
+                    if (!isCurrentDraftView(
+                            originalRoot,
+                            loadVersion,
+                            ownerId
+                    )) {
+                        return;
+                    }
+
+                    messageDraft = keepMemoryDraft
+                            ? memoryContent
+                            : storedContent;
+
+                    hasMemoryDraft = true;
+                    setDraftText(messageDraft);
+
+                    draftLoading = false;
+                    draftReady = true;
+                    setComposerEnabled(true);
+
+                    // Nội dung giữ trong Fragment có thể mới hơn SQLite.
+                    if (keepMemoryDraft) {
+                        draftDirty = true;
+                        scheduleDraftSave();
+                    }
+                });
+
+            } catch (RuntimeException exception) {
+                Log.e(TAG, "Không đọc được bản nháp.", exception);
+
+                mainHandler.post(() -> {
+                    if (!isCurrentDraftView(
+                            originalRoot,
+                            loadVersion,
+                            ownerId
+                    )) {
+                        return;
+                    }
+
+                    draftLoading = false;
+
+                    Toast.makeText(
+                            requireContext(),
+                            "Không đọc được bản nháp. "
+                                    + "Bạn quay lại rồi mở lại hội thoại nhé.",
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
+            }
+        });
+    }
+
+    private boolean isCurrentDraftView(
+            View originalRoot,
+            int loadVersion,
+            String ownerId
+    ) {
+        return binding != null
+                && binding.getRoot() == originalRoot
+                && draftLoadVersion == loadVersion
+                && ownerId.equals(draftOwnerId)
+                && ownerId.equals(getCurrentUserId())
+                && getAccessibleConversation() != null;
+    }
+
+    private void setDraftText(String content) {
+        if (binding == null) {
+            return;
+        }
+
+        applyingDraft = true;
+
+        try {
+            binding.edtChatMessage.setText(content);
+            binding.edtChatMessage.setSelection(
+                    binding.edtChatMessage.length()
+            );
+        } finally {
+            applyingDraft = false;
+        }
+    }
+
+    private void setComposerEnabled(boolean enabled) {
+        if (binding == null) {
+            return;
+        }
+
+        binding.edtChatMessage.setEnabled(enabled);
+        binding.btnSendMessage.setEnabled(enabled);
+    }
+
+    private String readMessageText() {
+        return binding.edtChatMessage.getText() == null
+                ? ""
+                : binding.edtChatMessage.getText().toString();
+    }
+
+    private void scheduleDraftSave() {
+        mainHandler.removeCallbacks(saveDraftRunnable);
+
+        if (binding != null && draftReady && draftDirty) {
+            mainHandler.postDelayed(saveDraftRunnable, 500);
+        }
+    }
+
+    private void saveLocalDraftNow() {
+        mainHandler.removeCallbacks(saveDraftRunnable);
+
+        if (binding == null
+                || !draftReady
+                || !draftDirty
+                || draftOwnerId.isEmpty()
+                || !draftOwnerId.equals(getCurrentUserId())
+                || getAccessibleConversation() == null) {
+            return;
+        }
+
+        messageDraft = readMessageText();
+        hasMemoryDraft = true;
+        draftDirty = false;
+
+        final String ownerId = draftOwnerId;
+        final String selectedConversationId = conversationId;
+        final String content = messageDraft;
+
+        final View originalRoot = binding.getRoot();
+        final int loadVersion = draftLoadVersion;
+        final LocalMessageDraftRepository repository =
+                localDraftRepository;
+
+        // Một hàng đợi chung bảo đảm ghi/xóa đúng thứ tự.
+        DRAFT_EXECUTOR.execute(() -> {
+            try {
+                // Repository tự xóa bản nháp nếu nội dung trống.
+                repository.saveDraft(
+                        ownerId,
+                        selectedConversationId,
+                        content
+                );
+            } catch (RuntimeException exception) {
+                Log.e(TAG, "Không lưu được bản nháp.", exception);
+
+                mainHandler.post(() -> {
+                    if (!isCurrentDraftView(
+                            originalRoot,
+                            loadVersion,
+                            ownerId
+                    )) {
+                        return;
+                    }
+
+                    draftDirty = true;
+
+                    Toast.makeText(
+                            requireContext(),
+                            "Chưa lưu được bản nháp trên điện thoại.",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
+            }
+        });
+    }
+
     private void sendMessage() {
         if (binding == null
+                || !draftReady
                 || !binding.btnSendMessage.isEnabled()) {
             return;
         }
 
-        String content = binding.edtChatMessage
-                .getText()
-                .toString()
-                .trim();
+        if (!draftOwnerId.equals(getCurrentUserId())
+                || getAccessibleConversation() == null) {
+            displayConversation();
+            return;
+        }
+
+        String content = readMessageText().trim();
 
         if (content.isEmpty()) {
+            return;
+        }
+
+        if (content.length() > 5000) {
+            binding.edtChatMessage.setError(
+                    "Tin nhắn không được vượt quá 5000 ký tự."
+            );
             return;
         }
 
@@ -384,30 +578,53 @@ public class ChatFragment extends Fragment {
             return;
         }
 
-        boolean sent = DemoChatRepository.getInstance()
-                .sendMessage(conversationId, content);
+        binding.btnSendMessage.setEnabled(false);
 
-        if (!sent) {
+        try {
+            boolean sent = DemoChatRepository.getInstance()
+                    .sendMessage(conversationId, content);
+
+            if (!sent) {
+                Toast.makeText(
+                        requireContext(),
+                        "Không thể lưu tin nhắn mẫu.",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
+
+            // Khi nối API: chỉ thực hiện phần này sau phản hồi thành công.
+            messageDraft = "";
+            hasMemoryDraft = true;
+            setDraftText("");
+
+            draftDirty = true;
+            saveLocalDraftNow();
+
+            displayConversation();
+
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            String message = exception.getMessage();
+
             Toast.makeText(
                     requireContext(),
-                    "Không thể lưu tin nhắn mẫu.",
-                    Toast.LENGTH_SHORT
+                    message == null
+                            ? "Không thể gửi tin nhắn."
+                            : message,
+                    Toast.LENGTH_LONG
             ).show();
 
-            return;
+        } finally {
+            if (binding != null) {
+                binding.btnSendMessage.setEnabled(
+                        draftReady
+                                && draftOwnerId.equals(getCurrentUserId())
+                                && getAccessibleConversation() != null
+                );
+            }
         }
-
-        messageDraft = "";
-        binding.edtChatMessage.setText("");
-
-
-        displayConversation();
     }
 
-    /**
-     * Yêu cầu đăng nhập và xác minh email trước khi gửi tin.
-     * Giữ bản nháp và mở màn hình phù hợp nếu chưa đủ điều kiện.
-     */
     private boolean checkSendMessagePermission() {
         SessionAccess.Result result =
                 SessionAccess.requireVerifiedEmail();
@@ -416,11 +633,7 @@ public class ChatFragment extends Fragment {
             return true;
         }
 
-        // Giữ cả khoảng trắng và xuống dòng của nội dung đang soạn.
-        messageDraft = binding.edtChatMessage
-                .getText()
-                .toString();
-
+        saveLocalDraftNow();
         hideKeyboard();
 
         Fragment nextFragment;
@@ -459,6 +672,10 @@ public class ChatFragment extends Fragment {
             return false;
         }
 
+        if (getParentFragmentManager().isStateSaved()) {
+            return false;
+        }
+
         getParentFragmentManager()
                 .beginTransaction()
                 .setReorderingAllowed(true)
@@ -472,35 +689,94 @@ public class ChatFragment extends Fragment {
         return false;
     }
 
-    /**
-     * Đóng bàn phím và bỏ focus trước khi chuyển màn hình.
-     */
+    private void setupKeyboardInsets() {
+        View root = binding.getRoot();
+
+        int initialLeft = root.getPaddingLeft();
+        int initialTop = root.getPaddingTop();
+        int initialRight = root.getPaddingRight();
+        int initialBottom = root.getPaddingBottom();
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+                root,
+                (view, insets) -> {
+                    int keyboardBottom = insets.getInsets(
+                            WindowInsetsCompat.Type.ime()
+                    ).bottom;
+
+                    int systemBottom = insets.getInsets(
+                            WindowInsetsCompat.Type.systemBars()
+                    ).bottom;
+
+                    view.setPadding(
+                            initialLeft,
+                            initialTop,
+                            initialRight,
+                            initialBottom + Math.max(
+                                    0,
+                                    keyboardBottom - systemBottom
+                            )
+                    );
+
+                    return insets;
+                }
+        );
+
+        ViewCompat.requestApplyInsets(root);
+    }
+
     private void hideKeyboard() {
-        if (binding == null) {
+        if (binding == null || !isAdded()) {
             return;
         }
 
-        WindowInsetsControllerCompat controller =
-                new WindowInsetsControllerCompat(
-                        requireActivity().getWindow(),
-                        binding.getRoot()
-                );
-
-        controller.hide(WindowInsetsCompat.Type.ime());
+        new WindowInsetsControllerCompat(
+                requireActivity().getWindow(),
+                binding.getRoot()
+        ).hide(WindowInsetsCompat.Type.ime());
 
         binding.edtChatMessage.clearFocus();
     }
 
-    /**
-     * Giữ bản nháp và gỡ các sự kiện trước khi giao diện bị hủy.
-     * Giải phóng adapter và binding để không giữ View cũ.
-     */
+    @Override
+    public void onPause() {
+        saveLocalDraftNow();
+        super.onPause();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        saveLocalDraftNow();
+
+        // Không ghi nội dung thuộc tài khoản trước vào Bundle mới.
+        boolean sameOwner = !draftOwnerId.isEmpty()
+                && draftOwnerId.equals(getCurrentUserId());
+
+        if (sameOwner && hasMemoryDraft) {
+            outState.putString(STATE_DRAFT, messageDraft);
+            outState.putString(STATE_DRAFT_OWNER, draftOwnerId);
+        }
+
+        super.onSaveInstanceState(outState);
+    }
+
     @Override
     public void onDestroyView() {
+        saveLocalDraftNow();
+
+        mainHandler.removeCallbacks(saveDraftRunnable);
+        draftLoadVersion++;
+
+        viewStateReady = false;
+        draftReady = false;
+        draftLoading = false;
+
         if (binding != null) {
-            messageDraft = binding.edtChatMessage
-                    .getText()
-                    .toString();
+            if (draftTextWatcher != null) {
+                binding.edtChatMessage.removeTextChangedListener(
+                        draftTextWatcher
+                );
+            }
 
             ViewCompat.setOnApplyWindowInsetsListener(
                     binding.getRoot(),
@@ -513,6 +789,7 @@ public class ChatFragment extends Fragment {
             binding.rvChatMessages.setAdapter(null);
         }
 
+        draftTextWatcher = null;
         messageAdapter = null;
         binding = null;
 
