@@ -1,195 +1,93 @@
 package com.example.roomly.ui.auth;
 
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-
 import com.example.roomly.databinding.FragmentForgotPasswordBinding;
+import com.example.roomly.ui.NavigationHelper;
+import java.nio.charset.StandardCharsets;
 
-/**
- * Hiển thị form yêu cầu đặt lại mật khẩu theo mô hình MVVM.
- */
+/** Gửi mã khôi phục rồi đặt mật khẩu mới ngay trên biểu mẫu, không giữ callback vào View. */
 public class ForgotPasswordFragment extends Fragment {
-
     private FragmentForgotPasswordBinding binding;
-    private ForgotPasswordViewModel viewModel;
+    private AuthChallengeViewModel viewModel;
 
-    /**
-     * Lấy ViewModel để giữ trạng thái khi Fragment được tạo lại.
-     */
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        viewModel = new ViewModelProvider(this)
-                .get(ForgotPasswordViewModel.class);
+    @Override public void onCreate(@Nullable Bundle state) {
+        super.onCreate(state);
+        viewModel = new ViewModelProvider(this).get(AuthChallengeViewModel.class);
     }
 
-    /**
-     * Tạo giao diện Quên mật khẩu từ XML bằng ViewBinding.
-     */
-    @Nullable
-    @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater,
-            @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState
-    ) {
-        binding = FragmentForgotPasswordBinding.inflate(
-                inflater,
-                container,
-                false
-        );
-
+    @Nullable @Override public View onCreateView(@NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container, @Nullable Bundle state) {
+        binding = FragmentForgotPasswordBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
-    /**
-     * Đăng ký thao tác gửi yêu cầu, quay lại và quan sát trạng thái.
-     */
-    @Override
-    public void onViewCreated(
-            @NonNull View view,
-            @Nullable Bundle savedInstanceState
-    ) {
-        super.onViewCreated(view, savedInstanceState);
-
-        binding.btnRequestPasswordReset.setOnClickListener(
-                clickedView -> submitRequest()
-        );
-
-        binding.btnForgotPasswordBack.setOnClickListener(
-                clickedView -> returnToLogin()
-        );
-
-        binding.btnForgotPasswordLogin.setOnClickListener(
-                clickedView -> returnToLogin()
-        );
-
-        // Bấm Xong để đóng bàn phím của ô email.
-        binding.edtForgotPasswordEmail.setOnEditorActionListener(
-                (textView, actionId, event) -> {
-                    if (actionId == EditorInfo.IME_ACTION_DONE) {
-                        hideKeyboard();
-                        return true;
-                    }
-
-                    return false;
-                }
-        );
-
-        viewModel.getUiState().observe(
-                getViewLifecycleOwner(),
-                this::renderState
-        );
+    @Override public void onViewCreated(@NonNull View view, @Nullable Bundle state) {
+        if (viewModel.hasRequestedCode()) binding.edtForgotPasswordEmail.setText(viewModel.email());
+        binding.btnRequestPasswordReset.setOnClickListener(v -> requestCode());
+        binding.btnSubmitPasswordReset.setOnClickListener(v -> resetPassword());
+        binding.btnForgotPasswordBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        binding.btnForgotPasswordLogin.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        viewModel.phase().observe(getViewLifecycleOwner(), phase -> render(phase));
     }
 
-    /**
-     * Đọc email và chuyển cho ViewModel kiểm tra.
-     */
-    private void submitRequest() {
-        String email =
-                binding.edtForgotPasswordEmail.getText() == null
-                        ? ""
-                        : binding.edtForgotPasswordEmail
-                        .getText()
-                        .toString();
-
-        hideKeyboard();
-        viewModel.requestPasswordReset(email);
-    }
-
-    /**
-     * Hiển thị lỗi, kết quả tiếp nhận và trạng thái tải.
-     */
-    private void renderState(ForgotPasswordUiState state) {
-        if (binding == null || state == null) {
+    private void requestCode() {
+        String email = binding.edtForgotPasswordEmail.getText().toString().trim();
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.layoutForgotPasswordEmail.setError("Email không hợp lệ.");
             return;
         }
-
-        binding.layoutForgotPasswordEmail.setError(
-                state.getEmailError()
-        );
-
-        String generalError = state.getGeneralError();
-
-        binding.tvForgotPasswordError.setText(generalError);
-        binding.tvForgotPasswordError.setVisibility(
-                generalError == null ? View.GONE : View.VISIBLE
-        );
-
-        binding.tvForgotPasswordResult.setVisibility(
-                state.isRequestAccepted()
-                        ? View.VISIBLE
-                        : View.GONE
-        );
-
-        boolean loading = state.isLoading();
-
-        binding.progressForgotPassword.setVisibility(
-                loading ? View.VISIBLE : View.GONE
-        );
-
-        binding.btnRequestPasswordReset.setEnabled(!loading);
-        binding.btnForgotPasswordBack.setEnabled(!loading);
-        binding.btnForgotPasswordLogin.setEnabled(!loading);
-        binding.edtForgotPasswordEmail.setEnabled(!loading);
+        binding.layoutForgotPasswordEmail.setError(null);
+        viewModel.requestCode(email, true);
     }
 
-    /**
-     * Đóng bàn phím và trở về màn hình đăng nhập trong back stack.
-     */
-    private void returnToLogin() {
-        hideKeyboard();
-        getParentFragmentManager().popBackStack();
-    }
-
-    /**
-     * Đóng bàn phím và bỏ focus khỏi ô nhập.
-     */
-    private void hideKeyboard() {
-        if (binding == null) {
+    private void resetPassword() {
+        String code = binding.edtRecoveryCode.getText().toString().trim();
+        String password = binding.edtRecoveryPassword.getText().toString();
+        if (!code.matches("[0-9]{6}")) {
+            binding.edtRecoveryCode.setError("Nhập đủ 6 chữ số.");
             return;
         }
+        if (password.length() < 12 || password.getBytes(StandardCharsets.UTF_8).length > 72) {
+            binding.edtRecoveryPassword.setError("Mật khẩu cần ít nhất 12 ký tự, tối đa 72 byte UTF-8.");
+            return;
+        }
+        viewModel.resetPassword(code, password);
+    }
 
-        WindowInsetsControllerCompat controller =
-                new WindowInsetsControllerCompat(
-                        requireActivity().getWindow(),
-                        binding.getRoot()
-                );
-
-        controller.hide(WindowInsetsCompat.Type.ime());
-
-        View focusedView = binding.getRoot().findFocus();
-
-        if (focusedView != null) {
-            focusedView.clearFocus();
+    private void render(String phase) {
+        if (binding == null) return;
+        boolean busy = viewModel.isBusy();
+        binding.progressForgotPassword.setVisibility(busy ? View.VISIBLE : View.GONE);
+        binding.edtForgotPasswordEmail.setEnabled(!busy && !viewModel.hasRequestedCode());
+        binding.btnRequestPasswordReset.setEnabled(!busy);
+        binding.btnSubmitPasswordReset.setEnabled(!busy);
+        binding.edtRecoveryCode.setEnabled(!busy);
+        binding.edtRecoveryPassword.setEnabled(!busy);
+        binding.layoutRecoveryForm.setVisibility(viewModel.hasRequestedCode() ? View.VISIBLE : View.GONE);
+        binding.tvForgotPasswordError.setText(viewModel.message());
+        binding.tvForgotPasswordError.setVisibility(AuthChallengeViewModel.ERROR.equals(phase) ? View.VISIBLE : View.GONE);
+        binding.tvForgotPasswordResult.setText(viewModel.message().isEmpty() ? "Nhập mã trong email và mật khẩu mới." : viewModel.message());
+        binding.tvForgotPasswordResult.setVisibility(AuthChallengeViewModel.CODE_SENT.equals(phase) ? View.VISIBLE : View.GONE);
+        if (AuthChallengeViewModel.COMPLETE.equals(phase)) {
+            NavigationHelper.whenResumed(this, () -> {
+                if (!viewModel.consumeCompletion()) return;
+                Toast.makeText(requireContext(), "Đã đổi mật khẩu. Hãy đăng nhập lại.", Toast.LENGTH_LONG).show();
+                getParentFragmentManager().popBackStack();
+            });
         }
     }
 
-    /**
-     * Gỡ listener và giải phóng binding khi giao diện bị hủy.
-     */
-    @Override
-    public void onDestroyView() {
-        binding.edtForgotPasswordEmail
-                .setOnEditorActionListener(null);
-
-        binding.btnRequestPasswordReset.setOnClickListener(null);
-        binding.btnForgotPasswordBack.setOnClickListener(null);
-        binding.btnForgotPasswordLogin.setOnClickListener(null);
-
+    @Override public void onDestroyView() {
         binding = null;
-
         super.onDestroyView();
     }
 }

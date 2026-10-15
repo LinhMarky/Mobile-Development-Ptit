@@ -1,30 +1,31 @@
 package com.example.roomly.ui.host;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.roomly.R;
+import com.example.roomly.data.model.HostListing;
 import com.example.roomly.data.model.HostRoom;
+import com.example.roomly.data.model.RoomCard;
 import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.model.UserRole;
-import com.example.roomly.data.repository.DemoHostRoomRepository;
+import com.example.roomly.data.repository.HostRepository;
 import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentHostRoomDetailBinding;
 import com.example.roomly.ui.auth.LoginFragment;
 import com.example.roomly.ui.auth.VerifyEmailFragment;
 import com.example.roomly.ui.host.viewing.HostViewingFragment;
+import com.example.roomly.util.ImageLoader;
 
 /**
- * Hiển thị chi tiết phòng thuộc tài khoản chủ trọ hiện tại.
- * Chỉ truyền ID qua Bundle, rồi lấy lại dữ liệu từ repository.
+ * Hiển thị chi tiết phòng thuộc tài khoản chủ trọ hiện tại. Chỉ truyền ID qua Bundle, rồi lấy lại
+ * dữ liệu từ repository.
  */
 public class HostRoomDetailFragment extends Fragment {
 
@@ -32,10 +33,9 @@ public class HostRoomDetailFragment extends Fragment {
 
     private FragmentHostRoomDetailBinding binding;
     private String roomId;
+    private boolean loadingListings;
 
-    /**
-     * Tạo màn hình chi tiết với ID của phòng được chọn.
-     */
+    /** Tạo màn hình chi tiết với ID của phòng được chọn. */
     public static HostRoomDetailFragment newInstance(String roomId) {
         HostRoomDetailFragment fragment = new HostRoomDetailFragment();
 
@@ -46,9 +46,7 @@ public class HostRoomDetailFragment extends Fragment {
         return fragment;
     }
 
-    /**
-     * Đọc ID phòng từ Bundle khi Fragment được tạo.
-     */
+    /** Đọc ID phòng từ Bundle khi Fragment được tạo. */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,62 +58,38 @@ public class HostRoomDetailFragment extends Fragment {
         }
     }
 
-    /**
-     * Tạo giao diện chi tiết phòng bằng ViewBinding.
-     */
+    /** Tạo giao diện chi tiết phòng bằng ViewBinding. */
     @Nullable
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState
-    ) {
-        binding = FragmentHostRoomDetailBinding.inflate(
-                inflater,
-                container,
-                false
-        );
+            @Nullable Bundle savedInstanceState) {
+        binding = FragmentHostRoomDetailBinding.inflate(inflater, container, false);
 
         return binding.getRoot();
     }
 
-    /**
-     * Đăng ký thao tác và cập nhật thông tin khi phiên thay đổi.
-     */
+    /** Đăng ký thao tác và cập nhật thông tin khi phiên thay đổi. */
     @Override
-    public void onViewCreated(
-            @NonNull View view,
-            @Nullable Bundle savedInstanceState
-    ) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         binding.btnHostDetailBack.setOnClickListener(
-                clickedView -> getParentFragmentManager().popBackStack()
-        );
+                clickedView -> getParentFragmentManager().popBackStack());
 
-        binding.btnHostDetailEdit.setOnClickListener(
-                clickedView -> handleEditRoom()
-        );
+        binding.btnHostDetailEdit.setOnClickListener(clickedView -> handleEditRoom());
 
-        binding.btnHostDetailCreateListing.setOnClickListener(
-                clickedView -> handleCreateListing()
-        );
+        binding.btnHostDetailCreateListing.setOnClickListener(clickedView -> handleCreateListing());
 
-        binding.btnHostDetailViewing.setOnClickListener(
-                clickedView -> openViewingScreen()
-        );
+        binding.btnHostDetailViewing.setOnClickListener(clickedView -> openViewingScreen());
 
         SessionRepository.getInstance()
                 .getSessionState()
-                .observe(
-                        getViewLifecycleOwner(),
-                        session -> displayRoom()
-                );
+                .observe(getViewLifecycleOwner(), session -> displayRoom());
     }
 
-    /**
-     * Đọc lại thông tin khi trở về từ màn hình khác.
-     */
+    /** Đọc lại thông tin khi trở về từ màn hình khác. */
     @Override
     public void onResume() {
         super.onResume();
@@ -124,16 +98,15 @@ public class HostRoomDetailFragment extends Fragment {
     }
 
     /**
-     * Kiểm tra phiên và chủ sở hữu trước khi hiển thị dữ liệu.
-     * Nếu dữ liệu mẫu đã mất, hiện thông báo để quay lại.
+     * Kiểm tra phiên và chủ sở hữu trước khi hiển thị dữ liệu. Nếu dữ liệu mẫu đã mất, hiện thông
+     * báo để quay lại.
      */
     private void displayRoom() {
         if (binding == null) {
             return;
         }
 
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn()) {
             showError("Bạn cần đăng nhập để xem phòng của mình.");
@@ -145,14 +118,12 @@ public class HostRoomDetailFragment extends Fragment {
             return;
         }
 
-        HostRoom room = DemoHostRoomRepository.getInstance()
-                .getMyRoomById(roomId);
+        HostRoom room = HostRepository.getInstance().getMyRoomById(roomId);
 
         if (room == null) {
             showError(
                     "Không tìm thấy phòng thuộc tài khoản của bạn. "
-                            + "Dữ liệu mẫu có thể đã mất khi ứng dụng khởi động lại."
-            );
+                            + "Dữ liệu mẫu có thể đã mất khi ứng dụng khởi động lại.");
             return;
         }
 
@@ -160,9 +131,7 @@ public class HostRoomDetailFragment extends Fragment {
         binding.tvHostDetailError.setVisibility(View.GONE);
         binding.layoutHostDetailContent.setVisibility(View.VISIBLE);
 
-        binding.tvHostDetailCode.setText(
-                "Mã phòng: " + room.getUnitCode()
-        );
+        binding.tvHostDetailCode.setText("Mã phòng: " + room.getUnitCode());
 
         binding.tvHostDetailName.setText(room.getName());
         binding.tvHostDetailAddress.setText(room.getAddress());
@@ -173,16 +142,12 @@ public class HostRoomDetailFragment extends Fragment {
         binding.tvHostDetailDescription.setText(
                 description == null || description.trim().isEmpty()
                         ? "Chưa có mô tả."
-                        : description
-        );
+                        : description);
 
         displayRoomImage(room);
     }
 
-    /**
-     * Hiển thị ảnh từ đường dẫn đã lưu.
-     * Dùng phần thay thế nếu ảnh không còn đọc được.
-     */
+    /** Hiển thị ảnh từ đường dẫn đã lưu. Dùng phần thay thế nếu ảnh không còn đọc được. */
     private void displayRoomImage(HostRoom room) {
         clearRoomImage();
 
@@ -193,42 +158,31 @@ public class HostRoomDetailFragment extends Fragment {
         }
 
         try {
-            binding.imgHostDetailRoom.setImageURI(
-                    Uri.parse(imageUri)
-            );
+            ImageLoader.load(
+                    binding.imgHostDetailRoom, imageUri, android.R.drawable.ic_menu_gallery);
 
-            boolean imageLoaded =
-                    binding.imgHostDetailRoom.getDrawable() != null;
+            boolean imageLoaded = binding.imgHostDetailRoom.getDrawable() != null;
 
-            binding.imgHostDetailRoom.setVisibility(
-                    imageLoaded ? View.VISIBLE : View.GONE
-            );
+            binding.imgHostDetailRoom.setVisibility(imageLoaded ? View.VISIBLE : View.GONE);
 
             binding.tvHostDetailImagePlaceholder.setVisibility(
-                    imageLoaded ? View.GONE : View.VISIBLE
-            );
+                    imageLoaded ? View.GONE : View.VISIBLE);
 
-            binding.imgHostDetailRoom.setContentDescription(
-                    "Ảnh phòng " + room.getName()
-            );
+            binding.imgHostDetailRoom.setContentDescription("Ảnh phòng " + room.getName());
 
         } catch (SecurityException exception) {
             clearRoomImage();
         }
     }
 
-    /**
-     * Xóa ảnh cũ và hiển thị phần thay thế.
-     */
+    /** Xóa ảnh cũ và hiển thị phần thay thế. */
     private void clearRoomImage() {
         binding.imgHostDetailRoom.setImageDrawable(null);
         binding.imgHostDetailRoom.setVisibility(View.GONE);
         binding.tvHostDetailImagePlaceholder.setVisibility(View.VISIBLE);
     }
 
-    /**
-     * Ẩn và xóa thông tin phòng khi không còn quyền truy cập.
-     */
+    /** Ẩn và xóa thông tin phòng khi không còn quyền truy cập. */
     private void showError(String message) {
         binding.layoutHostDetailContent.setVisibility(View.GONE);
 
@@ -245,12 +199,10 @@ public class HostRoomDetailFragment extends Fragment {
     }
 
     /**
-     * Kiểm tra quyền, chủ sở hữu và xác minh email.
-     * Khi đủ điều kiện, mở biểu mẫu chỉnh sửa phòng.
+     * Kiểm tra quyền, chủ sở hữu và xác minh email. Khi đủ điều kiện, mở biểu mẫu chỉnh sửa phòng.
      */
     private void handleEditRoom() {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn()) {
             openScreen(new LoginFragment());
@@ -262,8 +214,7 @@ public class HostRoomDetailFragment extends Fragment {
             return;
         }
 
-        HostRoom room = DemoHostRoomRepository.getInstance()
-                .getMyRoomById(roomId);
+        HostRoom room = HostRepository.getInstance().getMyRoomById(roomId);
 
         if (room == null) {
             displayRoom();
@@ -271,19 +222,14 @@ public class HostRoomDetailFragment extends Fragment {
         }
 
         if (!session.isEmailVerified()) {
-            openScreen(
-                    VerifyEmailFragment.newInstance(session.getEmail())
-            );
+            openScreen(VerifyEmailFragment.newInstance(session.getEmail()));
             return;
         }
 
-        openScreen(
-                HostEditRoomFragment.newInstance(room.getId())
-        );
+        openScreen(HostEditRoomFragment.newInstance(room.getId()));
     }
-    /**
-     * Mở màn hình xác thực và giữ chi tiết phòng trong back stack.
-     */
+
+    /** Mở màn hình xác thực và giữ chi tiết phòng trong back stack. */
     private void openScreen(Fragment fragment) {
         getParentFragmentManager()
                 .beginTransaction()
@@ -293,13 +239,13 @@ public class HostRoomDetailFragment extends Fragment {
                 .commit();
     }
 
-    /**
-     * Kiểm tra quyền, chủ sở hữu và xác minh email.
-     * Mở biểu mẫu tạo bài đăng cho phòng đang xem.
-     */
+    /** Tải bài đăng hiện tại để tránh tạo lại và ghi đè bài đã có của phòng. */
     private void handleCreateListing() {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        if (binding == null || loadingListings) {
+            return;
+        }
+
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn()) {
             openScreen(new LoginFragment());
@@ -311,8 +257,7 @@ public class HostRoomDetailFragment extends Fragment {
             return;
         }
 
-        HostRoom room = DemoHostRoomRepository.getInstance()
-                .getMyRoomById(roomId);
+        HostRoom room = HostRepository.getInstance().getMyRoomById(roomId);
 
         if (room == null) {
             displayRoom();
@@ -320,35 +265,85 @@ public class HostRoomDetailFragment extends Fragment {
         }
 
         if (!session.isEmailVerified()) {
-            openScreen(
-                    VerifyEmailFragment.newInstance(session.getEmail())
-            );
+            openScreen(VerifyEmailFragment.newInstance(session.getEmail()));
             return;
         }
 
-        openScreen(
-                HostCreateListingFragment.newInstance(room.getId())
-        );
+        FragmentHostRoomDetailBinding requestBinding = binding;
+        String requestOwnerId = session.getUserId();
+        loadingListings = true;
+        binding.btnHostDetailCreateListing.setEnabled(false);
+
+        HostRepository.getInstance()
+                .fetchListings(
+                        listings -> {
+                            if (!isCurrentListingRequest(requestBinding, requestOwnerId)) {
+                                return;
+                            }
+                            loadingListings = false;
+                            binding.btnHostDetailCreateListing.setEnabled(true);
+                            if (!isResumed() || getParentFragmentManager().isStateSaved()) {
+                                return;
+                            }
+
+                            for (HostListing listing : listings) {
+                                if (roomId.equals(listing.getRoomId())) {
+                                    openScreen(
+                                            HostListingDetailFragment.newInstance(listing.getId()));
+                                    return;
+                                }
+                            }
+
+                            HostRoom currentRoom =
+                                    HostRepository.getInstance().getMyRoomById(roomId);
+                            if (currentRoom == null) {
+                                displayRoom();
+                                return;
+                            }
+                            if (currentRoom.getAvailability() != RoomCard.Availability.AVAILABLE) {
+                                showListingError("Chỉ tạo bài đăng cho phòng đang trống.");
+                                return;
+                            }
+                            openScreen(HostCreateListingFragment.newInstance(roomId));
+                        },
+                        message -> {
+                            if (!isCurrentListingRequest(requestBinding, requestOwnerId)) {
+                                return;
+                            }
+                            loadingListings = false;
+                            binding.btnHostDetailCreateListing.setEnabled(true);
+                            showListingError("Không thể kiểm tra bài đăng hiện tại: " + message);
+                        });
+    }
+
+    private boolean isCurrentListingRequest(
+            FragmentHostRoomDetailBinding requestBinding, String requestOwnerId) {
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
+        return binding == requestBinding
+                && isAdded()
+                && requestOwnerId.equals(session.getUserId())
+                && session.hasRole(UserRole.HOST)
+                && session.isEmailVerified();
+    }
+
+    private void showListingError(String message) {
+        binding.tvHostDetailError.setText(message);
+        binding.tvHostDetailError.setVisibility(View.VISIBLE);
     }
 
     /**
-     * Mở màn hình quản lý khung giờ của phòng đang xem.
-     * Kiểm tra lại quyền sở hữu trước khi chuyển màn hình.
+     * Mở màn hình quản lý khung giờ của phòng đang xem. Kiểm tra lại quyền sở hữu trước khi chuyển
+     * màn hình.
      */
     private void openViewingScreen() {
-        if (DemoHostRoomRepository.getInstance()
-                .getMyRoomById(roomId) == null) {
+        if (HostRepository.getInstance().getMyRoomById(roomId) == null) {
             return;
         }
 
-        openScreen(
-                HostViewingFragment.newInstance(roomId)
-        );
+        openScreen(HostViewingFragment.newInstance(roomId));
     }
 
-    /**
-     * Gỡ listener, giải phóng ảnh và binding khi giao diện bị hủy.
-     */
+    /** Gỡ listener, giải phóng ảnh và binding khi giao diện bị hủy. */
     @Override
     public void onDestroyView() {
         if (binding != null) {
@@ -360,6 +355,7 @@ public class HostRoomDetailFragment extends Fragment {
         }
 
         binding = null;
+        loadingListings = false;
 
         super.onDestroyView();
     }

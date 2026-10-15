@@ -1,6 +1,5 @@
 package com.example.roomly.ui.host;
 
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,15 +9,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.roomly.data.model.HostRoom;
 import com.example.roomly.databinding.ItemHostRoomBinding;
+import com.example.roomly.util.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Hiển thị thông tin, ảnh phòng và xử lý bấm thẻ để mở chi tiết.
- */
-public class HostRoomAdapter
-        extends RecyclerView.Adapter<HostRoomAdapter.HostRoomViewHolder> {
+/** Hiển thị thông tin, ảnh phòng và xử lý bấm thẻ để mở chi tiết. */
+public class HostRoomAdapter extends RecyclerView.Adapter<HostRoomAdapter.HostRoomViewHolder> {
 
     private final List<HostRoom> rooms = new ArrayList<>();
 
@@ -26,82 +23,58 @@ public class HostRoomAdapter
 
     public interface OnRoomClickListener {
 
-        /**
-         * Thông báo phòng được chọn để mở màn hình chi tiết.
-         */
+        /** Thông báo phòng được chọn để mở màn hình chi tiết. */
         void onRoomClick(HostRoom room);
     }
 
-    /**
-     * Khởi tạo adapter với danh sách rỗng.
-     */
-    public HostRoomAdapter() {
-    }
+    /** Khởi tạo adapter với danh sách rỗng. */
+    public HostRoomAdapter() {}
 
-    /**
-     * Đăng ký xử lý thao tác bấm thẻ phòng.
-     * Truyền null để gỡ listener khi màn hình bị hủy.
-     */
+    /** Đăng ký xử lý thao tác bấm thẻ phòng. Truyền null để gỡ listener khi màn hình bị hủy. */
     public void setOnRoomClickListener(OnRoomClickListener listener) {
         this.onRoomClickListener = listener;
     }
 
-    /**
-     * Tạo giao diện một thẻ phòng bằng ViewBinding.
-     */
+    /** Tạo giao diện một thẻ phòng bằng ViewBinding. */
     @NonNull
     @Override
-    public HostRoomViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType
-    ) {
-        ItemHostRoomBinding binding = ItemHostRoomBinding.inflate(
-                LayoutInflater.from(parent.getContext()),
-                parent,
-                false
-        );
+    public HostRoomViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        ItemHostRoomBinding binding =
+                ItemHostRoomBinding.inflate(
+                        LayoutInflater.from(parent.getContext()), parent, false);
 
         return new HostRoomViewHolder(binding);
     }
 
     /**
-     * Hiển thị dữ liệu và đăng ký thao tác bấm thẻ phòng.
-     * Lấy vị trí hiện tại khi bấm để tránh sử dụng vị trí cũ.
+     * Hiển thị dữ liệu và đăng ký thao tác bấm thẻ phòng. Lấy vị trí hiện tại khi bấm để tránh sử
+     * dụng vị trí cũ.
      */
     @Override
-    public void onBindViewHolder(
-            @NonNull HostRoomViewHolder holder,
-            int position
-    ) {
+    public void onBindViewHolder(@NonNull HostRoomViewHolder holder, int position) {
         holder.bind(rooms.get(position));
 
-        holder.itemView.setOnClickListener(view -> {
-            int currentPosition = holder.getBindingAdapterPosition();
+        holder.itemView.setOnClickListener(
+                view -> {
+                    int currentPosition = holder.getBindingAdapterPosition();
 
-            if (currentPosition == RecyclerView.NO_POSITION) {
-                return;
-            }
+                    if (currentPosition == RecyclerView.NO_POSITION) {
+                        return;
+                    }
 
-            if (onRoomClickListener != null) {
-                onRoomClickListener.onRoomClick(
-                        rooms.get(currentPosition)
-                );
-            }
-        });
+                    if (onRoomClickListener != null) {
+                        onRoomClickListener.onRoomClick(rooms.get(currentPosition));
+                    }
+                });
     }
 
-    /**
-     * Trả về số phòng đang hiển thị.
-     */
+    /** Trả về số phòng đang hiển thị. */
     @Override
     public int getItemCount() {
         return rooms.size();
     }
 
-    /**
-     * Thay danh sách phòng và cập nhật giao diện.
-     * Sao chép trước khi xóa danh sách cũ.
-     */
+    /** Thay danh sách phòng và cập nhật giao diện. Sao chép trước khi xóa danh sách cũ. */
     public void updateRooms(List<HostRoom> newRooms) {
         List<HostRoom> updatedRooms = new ArrayList<>(newRooms);
 
@@ -111,9 +84,7 @@ public class HostRoomAdapter
         notifyDataSetChanged();
     }
 
-    /**
-     * Gỡ sự kiện bấm và giải phóng ảnh khi thẻ được tái sử dụng.
-     */
+    /** Gỡ sự kiện bấm và giải phóng ảnh khi thẻ được tái sử dụng. */
     @Override
     public void onViewRecycled(@NonNull HostRoomViewHolder holder) {
         holder.itemView.setOnClickListener(null);
@@ -122,56 +93,43 @@ public class HostRoomAdapter
         super.onViewRecycled(holder);
     }
 
-    /**
-     * Giữ các thành phần giao diện của một thẻ phòng.
-     */
+    /** Giữ các thành phần giao diện của một thẻ phòng. */
     static class HostRoomViewHolder extends RecyclerView.ViewHolder {
 
         private final ItemHostRoomBinding binding;
 
-        /**
-         * Khởi tạo ViewHolder từ binding của thẻ phòng.
-         */
+        /** Khởi tạo ViewHolder từ binding của thẻ phòng. */
         HostRoomViewHolder(ItemHostRoomBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
 
         /**
-         * Hiển thị thông tin phòng và cập nhật ảnh.
-         * Luôn đặt lại trạng thái khi RecyclerView tái sử dụng thẻ.
+         * Hiển thị thông tin phòng và cập nhật ảnh. Luôn đặt lại trạng thái khi RecyclerView tái sử
+         * dụng thẻ.
          */
         void bind(HostRoom room) {
-            binding.tvHostRoomCode.setText(
-                    "Mã phòng: " + room.getUnitCode()
-            );
+            binding.tvHostRoomCode.setText("Mã phòng: " + room.getUnitCode());
 
             binding.tvHostRoomName.setText(room.getName());
             binding.tvHostRoomAddress.setText(room.getAddress());
 
-            binding.tvHostRoomArea.setText(
-                    "Diện tích: " + room.getFormattedArea()
-            );
+            binding.tvHostRoomArea.setText("Diện tích: " + room.getFormattedArea());
 
             String description = room.getDescription();
 
-            boolean hasDescription = description != null
-                    && !description.trim().isEmpty();
+            boolean hasDescription = description != null && !description.trim().isEmpty();
 
-            binding.tvHostRoomDescription.setText(
-                    hasDescription ? description : ""
-            );
+            binding.tvHostRoomDescription.setText(hasDescription ? description : "");
 
-            binding.tvHostRoomDescription.setVisibility(
-                    hasDescription ? View.VISIBLE : View.GONE
-            );
+            binding.tvHostRoomDescription.setVisibility(hasDescription ? View.VISIBLE : View.GONE);
 
             displayImage(room);
         }
 
         /**
-         * Đọc ảnh từ đường dẫn đã lưu trong phòng mẫu.
-         * Hiển thị phần thay thế nếu ảnh bị xóa hoặc mất quyền đọc.
+         * Đọc ảnh từ đường dẫn đã lưu trong phòng mẫu. Hiển thị phần thay thế nếu ảnh bị xóa hoặc
+         * mất quyền đọc.
          */
         private void displayImage(HostRoom room) {
             clearImage();
@@ -183,33 +141,23 @@ public class HostRoomAdapter
             }
 
             try {
-                binding.imgHostRoom.setImageURI(
-                        Uri.parse(imageUri)
-                );
+                ImageLoader.load(binding.imgHostRoom, imageUri, android.R.drawable.ic_menu_gallery);
 
-                boolean imageLoaded =
-                        binding.imgHostRoom.getDrawable() != null;
+                boolean imageLoaded = binding.imgHostRoom.getDrawable() != null;
 
-                binding.imgHostRoom.setVisibility(
-                        imageLoaded ? View.VISIBLE : View.GONE
-                );
+                binding.imgHostRoom.setVisibility(imageLoaded ? View.VISIBLE : View.GONE);
 
                 binding.tvHostRoomImagePlaceholder.setVisibility(
-                        imageLoaded ? View.GONE : View.VISIBLE
-                );
+                        imageLoaded ? View.GONE : View.VISIBLE);
 
-                binding.imgHostRoom.setContentDescription(
-                        "Ảnh phòng " + room.getName()
-                );
+                binding.imgHostRoom.setContentDescription("Ảnh phòng " + room.getName());
 
             } catch (SecurityException exception) {
                 clearImage();
             }
         }
 
-        /**
-         * Xóa ảnh cũ và đưa thẻ về trạng thái chưa có ảnh.
-         */
+        /** Xóa ảnh cũ và đưa thẻ về trạng thái chưa có ảnh. */
         void clearImage() {
             binding.imgHostRoom.setImageDrawable(null);
             binding.imgHostRoom.setVisibility(View.GONE);

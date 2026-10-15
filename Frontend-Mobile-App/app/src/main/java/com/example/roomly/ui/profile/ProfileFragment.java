@@ -9,447 +9,467 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.roomly.BuildConfig;
 import com.example.roomly.R;
+import com.example.roomly.data.api.ApiClient;
 import com.example.roomly.data.model.AppMode;
 import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.model.UserRole;
+import com.example.roomly.data.repository.AuthRepository;
+import com.example.roomly.data.repository.DebugSessionHelper;
 import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentProfileBinding;
+import com.example.roomly.ui.admin.AdminDashboardFragment;
 import com.example.roomly.ui.auth.LoginFragment;
 import com.example.roomly.ui.auth.VerifyEmailFragment;
+import com.example.roomly.ui.booking.BookingsFragment;
+import com.example.roomly.ui.booking.HostBookingsFragment;
+import com.example.roomly.ui.notification.NotificationsFragment;
+import com.example.roomly.ui.report.MyReportsFragment;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import com.example.roomly.BuildConfig;
-import com.example.roomly.data.repository.DebugSessionHelper;
-
-
-/**
- * Hiển thị trang Cá nhân theo phiên đăng nhập.
- * Cho phép chọn chế độ Người thuê hoặc Chủ trọ theo vai trò hiện có.
- */
 public class ProfileFragment extends Fragment {
 
     private FragmentProfileBinding binding;
     private ProfileViewModel viewModel;
+    private AlertDialog demoDialog;
 
-    // Trạng thái hiện tại dùng để hiển thị giao diện.
     private SessionState currentSession = SessionState.guest();
     private AppMode currentMode = AppMode.TENANT;
+    private boolean openingScreen;
 
-    /**
-     * Lấy ViewModel quản lý phiên và chế độ giao diện.
-     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        viewModel = new ViewModelProvider(this)
-                .get(ProfileViewModel.class);
+        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
     }
 
-    /**
-     * Tạo giao diện Cá nhân từ XML bằng ViewBinding.
-     */
     @Nullable
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState
-    ) {
-        binding = FragmentProfileBinding.inflate(
-                inflater,
-                container,
-                false
-        );
+            @Nullable Bundle savedInstanceState) {
+        binding = FragmentProfileBinding.inflate(inflater, container, false);
 
         return binding.getRoot();
     }
 
-    /**
-     * Đăng ký các thao tác và quan sát phiên, chế độ theo vòng đời View.
-     */
     @Override
-    public void onViewCreated(
-            @NonNull View view,
-            @Nullable Bundle savedInstanceState
-    ) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         setupActionButtons();
 
-        viewModel.getSessionState().observe(
-                getViewLifecycleOwner(),
-                this::renderSession
-        );
+        viewModel.getSessionState().observe(getViewLifecycleOwner(), this::renderSession);
 
-        viewModel.getMode().observe(
-                getViewLifecycleOwner(),
-                this::renderMode
-        );
+        viewModel.getMode().observe(getViewLifecycleOwner(), this::renderMode);
     }
 
-    /**
-     * Đăng ký đăng nhập, xác minh, chỉnh sửa và chọn chế độ.
-     */
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        openingScreen = false;
+
+        renderSession(SessionRepository.getInstance().getCurrentSession());
+    }
+
     private void setupActionButtons() {
-        binding.btnOpenLogin.setOnClickListener(
-                view -> openLoginScreen()
-        );
+        binding.btnOpenLogin.setOnClickListener(view -> openLoginScreen());
 
-        binding.btnProfileVerifyEmail.setOnClickListener(
-                view -> openVerifyEmailScreen()
-        );
+        binding.btnProfileVerifyEmail.setOnClickListener(view -> openVerifyEmailScreen());
 
-        binding.btnEditProfile.setOnClickListener(
-                view -> handleEditProfile()
-        );
+        binding.btnEditProfile.setOnClickListener(view -> handleEditProfile());
 
-        binding.btnModeTenant.setOnClickListener(
-                view -> selectMode(AppMode.TENANT)
-        );
+        binding.btnProfileBookings.setOnClickListener(view -> openBookingsScreen());
 
-        binding.btnModeHost.setOnClickListener(
-                view -> selectMode(AppMode.HOST)
-        );
+        binding.btnProfileNotifications.setOnClickListener(view -> openNotificationsScreen());
 
-        binding.btnEnableDemoSession.setOnClickListener(view -> {
-            boolean enabled = DebugSessionHelper.enableDemoSession();
+        binding.btnProfileAdmin.setOnClickListener(view -> openAdminDashboard());
 
-            if (!enabled) {
-                Toast.makeText(
-                        requireContext(),
-                        "Không thể bật phiên mẫu khi đang có tài khoản đăng nhập.",
-                        Toast.LENGTH_SHORT
-                ).show();
-            }
-        });
+        binding.btnModeTenant.setOnClickListener(view -> selectMode(AppMode.TENANT));
 
-        binding.btnDisableDemoSession.setOnClickListener(view ->
-                DebugSessionHelper.disableDemoSession()
-        );
+        binding.btnModeHost.setOnClickListener(view -> selectMode(AppMode.HOST));
+
+        binding.btnEnableDemoSession.setOnClickListener(view -> showDemoAccountDialog());
+
+        binding.btnProfileReports.setOnClickListener(view -> openMyReportsScreen());
+
+        binding.btnEnableDemoAdminSession.setOnClickListener(
+                view -> {
+                    if (!DebugSessionHelper.enableDemoAdminSession()) {
+                        showMessage("Hãy tắt phiên thử hiện tại trước khi bật admin thử.");
+                    }
+                });
+
+        binding.btnDisableDemoSession.setOnClickListener(
+                view -> new AuthRepository().logout(() -> showMessage("Đã đăng xuất.")));
     }
 
-    /**
-     * Hiển thị lời mời đăng nhập cho khách hoặc thông tin tài khoản.
-     * Các lựa chọn chế độ được cập nhật theo vai trò trong phiên.
-     */
+    private void showDemoAccountDialog() {
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
+
+        if (!BuildConfig.DEBUG || session.isLoggedIn() || demoDialog != null) {
+            return;
+        }
+
+        String[] choices = {"Tài khoản Chủ trọ / Người thuê", "Tài khoản Người thuê riêng"};
+
+        AlertDialog dialog =
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Chọn tài khoản thử")
+                        .setItems(
+                                choices,
+                                (interfaceDialog, which) -> {
+                                    boolean enabled =
+                                            which == 0
+                                                    ? DebugSessionHelper.enableDemoSession()
+                                                    : DebugSessionHelper.enableDemoTenantSession();
+
+                                    if (!enabled) {
+                                        showMessage(
+                                                "Không thể bật phiên thử. "
+                                                        + "Hãy kiểm tra tài khoản hiện tại.");
+                                    }
+                                })
+                        .setNegativeButton("Đóng", null)
+                        .create();
+
+        demoDialog = dialog;
+
+        dialog.setOnDismissListener(
+                dismissed -> {
+                    if (demoDialog == dialog) {
+                        demoDialog = null;
+                    }
+                });
+
+        dialog.show();
+    }
+
     private void renderSession(@Nullable SessionState session) {
         if (binding == null) {
             return;
         }
 
-        currentSession = session == null
-                ? SessionState.guest()
-                : session;
+        currentSession = session == null ? SessionState.guest() : session;
 
         boolean loggedIn = currentSession.isLoggedIn();
 
-        // Chỉ hiện nút bật phiên mẫu cho khách trong bản debug.
-        binding.btnEnableDemoSession.setVisibility(
-                BuildConfig.DEBUG && !loggedIn
-                        ? View.VISIBLE
-                        : View.GONE
-        );
-
-        // Chỉ hiện nút tắt khi đang dùng đúng tài khoản mẫu.
-        boolean isDemoSession = BuildConfig.DEBUG
-                && loggedIn
-                && "debug-demo-user".equals(
-                currentSession.getUserId()
-        );
-
-        binding.btnDisableDemoSession.setVisibility(
-                isDemoSession ? View.VISIBLE : View.GONE
-        );
-
-        binding.layoutProfileGuest.setVisibility(
-                loggedIn ? View.GONE : View.VISIBLE
-        );
-
-        binding.layoutProfileAccount.setVisibility(
-                loggedIn ? View.VISIBLE : View.GONE
-        );
-
-        binding.tvProfileName.setText(
-                currentSession.getFullName()
-        );
-
-        binding.tvProfileEmail.setText(
-                currentSession.getEmail()
-        );
-
-        // Không dùng số điện thoại mẫu thay dữ liệu tài khoản thật.
-        binding.tvProfilePhone.setText("");
-        binding.tvProfilePhone.setVisibility(View.GONE);
-
-        if (!loggedIn) {
-            binding.tvProfileVerification.setText("");
-            binding.btnProfileVerifyEmail.setVisibility(View.GONE);
-            binding.btnEditProfile.setEnabled(false);
-
-        } else {
-            boolean verified = currentSession.isEmailVerified();
-
-            binding.tvProfileVerification.setText(
-                    verified
-                            ? "Email đã được xác minh"
-                            : "Email chưa được xác minh"
-            );
-
-            binding.btnProfileVerifyEmail.setVisibility(
-                    verified ? View.GONE : View.VISIBLE
-            );
-
-            binding.btnEditProfile.setEnabled(true);
+        if (loggedIn) {
+            closeDemoDialog();
         }
 
-        currentMode = viewModel.getCurrentMode();
+        binding.layoutProfileGuest.setVisibility(loggedIn ? View.GONE : View.VISIBLE);
 
+        binding.layoutProfileAccount.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
+
+        binding.tvProfileName.setText(currentSession.getFullName());
+        binding.tvProfileEmail.setText(currentSession.getEmail());
+
+        String phone = ApiClient.cachedUser().optString("phone", "");
+
+        binding.tvProfilePhone.setText(phone);
+        binding.tvProfilePhone.setVisibility(
+                loggedIn && !phone.isEmpty() ? View.VISIBLE : View.GONE);
+
+        binding.btnProfileAdmin.setVisibility(
+                loggedIn && currentSession.hasRole(UserRole.ADMIN) ? View.VISIBLE : View.GONE);
+
+        binding.btnProfileNotifications.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
+
+        binding.btnProfileNotifications.setEnabled(loggedIn && !openingScreen);
+
+        boolean canEnableDemo = false;
+
+        binding.btnEnableDemoSession.setText("Chọn tài khoản thử");
+        binding.btnEnableDemoSession.setVisibility(canEnableDemo ? View.VISIBLE : View.GONE);
+
+        binding.btnEnableDemoAdminSession.setVisibility(canEnableDemo ? View.VISIBLE : View.GONE);
+
+        binding.btnDisableDemoSession.setText("Đăng xuất");
+        binding.btnDisableDemoSession.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
+
+        binding.tvProfileVerification.setText(
+                !loggedIn
+                        ? ""
+                        : currentSession.isEmailVerified()
+                                ? "Email đã được xác minh"
+                                : "Email chưa được xác minh");
+
+        binding.btnProfileVerifyEmail.setVisibility(
+                loggedIn && !currentSession.isEmailVerified() ? View.VISIBLE : View.GONE);
+
+        binding.btnEditProfile.setEnabled(loggedIn);
+
+        currentMode = viewModel.getCurrentMode();
         renderModeOptions();
     }
 
-    /**
-     * Nhận chế độ mới từ repository và cập nhật các nút lựa chọn.
-     */
     private void renderMode(@Nullable AppMode mode) {
         currentMode = mode == null ? AppMode.TENANT : mode;
-
         renderModeOptions();
     }
 
-    /**
-     * Chỉ hiện chế độ mà tài khoản có vai trò tương ứng.
-     * Khách và tài khoản chỉ có ADMIN không thấy bộ chọn này.
-     */
     private void renderModeOptions() {
         if (binding == null) {
             return;
         }
 
-        boolean canUseTenant =
-                currentSession.hasRole(UserRole.TENANT);
+        boolean tenant = currentSession.isLoggedIn() && currentSession.hasRole(UserRole.TENANT);
 
-        boolean canUseHost =
-                currentSession.hasRole(UserRole.HOST);
-
-        boolean hasAvailableMode = canUseTenant || canUseHost;
+        boolean host = currentSession.isLoggedIn() && currentSession.hasRole(UserRole.HOST);
 
         binding.layoutProfileMode.setVisibility(
-                hasAvailableMode ? View.VISIBLE : View.GONE
-        );
+                tenant || tenant || host ? View.VISIBLE : View.GONE);
 
-        binding.btnModeTenant.setVisibility(
-                canUseTenant ? View.VISIBLE : View.GONE
-        );
+        binding.btnModeTenant.setVisibility(tenant ? View.VISIBLE : View.GONE);
 
-        binding.btnModeHost.setVisibility(
-                canUseHost ? View.VISIBLE : View.GONE
-        );
+        binding.btnModeHost.setVisibility(tenant || host ? View.VISIBLE : View.GONE);
 
-        binding.btnModeTenant.setEnabled(canUseTenant);
-        binding.btnModeHost.setEnabled(canUseHost);
+        binding.btnModeTenant.setEnabled(tenant);
+        binding.btnModeHost.setEnabled(tenant || host);
 
-        if (!hasAvailableMode) {
+        boolean hostBookings = host && (currentMode == AppMode.HOST || !tenant);
+
+        binding.btnProfileBookings.setVisibility(tenant || host ? View.VISIBLE : View.GONE);
+
+        binding.btnProfileBookings.setEnabled(tenant || host);
+
+        binding.btnProfileBookings.setText(
+                hostBookings ? "Yêu cầu thuê nhận được" : "Yêu cầu thuê của tôi");
+
+        if (!tenant && !host) {
             binding.tvProfileCurrentMode.setText("");
             return;
         }
 
-        boolean tenantSelected =
-                canUseTenant && currentMode == AppMode.TENANT;
+        updateModeButton(binding.btnModeTenant, tenant && !hostBookings);
 
-        boolean hostSelected =
-                canUseHost && currentMode == AppMode.HOST;
-
-        updateModeButton(
-                binding.btnModeTenant,
-                tenantSelected
-        );
-
-        updateModeButton(
-                binding.btnModeHost,
-                hostSelected
-        );
+        updateModeButton(binding.btnModeHost, hostBookings);
 
         binding.tvProfileCurrentMode.setText(
-                currentMode == AppMode.HOST
-                        ? "Đang sử dụng chế độ Chủ trọ"
-                        : "Đang sử dụng chế độ Người thuê"
-        );
+                hostBookings ? "Đang sử dụng chế độ Chủ trọ" : "Đang sử dụng chế độ Người thuê");
     }
 
-    /**
-     * Đổi màu nút và mô tả để thể hiện chế độ đang được chọn.
-     */
-    private void updateModeButton(
-            MaterialButton button,
-            boolean selected
-    ) {
-        int backgroundColor = ContextCompat.getColor(
-                requireContext(),
-                selected
-                        ? R.color.roomly_primary
-                        : R.color.roomly_surface
-        );
-
-        int textColor = ContextCompat.getColor(
-                requireContext(),
-                selected
-                        ? R.color.roomly_surface
-                        : R.color.roomly_primary
-        );
-
+    private void updateModeButton(MaterialButton button, boolean selected) {
         button.setBackgroundTintList(
-                ColorStateList.valueOf(backgroundColor)
-        );
+                ColorStateList.valueOf(
+                        ContextCompat.getColor(
+                                requireContext(),
+                                selected ? R.color.roomly_primary : R.color.roomly_surface)));
 
-        button.setTextColor(textColor);
+        button.setTextColor(
+                ContextCompat.getColor(
+                        requireContext(),
+                        selected ? R.color.roomly_surface : R.color.roomly_primary));
+
         button.setSelected(selected);
-
-        button.setContentDescription(
-                button.getText().toString()
-                        + (selected ? ", đang chọn" : "")
-        );
+        button.setContentDescription(button.getText() + (selected ? ", đang chọn" : ""));
     }
 
-    /**
-     * Yêu cầu repository đổi chế độ sau khi kiểm tra vai trò.
-     * Không sửa vai trò hoặc token đăng nhập.
-     */
     private void selectMode(AppMode requestedMode) {
-        if (binding == null) {
-            return;
-        }
-
-        // Đọc phiên mới nhất thay vì chỉ dựa vào dữ liệu đang hiển thị.
-        currentSession = SessionRepository.getInstance()
-                .getCurrentSession();
+        currentSession = SessionRepository.getInstance().getCurrentSession();
 
         if (!currentSession.isLoggedIn()) {
-            renderSession(currentSession);
             openLoginScreen();
             return;
         }
 
-        boolean changed = viewModel.selectMode(requestedMode);
+        if (requestedMode == AppMode.HOST && !currentSession.hasRole(UserRole.HOST)) {
+            if (!currentSession.isEmailVerified()) {
+                openVerifyEmailScreen();
+                return;
+            }
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Bật quyền chủ trọ?")
+                    .setMessage("Bạn sẽ có thể tạo phòng và gửi tin đăng để quản trị viên duyệt.")
+                    .setNegativeButton("Quay lại", null)
+                    .setPositiveButton(
+                            "Bật chủ trọ",
+                            (dialog, which) ->
+                                    new AuthRepository()
+                                            .enableHost(
+                                                    () -> {
+                                                        if (binding == null) return;
+                                                        viewModel.selectMode(AppMode.HOST);
+                                                        currentMode = viewModel.getCurrentMode();
+                                                        renderModeOptions();
+                                                    },
+                                                    this::showMessage))
+                    .show();
+            return;
+        }
 
-        if (!changed) {
+        if (!viewModel.selectMode(requestedMode)) {
             renderSession(currentSession);
-
-            Toast.makeText(
-                    requireContext(),
-                    "Tài khoản chưa có quyền sử dụng chế độ này.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
+            showMessage("Tài khoản chưa có quyền sử dụng chế độ này.");
             return;
         }
 
         currentMode = viewModel.getCurrentMode();
-
         renderModeOptions();
     }
 
-    /**
-     * Mở Đăng nhập và giữ trang Cá nhân trong back stack.
-     */
+    private void openBookingsScreen() {
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            openLoginScreen();
+            return;
+        }
+
+        boolean tenant = session.hasRole(UserRole.TENANT);
+        boolean host = session.hasRole(UserRole.HOST);
+
+        currentMode = viewModel.getCurrentMode();
+
+        if (host && (currentMode == AppMode.HOST || !tenant)) {
+            openScreen(new HostBookingsFragment());
+        } else if (tenant) {
+            openScreen(new BookingsFragment());
+        } else {
+            renderSession(session);
+            showMessage("Tài khoản chưa có quyền quản lý yêu cầu thuê.");
+        }
+    }
+
+    private void openNotificationsScreen() {
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            openLoginScreen();
+            return;
+        }
+
+        openScreen(new NotificationsFragment());
+    }
+
     private void openLoginScreen() {
-        if (binding == null) {
-            return;
-        }
-
-        getParentFragmentManager()
-                .beginTransaction()
-                .setReorderingAllowed(true)
-                .replace(
-                        R.id.fragment_container,
-                        new LoginFragment()
-                )
-                .addToBackStack(null)
-                .commit();
+        openScreen(new LoginFragment());
     }
 
-    /**
-     * Mở xác minh cho tài khoản đã đăng nhập nhưng chưa xác minh email.
-     */
     private void openVerifyEmailScreen() {
-        if (binding == null) {
-            return;
-        }
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
-        currentSession = SessionRepository.getInstance()
-                .getCurrentSession();
-
-        if (!currentSession.isLoggedIn()) {
+        if (!session.isLoggedIn()) {
             openLoginScreen();
             return;
         }
 
-        if (currentSession.isEmailVerified()) {
-            renderSession(currentSession);
-            return;
+        if (!session.isEmailVerified()) {
+            openScreen(VerifyEmailFragment.newInstance(session.getEmail()));
         }
-
-        getParentFragmentManager()
-                .beginTransaction()
-                .setReorderingAllowed(true)
-                .replace(
-                        R.id.fragment_container,
-                        VerifyEmailFragment.newInstance(
-                                currentSession.getEmail()
-                        )
-                )
-                .addToBackStack(null)
-                .commit();
     }
 
-    /**
-     * Kiểm tra đăng nhập và xác minh trước khi chỉnh sửa hồ sơ.
-     * Chức năng cập nhật hồ sơ thật sẽ được nối với API sau.
-     */
     private void handleEditProfile() {
-        currentSession = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
-        if (!currentSession.isLoggedIn()) {
+        if (!session.isLoggedIn()) {
             openLoginScreen();
             return;
         }
 
-        if (!currentSession.isEmailVerified()) {
+        if (!session.isEmailVerified()) {
             openVerifyEmailScreen();
             return;
         }
 
-        Toast.makeText(
-                requireContext(),
-                "Chưa kết nối dịch vụ cập nhật hồ sơ.",
-                Toast.LENGTH_SHORT
-        ).show();
+        if (binding == null
+                || openingScreen
+                || getChildFragmentManager().isStateSaved()
+                || getChildFragmentManager().findFragmentByTag(EditProfileDialogFragment.TAG)
+                        != null) {
+            return;
+        }
+
+        EditProfileDialogFragment.newInstance(session.getUserId())
+                .showNow(getChildFragmentManager(), EditProfileDialogFragment.TAG);
     }
 
-    /**
-     * Gỡ sự kiện và giải phóng Binding khi giao diện bị hủy.
-     * Observer tự được gỡ theo vòng đời giao diện.
-     */
+    private void openAdminDashboard() {
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
+
+        if (session.isLoggedIn() && session.hasRole(UserRole.ADMIN)) {
+            openScreen(new AdminDashboardFragment());
+        } else {
+            renderSession(session);
+        }
+    }
+
+    private void openScreen(Fragment fragment) {
+        if (binding == null || openingScreen || getParentFragmentManager().isStateSaved()) {
+            return;
+        }
+
+        openingScreen = true;
+        binding.btnProfileNotifications.setEnabled(false);
+
+        closeDemoDialog();
+
+        getParentFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void showMessage(String message) {
+        if (isAdded()) {
+            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void closeDemoDialog() {
+        if (demoDialog != null) {
+            AlertDialog dialog = demoDialog;
+            demoDialog = null;
+
+            dialog.setOnDismissListener(null);
+            dialog.dismiss();
+        }
+    }
+
+    private void openMyReportsScreen() {
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            openLoginScreen();
+            return;
+        }
+
+        openScreen(new MyReportsFragment());
+    }
+
     @Override
     public void onDestroyView() {
+        closeDemoDialog();
+
         if (binding != null) {
             binding.btnOpenLogin.setOnClickListener(null);
             binding.btnProfileVerifyEmail.setOnClickListener(null);
             binding.btnEditProfile.setOnClickListener(null);
+            binding.btnProfileBookings.setOnClickListener(null);
+            binding.btnProfileNotifications.setOnClickListener(null);
+            binding.btnProfileAdmin.setOnClickListener(null);
             binding.btnModeTenant.setOnClickListener(null);
             binding.btnModeHost.setOnClickListener(null);
             binding.btnEnableDemoSession.setOnClickListener(null);
+            binding.btnEnableDemoAdminSession.setOnClickListener(null);
             binding.btnDisableDemoSession.setOnClickListener(null);
+            binding.btnProfileReports.setOnClickListener(null);
         }
 
         binding = null;
-
         super.onDestroyView();
     }
 }

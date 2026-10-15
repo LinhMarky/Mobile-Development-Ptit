@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Màn hình quản trị danh sách bài đăng. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/roomly_background">
+
+    <!-- Thanh tiêu đề và nút quay lại. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_admin_listings_back"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Quay lại"
+            android:textAllCaps="false"
+            android:textColor="@color/roomly_primary" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Kiểm duyệt bài đăng"
+            android:textColor="@color/roomly_text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- Nội dung chỉ hiện khi tài khoản có quyền ADMIN. -->
+    <LinearLayout
+        android:id="@+id/layout_admin_listings_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:text="Chọn bài đăng để xem nội dung và thực hiện kiểm duyệt."
+            android:textColor="@color/roomly_text_secondary"
+            android:textSize="14sp"
+            android:lineSpacingExtra="3dp" />
+
+        <!-- Bộ lọc cuộn ngang để không bị chật trên màn hình nhỏ. -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:clipToPadding="false"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_admin_listings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleLine="true"
+                app:singleSelection="true"
+                app:selectionRequired="true"
+                app:chipSpacingHorizontal="8dp">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_admin_listings_all"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Tất cả"
+                    android:textColor="@color/roomly_text_primary"
+                    app:chipBackgroundColor="@color/roomly_primary_light"
+                    app:checkedIconVisible="false"
+                    app:ensureMinTouchTargetSize="true" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_admin_listings_pending"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Chờ duyệt"
+                    android:textColor="@color/roomly_text_primary"
+                    app:chipBackgroundColor="@color/roomly_primary_light"
+                    app:checkedIconVisible="false"
+                    app:ensureMinTouchTargetSize="true" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_admin_listings_published"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Đang hiển thị"
+                    android:textColor="@color/roomly_text_primary"
+                    app:chipBackgroundColor="@color/roomly_primary_light"
+                    app:checkedIconVisible="false"
+                    app:ensureMinTouchTargetSize="true" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_admin_listings_hidden"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Đã ẩn"
+                    android:textColor="@color/roomly_text_primary"
+                    app:chipBackgroundColor="@color/roomly_primary_light"
+                    app:checkedIconVisible="false"
+                    app:ensureMinTouchTargetSize="true" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </HorizontalScrollView>
+
+        <!-- Danh sách bài đăng hoặc thông báo không có kết quả. -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="16dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_admin_listings"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="24dp"
+                android:clipToPadding="false"
+                android:visibility="gone" />
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/layout_admin_listings_empty"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:id="@+id/tv_admin_listings_empty_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="Chưa có bài đăng"
+                        android:textColor="@color/roomly_text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:accessibilityLiveRegion="polite" />
+
+                    <TextView
+                        android:id="@+id/tv_admin_listings_empty_description"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center"
+                        android:text="Danh sách bài đăng sẽ xuất hiện tại đây."
+                        android:textColor="@color/roomly_text_secondary"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+
+                </LinearLayout>
+
+            </androidx.core.widget.NestedScrollView>
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <!-- Hiện khi chưa đăng nhập hoặc không có quyền quản trị. -->
+    <TextView
+        android:id="@+id/tv_admin_listings_access_error"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:padding="16dp"
+        android:text="Tài khoản hiện tại không có quyền quản trị."
+        android:textColor="?attr/colorError"
+        android:textSize="15sp"
+        android:lineSpacingExtra="4dp"
+        android:accessibilityLiveRegion="polite"
+        android:visibility="gone" />
+
+</LinearLayout>

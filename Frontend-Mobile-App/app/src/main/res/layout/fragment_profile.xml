@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Trang Cá nhân có thể cuộn trên màn hình nhỏ. -->
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -18,7 +17,6 @@
         android:paddingEnd="20dp"
         android:paddingBottom="24dp">
 
-        <!-- Tiêu đề trang -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,7 +25,6 @@
             android:textSize="26sp"
             android:textStyle="bold" />
 
-        <!-- Vùng dành cho khách chưa đăng nhập -->
         <LinearLayout
             android:id="@+id/layout_profile_guest"
             android:layout_width="match_parent"
@@ -47,8 +44,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:gravity="center_horizontal"
+                    android:orientation="vertical"
                     android:padding="24dp">
 
                     <ImageView
@@ -56,9 +53,9 @@
                         android:layout_height="80dp"
                         android:background="@drawable/bg_favorite_button"
                         android:backgroundTint="@color/roomly_primary_light"
+                        android:importantForAccessibility="no"
                         android:padding="20dp"
                         android:src="@drawable/ic_person"
-                        android:importantForAccessibility="no"
                         app:tint="@color/roomly_primary" />
 
                     <TextView
@@ -81,7 +78,6 @@
                         android:textColor="@color/roomly_text_secondary"
                         android:textSize="14sp" />
 
-                    <!-- Mở màn hình đăng nhập -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_open_login"
                         android:layout_width="match_parent"
@@ -91,11 +87,9 @@
                         android:text="Đăng nhập / Đăng ký"
                         android:textAllCaps="false"
                         android:textColor="@color/roomly_surface"
-                        android:textSize="15sp"
                         app:backgroundTint="@color/roomly_primary"
                         app:cornerRadius="12dp" />
 
-                    <!-- Java chỉ hiện nút này trong bản debug -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_enable_demo_session"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -103,14 +97,26 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:minHeight="48dp"
-                        android:text="Bật tài khoản thử giao diện"
+                        android:text="Chọn tài khoản thử"
                         android:textAllCaps="false"
                         android:textColor="@color/roomly_primary"
                         android:visibility="gone"
-                        app:backgroundTint="@color/roomly_surface"
                         app:cornerRadius="12dp"
-                        app:strokeColor="@color/roomly_primary"
-                        app:strokeWidth="1dp" />
+                        app:strokeColor="@color/roomly_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_enable_demo_admin_session"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:minHeight="48dp"
+                        android:text="Bật tài khoản admin thử (debug)"
+                        android:textAllCaps="false"
+                        android:textColor="@color/roomly_primary"
+                        android:visibility="gone"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/roomly_primary" />
 
                 </LinearLayout>
 
@@ -118,7 +124,6 @@
 
         </LinearLayout>
 
-        <!-- Vùng tài khoản: chỉ hiện khi có phiên đăng nhập -->
         <LinearLayout
             android:id="@+id/layout_profile_account"
             android:layout_width="match_parent"
@@ -127,7 +132,6 @@
             android:orientation="vertical"
             android:visibility="gone">
 
-            <!-- Thẻ thông tin tài khoản -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -140,8 +144,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:gravity="center_horizontal"
+                    android:orientation="vertical"
                     android:padding="24dp">
 
                     <ImageView
@@ -149,9 +153,9 @@
                         android:layout_height="80dp"
                         android:background="@drawable/bg_favorite_button"
                         android:backgroundTint="@color/roomly_primary_light"
+                        android:importantForAccessibility="no"
                         android:padding="20dp"
                         android:src="@drawable/ic_person"
-                        android:importantForAccessibility="no"
                         app:tint="@color/roomly_primary" />
 
                     <TextView
@@ -173,7 +177,16 @@
                         android:textColor="@color/roomly_text_secondary"
                         android:textSize="14sp" />
 
-                    <!-- Trạng thái xác minh lấy từ phiên tài khoản -->
+                    <TextView
+                        android:id="@+id/tv_profile_phone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"
+                        android:textColor="@color/roomly_text_secondary"
+                        android:textSize="14sp"
+                        android:visibility="gone" />
+
                     <TextView
                         android:id="@+id/tv_profile_verification"
                         android:layout_width="match_parent"
@@ -194,10 +207,8 @@
                         android:textAllCaps="false"
                         android:textColor="@color/roomly_primary"
                         android:visibility="gone"
-                        app:backgroundTint="@color/roomly_surface"
                         app:cornerRadius="12dp"
-                        app:strokeColor="@color/roomly_primary"
-                        app:strokeWidth="1dp" />
+                        app:strokeColor="@color/roomly_primary" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_edit_profile"
@@ -209,12 +220,69 @@
                         android:text="Chỉnh sửa thông tin"
                         android:textAllCaps="false"
                         android:textColor="@color/roomly_primary"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/roomly_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_profile_notifications"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:minHeight="48dp"
+                        android:text="Thông báo"
+                        android:textAllCaps="false"
+                        android:textColor="@color/roomly_primary"
+                        android:textSize="15sp"
                         app:backgroundTint="@color/roomly_surface"
                         app:cornerRadius="12dp"
                         app:strokeColor="@color/roomly_primary"
                         app:strokeWidth="1dp" />
 
-                    <!-- Chỉ hiện khi đang dùng phiên mẫu trong debug -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_profile_reports"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:minHeight="48dp"
+                        android:text="Báo cáo của tôi"
+                        android:textAllCaps="false"
+                        android:textColor="@color/roomly_primary"
+                        android:textSize="15sp"
+                        app:backgroundTint="@color/roomly_surface"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/roomly_primary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_profile_bookings"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:minHeight="48dp"
+                        android:text="Yêu cầu thuê của tôi"
+                        android:textAllCaps="false"
+                        android:textColor="@color/roomly_primary"
+                        android:visibility="gone"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/roomly_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_profile_admin"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:minHeight="48dp"
+                        android:text="Trang quản trị"
+                        android:textAllCaps="false"
+                        android:textColor="@color/roomly_primary"
+                        android:visibility="gone"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/roomly_primary" />
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_disable_demo_session"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -226,16 +294,13 @@
                         android:textAllCaps="false"
                         android:textColor="@color/roomly_primary"
                         android:visibility="gone"
-                        app:backgroundTint="@color/roomly_surface"
                         app:cornerRadius="12dp"
-                        app:strokeColor="@color/roomly_primary"
-                        app:strokeWidth="1dp" />
+                        app:strokeColor="@color/roomly_primary" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Chọn chế độ giao diện theo vai trò tài khoản -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/layout_profile_mode"
                 android:layout_width="match_parent"
@@ -262,68 +327,48 @@
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
-                    <!-- Java hiển thị chế độ đang chọn -->
                     <TextView
                         android:id="@+id/tv_profile_current_mode"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
+                        android:accessibilityLiveRegion="polite"
                         android:textColor="@color/roomly_text_secondary"
-                        android:textSize="14sp"
-                        android:accessibilityLiveRegion="polite" />
+                        android:textSize="14sp" />
 
-                    <!-- Chỉ hiện lựa chọn có vai trò tương ứng -->
-                    <LinearLayout
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_mode_tenant"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:orientation="vertical">
+                        android:minHeight="48dp"
+                        android:text="Người thuê"
+                        android:textAllCaps="false"
+                        android:textColor="@color/roomly_primary"
+                        android:visibility="gone"
+                        app:backgroundTint="@color/roomly_surface"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/roomly_primary" />
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_mode_tenant"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:minHeight="48dp"
-                            android:text="Người thuê"
-                            android:textAllCaps="false"
-                            android:textColor="@color/roomly_primary"
-                            android:visibility="gone"
-                            app:backgroundTint="@color/roomly_surface"
-                            app:cornerRadius="12dp"
-                            app:strokeColor="@color/roomly_primary"
-                            app:strokeWidth="1dp" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_mode_host"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:minHeight="48dp"
-                            android:text="Chủ trọ"
-                            android:textAllCaps="false"
-                            android:textColor="@color/roomly_primary"
-                            android:visibility="gone"
-                            app:backgroundTint="@color/roomly_surface"
-                            app:cornerRadius="12dp"
-                            app:strokeColor="@color/roomly_primary"
-                            app:strokeWidth="1dp" />
-
-                    </LinearLayout>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_mode_host"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:minHeight="48dp"
+                        android:text="Chủ trọ"
+                        android:textAllCaps="false"
+                        android:textColor="@color/roomly_primary"
+                        android:visibility="gone"
+                        app:backgroundTint="@color/roomly_surface"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/roomly_primary" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- Điện thoại chưa có trong dữ liệu hồ sơ hiện tại -->
-            <TextView
-                android:id="@+id/tv_profile_phone"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/roomly_text_primary"
-                android:textSize="16sp"
-                android:visibility="gone" />
 
         </LinearLayout>
 

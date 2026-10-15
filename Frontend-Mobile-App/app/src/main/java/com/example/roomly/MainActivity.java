@@ -1,5 +1,6 @@
 package com.example.roomly;
 
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
@@ -12,39 +13,64 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Lifecycle;
 
 import com.example.roomly.data.model.AppMode;
 import com.example.roomly.data.repository.AppModeRepository;
+import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.ActivityMainBinding;
+import com.example.roomly.push.PushManager;
+import com.example.roomly.ui.admin.AdminAccountsFragment;
+import com.example.roomly.ui.admin.AdminBookingCasesFragment;
+import com.example.roomly.ui.admin.AdminDashboardFragment;
+import com.example.roomly.ui.admin.AdminListingDetailFragment;
+import com.example.roomly.ui.admin.AdminListingsFragment;
+import com.example.roomly.ui.admin.AdminMetricsFragment;
+import com.example.roomly.ui.admin.AdminReportDetailFragment;
+import com.example.roomly.ui.admin.AdminReportsFragment;
 import com.example.roomly.ui.auth.ForgotPasswordFragment;
 import com.example.roomly.ui.auth.LoginFragment;
 import com.example.roomly.ui.auth.RegisterFragment;
 import com.example.roomly.ui.auth.VerifyEmailFragment;
+import com.example.roomly.ui.booking.BookingCreateFragment;
+import com.example.roomly.ui.booking.BookingDetailFragment;
+import com.example.roomly.ui.booking.BookingHandoverFragment;
+import com.example.roomly.ui.booking.BookingPaymentFragment;
+import com.example.roomly.ui.booking.BookingReviewFragment;
+import com.example.roomly.ui.booking.BookingsFragment;
+import com.example.roomly.ui.booking.HostBookingDetailFragment;
+import com.example.roomly.ui.booking.HostBookingsFragment;
 import com.example.roomly.ui.detail.RoomDetailFragment;
 import com.example.roomly.ui.explore.ExploreFragment;
+import com.example.roomly.ui.host.HostAddRoomFragment;
+import com.example.roomly.ui.host.HostCreateListingFragment;
 import com.example.roomly.ui.host.HostEditListingFragment;
+import com.example.roomly.ui.host.HostEditRoomFragment;
+import com.example.roomly.ui.host.HostListingDetailFragment;
+import com.example.roomly.ui.host.HostListingsFragment;
+import com.example.roomly.ui.host.HostRoomDetailFragment;
 import com.example.roomly.ui.host.HostRoomsFragment;
+import com.example.roomly.ui.host.viewing.HostAppointmentsFragment;
+import com.example.roomly.ui.host.viewing.HostViewingFragment;
 import com.example.roomly.ui.messages.ChatFragment;
 import com.example.roomly.ui.messages.MessagesFragment;
+import com.example.roomly.ui.notification.NotificationsFragment;
 import com.example.roomly.ui.profile.ProfileFragment;
+import com.example.roomly.ui.report.MyReportsFragment;
 import com.example.roomly.ui.saved.SavedFragment;
 import com.example.roomly.ui.schedule.ScheduleFragment;
-import com.example.roomly.ui.host.HostAddRoomFragment;
-import com.example.roomly.ui.host.HostRoomDetailFragment;
-import com.example.roomly.ui.host.HostEditRoomFragment;
-import com.example.roomly.ui.host.HostCreateListingFragment;
-import com.example.roomly.ui.host.HostListingsFragment;
-import com.example.roomly.ui.host.HostListingDetailFragment;
-import com.example.roomly.ui.host.viewing.HostViewingFragment;
-import com.example.roomly.ui.host.viewing.HostAppointmentsFragment;
 
 /**
- * Điều khiển màn hình chính và thanh điều hướng theo chế độ sử dụng.
- * Chế độ chỉ thay đổi giao diện; quyền vẫn được kiểm tra theo phiên.
+ * Điều khiển màn hình chính và thanh điều hướng theo chế độ sử dụng. Chế độ chỉ thay đổi giao diện;
+ * quyền vẫn được kiểm tra theo phiên.
  */
 public class MainActivity extends AppCompatActivity {
+    private static final String STATE_SESSION_USER = "session_user";
+    private static final String STATE_SESSION_RESET = "session_reset";
 
     private ActivityMainBinding binding;
+    private String observedUserId = "";
+    private boolean sessionResetPending;
 
     // Chế độ tương ứng với menu đang hiển thị.
     private AppMode displayedMode;
@@ -52,9 +78,7 @@ public class MainActivity extends AppCompatActivity {
     // Chặn sự kiện chọn tab khi đang thay menu bằng code.
     private boolean updatingNavigation;
 
-    /**
-     * Khởi tạo giao diện, điều hướng và quan sát chế độ sử dụng.
-     */
+    /** Khởi tạo giao diện, điều hướng và quan sát chế độ sử dụng. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,13 +92,10 @@ public class MainActivity extends AppCompatActivity {
         setupBottomNavAppearance();
         setupBottomNavigation();
 
-        getSupportFragmentManager().addOnBackStackChangedListener(
-                this::updateBottomNavVisibility
-        );
+        getSupportFragmentManager().addOnBackStackChangedListener(this::updateBottomNavVisibility);
 
         // Cài menu đúng chế độ trước khi nhận thao tác của người dùng.
-        AppMode initialMode = AppModeRepository.getInstance()
-                .getCurrentMode();
+        AppMode initialMode = AppModeRepository.getInstance().getCurrentMode();
 
         installNavigationMenu(initialMode);
 
@@ -84,119 +105,183 @@ public class MainActivity extends AppCompatActivity {
 
         observeAppMode();
         updateBottomNavVisibility();
+        String restoredUserId = SessionRepository.getInstance().getCurrentSession().getUserId();
+        observedUserId = restoredUserId == null ? "" : restoredUserId;
+        if (savedInstanceState != null) {
+            observedUserId = savedInstanceState.getString(STATE_SESSION_USER, observedUserId);
+            sessionResetPending = savedInstanceState.getBoolean(STATE_SESSION_RESET, false);
+        }
+        SessionRepository.getInstance()
+                .getSessionState()
+                .observe(
+                        this,
+                        session -> {
+                            String nextUserId =
+                                    session.getUserId() == null ? "" : session.getUserId();
+                            if (!observedUserId.isEmpty() && !observedUserId.equals(nextUserId)) {
+                                sessionResetPending = true;
+                            }
+                            observedUserId = nextUserId;
+                            binding.getRoot()
+                                    .post(
+                                            () -> {
+                                                if (!isFinishing() && !isDestroyed()) {
+                                                    applyPendingSessionReset();
+                                                    PushManager.requestPermission(this);
+                                                }
+                                            });
+                        });
     }
 
-    /**
-     * Thêm khoảng trống để thanh hệ thống không che giao diện.
-     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(STATE_SESSION_USER, observedUserId);
+        outState.putBoolean(STATE_SESSION_RESET, sessionResetPending);
+        super.onSaveInstanceState(outState);
+    }
+
+    // Khi phiên hết hạn, xóa màn hình riêng tư và các thao tác đang chờ của tài khoản cũ.
+    private boolean applyPendingSessionReset() {
+        if (!sessionResetPending
+                || !getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)
+                || getSupportFragmentManager().isStateSaved()) {
+            return false;
+        }
+
+        sessionResetPending = false;
+        FragmentManager fragments = getSupportFragmentManager();
+        Fragment current = fragments.findFragmentById(R.id.fragment_container);
+        boolean profileAlreadyRoot =
+                current instanceof ProfileFragment && fragments.getBackStackEntryCount() == 0;
+        fragments.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+        AppMode nextMode = AppModeRepository.getInstance().getCurrentMode();
+        if (nextMode != displayedMode) {
+            installNavigationMenu(nextMode);
+        }
+        if (!profileAlreadyRoot) {
+            showRootScreen(R.id.nav_profile);
+        }
+        return true;
+    }
+
+    /** Thêm khoảng trống để thanh hệ thống không che giao diện. */
     private void setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(
                 binding.getRoot(),
                 (view, insets) -> {
-                    Insets systemBars = insets.getInsets(
-                            WindowInsetsCompat.Type.systemBars()
-                    );
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
                     view.setPadding(
-                            systemBars.left,
-                            systemBars.top,
-                            systemBars.right,
-                            systemBars.bottom
-                    );
+                            systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
 
                     return insets;
-                }
-        );
+                });
 
         ViewCompat.requestApplyInsets(binding.getRoot());
     }
 
-    /**
-     * Đặt nền xanh nhạt cho tab đang chọn.
-     */
+    /** Đặt nền xanh nhạt cho tab đang chọn. */
     private void setupBottomNavAppearance() {
         binding.bottomNav.setItemActiveIndicatorColor(
-                ColorStateList.valueOf(
-                        ContextCompat.getColor(
-                                this,
-                                R.color.roomly_primary_light
-                        )
-                )
-        );
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.roomly_primary_light)));
     }
 
     /**
-     * Quan sát chế độ và xử lý sau khi các cập nhật phiên hoàn tất.
-     * Đưa việc đổi giao diện vào hàng đợi để tránh giao dịch Fragment
-     * ngay trong lúc Fragment khác đang được khởi tạo.
+     * Quan sát chế độ và xử lý sau khi các cập nhật phiên hoàn tất. Đưa việc đổi giao diện vào hàng
+     * đợi để tránh giao dịch Fragment ngay trong lúc Fragment khác đang được khởi tạo.
      */
     private void observeAppMode() {
         AppModeRepository.getInstance()
                 .getMode()
-                .observe(this, mode -> {
-                    binding.getRoot().post(() -> {
-                        if (isFinishing() || isDestroyed()) {
-                            return;
-                        }
+                .observe(
+                        this,
+                        mode -> {
+                            binding.getRoot()
+                                    .post(
+                                            () -> {
+                                                if (isFinishing() || isDestroyed()) {
+                                                    return;
+                                                }
 
-                        applyCurrentMode();
-                    });
-                });
+                                                applyCurrentMode();
+                                            });
+                        });
     }
 
     /**
-     * Đồng bộ lại chế độ khi Activity có thể thực hiện giao dịch Fragment.
-     * Nếu ứng dụng vừa ở nền, thay đổi sẽ được áp dụng khi quay lại.
+     * Đồng bộ lại chế độ khi Activity có thể thực hiện giao dịch Fragment. Nếu ứng dụng vừa ở nền,
+     * thay đổi sẽ được áp dụng khi quay lại.
      */
     @Override
     protected void onResumeFragments() {
         super.onResumeFragments();
 
-        applyCurrentMode();
+        if (!applyPendingSessionReset()) {
+            applyCurrentMode();
+        }
         updateBottomNavVisibility();
+        openPushInbox();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+
+    private void openPushInbox() {
+        Intent intent = getIntent();
+        if (!intent.getBooleanExtra(PushManager.EXTRA_OPEN_INBOX, false)) {
+            return;
+        }
+        intent.removeExtra(PushManager.EXTRA_OPEN_INBOX);
+        if (!PushManager.isCurrentRecipient(
+                intent.getStringExtra(PushManager.EXTRA_RECIPIENT),
+                intent.getStringExtra(PushManager.EXTRA_INSTALLATION))) {
+            return;
+        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, new NotificationsFragment())
+                .addToBackStack(null)
+                .commit();
     }
 
     /**
-     * Đổi menu khi chế độ thay đổi.
-     * Giữ trang Cá nhân nếu đang chọn chế độ tại trang này.
-     * Những màn hình khác chuyển về tab đầu tiên của chế độ mới.
+     * Đổi menu khi chế độ thay đổi. Giữ trang Cá nhân nếu đang chọn chế độ tại trang này. Những màn
+     * hình khác chuyển về tab đầu tiên của chế độ mới.
      */
     private void applyCurrentMode() {
-        if (binding == null
-                || getSupportFragmentManager().isStateSaved()) {
+        if (binding == null || getSupportFragmentManager().isStateSaved()) {
             return;
         }
 
-        AppMode nextMode = AppModeRepository.getInstance()
-                .getCurrentMode();
+        AppMode nextMode = AppModeRepository.getInstance().getCurrentMode();
 
         if (nextMode == displayedMode) {
             return;
         }
 
-        Fragment currentFragment = getSupportFragmentManager()
-                .findFragmentById(R.id.fragment_container);
+        Fragment currentFragment =
+                getSupportFragmentManager().findFragmentById(R.id.fragment_container);
 
         boolean keepProfile = currentFragment instanceof ProfileFragment;
 
         // Xóa màn hình con của chế độ cũ khỏi lịch sử quay lại.
-        getSupportFragmentManager().popBackStackImmediate(
-                null,
-                FragmentManager.POP_BACK_STACK_INCLUSIVE
-        );
+        getSupportFragmentManager()
+                .popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
         installNavigationMenu(nextMode);
 
-        int nextTab = keepProfile
-                ? R.id.nav_profile
-                : getDefaultTab(nextMode);
+        int nextTab = keepProfile ? R.id.nav_profile : getDefaultTab(nextMode);
 
         showRootScreen(nextTab);
     }
 
     /**
-     * Thay menu theo chế độ và giữ lựa chọn tab chung nếu có.
-     * Không phát sinh thao tác chuyển Fragment trong lúc thay menu.
+     * Thay menu theo chế độ và giữ lựa chọn tab chung nếu có. Không phát sinh thao tác chuyển
+     * Fragment trong lúc thay menu.
      */
     private void installNavigationMenu(AppMode mode) {
         int previousTab = binding.bottomNav.getSelectedItemId();
@@ -206,10 +291,7 @@ public class MainActivity extends AppCompatActivity {
         binding.bottomNav.getMenu().clear();
 
         binding.bottomNav.inflateMenu(
-                mode == AppMode.HOST
-                        ? R.menu.bottom_nav_host_menu
-                        : R.menu.menu_bottom_nav
-        );
+                mode == AppMode.HOST ? R.menu.bottom_nav_host_menu : R.menu.menu_bottom_nav);
 
         displayedMode = mode;
 
@@ -223,46 +305,42 @@ public class MainActivity extends AppCompatActivity {
         updatingNavigation = false;
     }
 
-    /**
-     * Trả về tab đầu tiên của từng chế độ.
-     */
+    /** Trả về tab đầu tiên của từng chế độ. */
     private int getDefaultTab(AppMode mode) {
-        return mode == AppMode.HOST
-                ? R.id.nav_host_rooms
-                : R.id.nav_explore;
+        return mode == AppMode.HOST ? R.id.nav_host_rooms : R.id.nav_explore;
     }
 
-    /**
-     * Xử lý chọn tab và giữ nguyên màn hình khi bấm lại tab hiện tại.
-     */
+    /** Xử lý chọn tab và giữ nguyên màn hình khi bấm lại tab hiện tại. */
     private void setupBottomNavigation() {
-        binding.bottomNav.setOnItemSelectedListener(item -> {
-            if (updatingNavigation) {
-                return true;
-            }
+        binding.bottomNav.setOnItemSelectedListener(
+                item -> {
+                    if (updatingNavigation) {
+                        return true;
+                    }
 
-            if (getSupportFragmentManager().isStateSaved()) {
-                return false;
-            }
+                    if (getSupportFragmentManager().isStateSaved()) {
+                        return false;
+                    }
 
-            Fragment nextFragment = createTabFragment(item.getItemId());
+                    Fragment nextFragment = createTabFragment(item.getItemId());
 
-            if (nextFragment == null) {
-                return false;
-            }
+                    if (nextFragment == null) {
+                        return false;
+                    }
 
-            replaceRootFragment(nextFragment);
-            return true;
-        });
+                    replaceRootFragment(nextFragment);
+                    return true;
+                });
 
-        binding.bottomNav.setOnItemReselectedListener(item -> {
-            // Giữ nguyên Fragment và dữ liệu đang hiển thị.
-        });
+        binding.bottomNav.setOnItemReselectedListener(
+                item -> {
+                    // Giữ nguyên Fragment và dữ liệu đang hiển thị.
+                });
     }
 
     /**
-     * Tạo Fragment tương ứng với tab và chế độ hiện tại.
-     * Các tab người thuê không được mở bằng menu chủ trọ.
+     * Tạo Fragment tương ứng với tab và chế độ hiện tại. Các tab người thuê không được mở bằng menu
+     * chủ trọ.
      */
     private Fragment createTabFragment(int itemId) {
         if (itemId == R.id.nav_profile) {
@@ -300,9 +378,7 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-    /**
-     * Chọn tab bằng code rồi mở màn hình tương ứng một lần.
-     */
+    /** Chọn tab bằng code rồi mở màn hình tương ứng một lần. */
     private void showRootScreen(int itemId) {
         Fragment fragment = createTabFragment(itemId);
 
@@ -318,8 +394,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Thay nội dung tab chính và cập nhật menu khi giao dịch hoàn tất.
-     * Tab chính không được thêm vào back stack.
+     * Thay nội dung tab chính và cập nhật menu khi giao dịch hoàn tất. Tab chính không được thêm
+     * vào back stack.
      */
     private void replaceRootFragment(Fragment fragment) {
         getSupportFragmentManager()
@@ -331,16 +407,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Ẩn menu ở màn hình chi tiết, chat và các màn hình xác thực.
-     * Đồng bộ tab đang chọn khi Android khôi phục Fragment.
+     * Ẩn menu ở màn hình chi tiết, chat và các màn hình xác thực. Đồng bộ tab đang chọn khi Android
+     * khôi phục Fragment.
      */
     private void updateBottomNavVisibility() {
         if (binding == null) {
             return;
         }
 
-        Fragment currentFragment = getSupportFragmentManager()
-                .findFragmentById(R.id.fragment_container);
+        Fragment currentFragment =
+                getSupportFragmentManager().findFragmentById(R.id.fragment_container);
 
         boolean hideBottomNav =
                 currentFragment instanceof RoomDetailFragment
@@ -356,20 +432,34 @@ public class MainActivity extends AppCompatActivity {
                         || currentFragment instanceof HostListingDetailFragment
                         || currentFragment instanceof HostEditListingFragment
                         || currentFragment instanceof HostViewingFragment
-                        || currentFragment instanceof HostAppointmentsFragment;
+                        || currentFragment instanceof HostAppointmentsFragment
+                        || currentFragment instanceof AdminDashboardFragment
+                        || currentFragment instanceof AdminListingsFragment
+                        || currentFragment instanceof AdminListingDetailFragment
+                        || currentFragment instanceof AdminReportsFragment
+                        || currentFragment instanceof AdminReportDetailFragment
+                        || currentFragment instanceof AdminAccountsFragment
+                        || currentFragment instanceof AdminMetricsFragment
+                        || currentFragment instanceof BookingCreateFragment
+                        || currentFragment instanceof BookingsFragment
+                        || currentFragment instanceof BookingDetailFragment
+                        || currentFragment instanceof BookingPaymentFragment
+                        || currentFragment instanceof BookingHandoverFragment
+                        || currentFragment instanceof BookingReviewFragment
+                        || currentFragment instanceof HostBookingsFragment
+                        || currentFragment instanceof HostBookingDetailFragment
+                        || currentFragment instanceof NotificationsFragment
+                        || currentFragment instanceof MyReportsFragment
+                        || currentFragment instanceof AdminBookingCasesFragment;
 
-        binding.bottomNav.setVisibility(
-                hideBottomNav ? View.GONE : View.VISIBLE
-        );
+        binding.bottomNav.setVisibility(hideBottomNav ? View.GONE : View.VISIBLE);
 
         if (!hideBottomNav) {
             syncSelectedTab(currentFragment);
         }
     }
 
-    /**
-     * Đánh dấu tab phù hợp với Fragment mà không tạo lại màn hình.
-     */
+    /** Đánh dấu tab phù hợp với Fragment mà không tạo lại màn hình. */
     private void syncSelectedTab(Fragment fragment) {
         int itemId = 0;
 
@@ -395,8 +485,7 @@ public class MainActivity extends AppCompatActivity {
             itemId = R.id.nav_schedule;
         }
 
-        if (itemId == 0
-                || binding.bottomNav.getMenu().findItem(itemId) == null) {
+        if (itemId == 0 || binding.bottomNav.getMenu().findItem(itemId) == null) {
             return;
         }
 

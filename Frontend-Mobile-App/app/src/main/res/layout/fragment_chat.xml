@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Màn hình trò chuyện: tiêu đề trên, danh sách giữa, ô nhập dưới. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -40,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:text="Nguyễn Minh Anh"
+                android:text="Hội thoại"
                 android:textColor="@color/roomly_text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -60,7 +59,7 @@
 
     </LinearLayout>
 
-    <!-- Thông báo rõ trạng thái trò chuyện mẫu. -->
+    <!-- Tin nhắn được lưu trên máy chủ. -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -69,11 +68,11 @@
         android:paddingTop="8dp"
         android:paddingEnd="16dp"
         android:paddingBottom="8dp"
-        android:text="Trò chuyện mẫu • Tin nhắn chưa gửi đến chủ phòng"
+        android:text="Trò chuyện với chủ trọ hoặc người thuê về căn phòng này."
         android:textColor="@color/roomly_primary"
         android:textSize="12sp" />
 
-    <!-- Danh sách tin nhắn và trạng thái chưa có nội dung. -->
+    <!-- Danh sách tin nhắn và trạng thái trống. -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -98,7 +97,7 @@
 
     </FrameLayout>
 
-    <!-- Ô nhập và nút gửi tin nhắn. -->
+    <!-- Ô nhập nhiều dòng và nút gửi. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -116,11 +115,15 @@
             android:background="@drawable/bg_search"
             android:hint="Nhập tin nhắn..."
             android:imeOptions="actionSend"
-            android:inputType="textCapSentences"
-            android:maxLength="1000"
-            android:singleLine="true"
+            android:inputType="textCapSentences|textMultiLine"
+            android:minLines="1"
+            android:maxLines="4"
+            android:maxLength="3000"
+            android:gravity="top|start"
             android:paddingStart="16dp"
+            android:paddingTop="12dp"
             android:paddingEnd="16dp"
+            android:paddingBottom="12dp"
             android:textColor="@color/roomly_text_primary"
             android:textColorHint="@color/roomly_text_secondary"
             android:textSize="14sp" />

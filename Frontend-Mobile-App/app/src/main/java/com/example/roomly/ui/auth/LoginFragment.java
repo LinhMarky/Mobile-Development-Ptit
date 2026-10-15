@@ -12,75 +12,70 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import com.example.roomly.R;
 
+import com.example.roomly.R;
+import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentLoginBinding;
 
-/**
- * Hiển thị giao diện đăng nhập và quan sát trạng thái từ ViewModel.
- */
+/** Hiển thị giao diện đăng nhập và quan sát trạng thái từ ViewModel. */
 public class LoginFragment extends Fragment {
 
     private FragmentLoginBinding binding;
     private LoginViewModel viewModel;
+    private boolean navigated;
 
-    /**
-     * Lấy ViewModel để giữ trạng thái khi Fragment được tạo lại.
-     */
+    /** Lấy ViewModel để giữ trạng thái khi Fragment được tạo lại. */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        viewModel = new ViewModelProvider(this)
-                .get(LoginViewModel.class);
+        viewModel = new ViewModelProvider(this).get(LoginViewModel.class);
     }
 
-    /**
-     * Tạo giao diện đăng nhập từ XML bằng ViewBinding.
-     */
+    /** Tạo giao diện đăng nhập từ XML bằng ViewBinding. */
     @Nullable
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState
-    ) {
-        binding = FragmentLoginBinding.inflate(
-                inflater,
-                container,
-                false
-        );
+            @Nullable Bundle savedInstanceState) {
+        binding = FragmentLoginBinding.inflate(inflater, container, false);
 
         return binding.getRoot();
     }
 
-    /**
-     * Đăng ký thao tác đăng nhập và quan sát trạng thái giao diện.
-     */
+    /** Đăng ký thao tác đăng nhập và quan sát trạng thái giao diện. */
     @Override
-    public void onViewCreated(
-            @NonNull View view,
-            @Nullable Bundle savedInstanceState
-    ) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        navigated = false;
 
-        binding.btnLogin.setOnClickListener(
-                clickedView -> submitLogin()
-        );
+        SessionRepository.getInstance()
+                .getSessionState()
+                .observe(
+                        getViewLifecycleOwner(),
+                        session -> {
+                            if (session.isLoggedIn()) {
+                                com.example.roomly.ui.NavigationHelper.whenResumed(this, () -> {
+                                    if (navigated || !SessionRepository.getInstance().getCurrentSession().isLoggedIn()) return;
+                                    navigated = true;
+                                    getParentFragmentManager().popBackStack();
+                                });
+                            }
+                        });
 
-        binding.btnOpenRegister.setOnClickListener(
-                clickedView -> openRegisterScreen()
-        );
+        binding.btnLogin.setOnClickListener(clickedView -> submitLogin());
 
-        binding.btnForgotPassword.setOnClickListener(
-                clickedView -> openForgotPasswordScreen()
-        );
+        binding.btnOpenRegister.setOnClickListener(clickedView -> openRegisterScreen());
+
+        binding.btnForgotPassword.setOnClickListener(clickedView -> openForgotPasswordScreen());
 
         // Đóng màn hình đăng nhập và trở về trang Cá nhân.
-        binding.btnContinueGuest.setOnClickListener(clickedView -> {
-            hideKeyboard();
-            getParentFragmentManager().popBackStack();
-        });
+        binding.btnContinueGuest.setOnClickListener(
+                clickedView -> {
+                    hideKeyboard();
+                    getParentFragmentManager().popBackStack();
+                });
 
         // Bấm Xong ở ô mật khẩu sẽ đóng bàn phím.
         binding.edtLoginPassword.setOnEditorActionListener(
@@ -91,62 +86,52 @@ public class LoginFragment extends Fragment {
                     }
 
                     return false;
-                }
-        );
+                });
 
         // Quan sát theo vòng đời giao diện để tránh cập nhật View cũ.
-        viewModel.getUiState().observe(
-                getViewLifecycleOwner(),
-                this::renderState
-        );
+        viewModel.getUiState().observe(getViewLifecycleOwner(), this::renderState);
     }
 
     /**
-     * Đọc email, mật khẩu và chuyển cho ViewModel kiểm tra.
-     * Giữ nguyên nội dung mật khẩu, không loại bỏ khoảng trắng.
+     * Đọc email, mật khẩu và chuyển cho ViewModel kiểm tra. Giữ nguyên nội dung mật khẩu, không
+     * loại bỏ khoảng trắng.
      */
     private void submitLogin() {
-        String email = binding.edtLoginEmail.getText() == null
-                ? ""
-                : binding.edtLoginEmail.getText().toString();
+        String email =
+                binding.edtLoginEmail.getText() == null
+                        ? ""
+                        : binding.edtLoginEmail.getText().toString();
 
-        String password = binding.edtLoginPassword.getText() == null
-                ? ""
-                : binding.edtLoginPassword.getText().toString();
+        String password =
+                binding.edtLoginPassword.getText() == null
+                        ? ""
+                        : binding.edtLoginPassword.getText().toString();
 
         hideKeyboard();
         viewModel.login(email, password);
     }
 
     /**
-     * Hiển thị lỗi và trạng thái tải nhận được từ ViewModel.
-     * Vô hiệu hóa thao tác khi yêu cầu đang được xử lý.
+     * Hiển thị lỗi và trạng thái tải nhận được từ ViewModel. Vô hiệu hóa thao tác khi yêu cầu đang
+     * được xử lý.
      */
     private void renderState(LoginUiState state) {
         if (binding == null || state == null) {
             return;
         }
 
-        binding.layoutLoginEmail.setError(
-                state.getEmailError()
-        );
+        binding.layoutLoginEmail.setError(state.getEmailError());
 
-        binding.layoutLoginPassword.setError(
-                state.getPasswordError()
-        );
+        binding.layoutLoginPassword.setError(state.getPasswordError());
 
         String generalError = state.getGeneralError();
 
         binding.tvLoginError.setText(generalError);
-        binding.tvLoginError.setVisibility(
-                generalError == null ? View.GONE : View.VISIBLE
-        );
+        binding.tvLoginError.setVisibility(generalError == null ? View.GONE : View.VISIBLE);
 
         boolean loading = state.isLoading();
 
-        binding.progressLogin.setVisibility(
-                loading ? View.VISIBLE : View.GONE
-        );
+        binding.progressLogin.setVisibility(loading ? View.VISIBLE : View.GONE);
 
         binding.btnLogin.setEnabled(!loading);
         binding.btnOpenRegister.setEnabled(!loading);
@@ -157,19 +142,14 @@ public class LoginFragment extends Fragment {
         binding.edtLoginPassword.setEnabled(!loading);
     }
 
-    /**
-     * Đóng bàn phím và bỏ focus khỏi ô đang nhập.
-     */
+    /** Đóng bàn phím và bỏ focus khỏi ô đang nhập. */
     private void hideKeyboard() {
         if (binding == null) {
             return;
         }
 
         WindowInsetsControllerCompat controller =
-                new WindowInsetsControllerCompat(
-                        requireActivity().getWindow(),
-                        binding.getRoot()
-                );
+                new WindowInsetsControllerCompat(requireActivity().getWindow(), binding.getRoot());
 
         controller.hide(WindowInsetsCompat.Type.ime());
 
@@ -180,43 +160,31 @@ public class LoginFragment extends Fragment {
         }
     }
 
-    /**
-     * Mở màn hình đăng ký và giữ màn hình đăng nhập trong back stack.
-     */
+    /** Mở màn hình đăng ký và giữ màn hình đăng nhập trong back stack. */
     private void openRegisterScreen() {
         hideKeyboard();
 
         getParentFragmentManager()
                 .beginTransaction()
                 .setReorderingAllowed(true)
-                .replace(
-                        R.id.fragment_container,
-                        new RegisterFragment()
-                )
+                .replace(R.id.fragment_container, new RegisterFragment())
                 .addToBackStack(null)
                 .commit();
     }
 
-    /**
-     * Mở form Quên mật khẩu và giữ màn hình đăng nhập trong back stack.
-     */
+    /** Mở form Quên mật khẩu và giữ màn hình đăng nhập trong back stack. */
     private void openForgotPasswordScreen() {
         hideKeyboard();
 
         getParentFragmentManager()
                 .beginTransaction()
                 .setReorderingAllowed(true)
-                .replace(
-                        R.id.fragment_container,
-                        new ForgotPasswordFragment()
-                )
+                .replace(R.id.fragment_container, new ForgotPasswordFragment())
                 .addToBackStack(null)
                 .commit();
     }
 
-    /**
-     * Gỡ listener và giải phóng binding khi giao diện bị hủy.
-     */
+    /** Gỡ listener và giải phóng binding khi giao diện bị hủy. */
     @Override
     public void onDestroyView() {
         binding.edtLoginPassword.setOnEditorActionListener(null);

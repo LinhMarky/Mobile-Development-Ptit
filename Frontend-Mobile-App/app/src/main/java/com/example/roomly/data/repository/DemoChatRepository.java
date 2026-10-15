@@ -5,6 +5,8 @@ import androidx.annotation.Nullable;
 import com.example.roomly.data.model.ChatMessage;
 import com.example.roomly.data.model.Conversation;
 import com.example.roomly.data.model.RoomCard;
+import com.example.roomly.data.model.SessionState;
+import com.example.roomly.data.model.UserRole;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,41 +15,45 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Giữ các cuộc trò chuyện mẫu trong bộ nhớ.
- * Tin nhắn chưa được gửi đến backend hoặc chủ phòng thật.
+ * Lưu hội thoại demo trong bộ nhớ.
+ * Mỗi phòng và người thuê có một hội thoại riêng.
  */
 public class DemoChatRepository {
 
     private static final DemoChatRepository INSTANCE =
             new DemoChatRepository();
 
-    // Tra cứu hội thoại theo mã riêng.
     private final Map<String, Conversation> conversations =
             new HashMap<>();
 
-    // Ghép phòng mẫu với hội thoại để tránh tạo trùng khi mở lại.
     private final Map<String, String> conversationIdsByRoom =
             new HashMap<>();
 
-    /**
-     * Chỉ tạo repository dùng chung bên trong lớp này.
-     */
     private DemoChatRepository() {
     }
 
-    /**
-     * Trả về repository dùng chung trong ứng dụng.
-     */
     public static DemoChatRepository getInstance() {
         return INSTANCE;
     }
 
     /**
-     * Trả về danh sách hội thoại, sắp xếp hoạt động mới nhất lên đầu.
+     * Chỉ trả về hội thoại của tài khoản đang đăng nhập.
      */
     public List<Conversation> getConversations() {
-        List<Conversation> result =
-                new ArrayList<>(conversations.values());
+        List<Conversation> result = new ArrayList<>();
+
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            return result;
+        }
+
+        for (Conversation conversation : conversations.values()) {
+            if (conversation.isParticipant(session.getUserId())) {
+                result.add(conversation);
+            }
+        }
 
         result.sort((first, second) -> Long.compare(
                 second.getLastActivityMillis(),
@@ -58,25 +64,103 @@ public class DemoChatRepository {
     }
 
     /**
-     * Tìm hội thoại theo mã; trả về null nếu không còn dữ liệu.
+     * Không cho tài khoản ngoài hội thoại đọc nội dung.
      */
     @Nullable
     public Conversation getConversation(String conversationId) {
-        return conversations.get(conversationId);
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn() || conversationId == null) {
+            return null;
+        }
+
+        Conversation conversation = conversations.get(conversationId);
+
+        if (conversation == null
+                || !conversation.isParticipant(session.getUserId())) {
+            return null;
+        }
+
+        return conversation;
     }
 
     /**
-     * Mở lại hội thoại của phòng mẫu hoặc tạo mới nếu chưa có.
-     * Tên người liên hệ hiện dùng dữ liệu mẫu.
+     * Người thuê mở hội thoại với chủ phòng.
+     * Chủ trọ trả lời từ danh sách hội thoại của mình.
      */
     public Conversation getOrCreateConversation(RoomCard room) {
-        String roomKey = createRoomKey(room);
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            throw new IllegalStateException(
+                    "Bạn cần đăng nhập để nhắn tin."
+            );
+        }
+
+        if (!session.hasRole(UserRole.TENANT)) {
+            throw new IllegalStateException(
+                    "Bạn cần quyền người thuê để bắt đầu hội thoại với chủ trọ."
+            );
+        }
+
+        if (!session.isEmailVerified()) {
+            throw new IllegalStateException(
+                    "Bạn cần xác minh email trước khi bắt đầu hội thoại."
+            );
+        }
+
+        if (room == null) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy phòng."
+            );
+        }
+
+        // Với bài đăng công khai, lấy lại dữ liệu mới nhất.
+        String listingId = cleanText(room.getListingId());
+
+        if (!listingId.isEmpty()) {
+            room = DemoAdminListingRepository.getInstance()
+                    .getPublishedRoomCardById(listingId);
+
+            if (room == null) {
+                throw new IllegalStateException(
+                        "Bài đăng không còn hiển thị."
+                );
+            }
+        }
+
+        String roomId = cleanText(room.getRoomId());
+        String hostId = cleanText(room.getOwnerId());
+        String tenantId = cleanText(session.getUserId());
+
+        if (roomId.isEmpty() || hostId.isEmpty() || tenantId.isEmpty()) {
+            throw new IllegalStateException(
+                    "Thiếu mã phòng hoặc thông tin thành viên hội thoại."
+            );
+        }
+
+        if (hostId.equals(tenantId)) {
+            throw new IllegalStateException(
+                    "Bạn không thể nhắn tin với chính mình."
+            );
+        }
+
+        String roomKey = createRoomKey(roomId, tenantId);
         String existingId = conversationIdsByRoom.get(roomKey);
 
         if (existingId != null) {
             Conversation existing = conversations.get(existingId);
 
             if (existing != null) {
+                if (!hostId.equals(existing.getHostId())
+                        || !existing.isParticipant(tenantId)) {
+                    throw new IllegalStateException(
+                            "Thông tin chủ phòng đã thay đổi."
+                    );
+                }
+
                 return existing;
             }
         }
@@ -85,7 +169,11 @@ public class DemoChatRepository {
 
         Conversation conversation = new Conversation(
                 id,
-                "Nguyễn Minh Anh",
+                roomId,
+                hostId,
+                tenantId,
+                room.getHostName(),
+                session.getFullName(),
                 room.getTitle(),
                 room.getImageResId(),
                 System.currentTimeMillis()
@@ -98,15 +186,20 @@ public class DemoChatRepository {
     }
 
     /**
-     * Thêm tin nhắn do người dùng gửi vào hội thoại mẫu.
-     * Trả về false nếu không tìm thấy hội thoại hoặc nội dung trống.
+     * Chỉ thành viên đã xác minh email được gửi tin.
      */
     public boolean sendMessage(
             String conversationId,
             String content
     ) {
-        Conversation conversation =
-                conversations.get(conversationId);
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
+
+        if (!session.isLoggedIn() || !session.isEmailVerified()) {
+            return false;
+        }
+
+        Conversation conversation = getConversation(conversationId);
 
         if (conversation == null || content == null) {
             return false;
@@ -114,28 +207,25 @@ public class DemoChatRepository {
 
         String trimmedContent = content.trim();
 
-        if (trimmedContent.isEmpty()) {
+        if (trimmedContent.isEmpty() || trimmedContent.length() > 5000) {
             return false;
         }
 
         conversation.addMessage(new ChatMessage(
                 trimmedContent,
                 System.currentTimeMillis(),
-                true
+                session.getUserId()
         ));
 
         return true;
     }
 
-    /**
-     * Tạo khóa từ tên và địa chỉ để nhận diện phòng trong dữ liệu mẫu.
-     * Khi nối backend, khóa này cần được thay bằng mã phòng thật.
-     */
-    private String createRoomKey(RoomCard room) {
-        String title = room.getTitle();
-        String address = room.getAddress();
+    private String createRoomKey(String roomId, String tenantId) {
+        return roomId.length() + ":" + roomId
+                + tenantId.length() + ":" + tenantId;
+    }
 
-        // Ghi độ dài tên để phân biệt các cặp tên và địa chỉ.
-        return title.length() + ":" + title + address;
+    private String cleanText(String text) {
+        return text == null ? "" : text.trim();
     }
 }

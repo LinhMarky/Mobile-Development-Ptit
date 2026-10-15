@@ -130,6 +130,12 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>student14</id>
+            <build><finalName>rental-student14</finalName></build>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <plugin>
@@ -149,6 +155,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <mainClass>com.homely.rental.RentalApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>

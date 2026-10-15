@@ -10,54 +10,41 @@ import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.model.UserRole;
 
 /**
- * Giữ chế độ giao diện trong bộ nhớ khi ứng dụng đang chạy.
- * Chuyển chế độ không thay đổi vai trò hoặc token đăng nhập.
+ * Giữ chế độ giao diện trong bộ nhớ khi ứng dụng đang chạy. Chuyển chế độ không thay đổi vai trò
+ * hoặc token đăng nhập.
  */
 public final class AppModeRepository {
 
-    private static final AppModeRepository INSTANCE =
-            new AppModeRepository();
+    private static final AppModeRepository INSTANCE = new AppModeRepository();
 
-    private final MediatorLiveData<AppMode> currentMode =
-            new MediatorLiveData<>(AppMode.TENANT);
+    private final MediatorLiveData<AppMode> currentMode = new MediatorLiveData<>(AppMode.TENANT);
 
     // Theo dõi tài khoản để không giữ chế độ của người dùng trước.
-    @Nullable
-    private String modeUserId;
+    @Nullable private String modeUserId;
 
     /**
-     * Theo dõi phiên khi có màn hình đang quan sát chế độ.
-     * Điều chỉnh chế độ khi đăng xuất, đổi tài khoản hoặc đổi vai trò.
+     * Theo dõi phiên khi có màn hình đang quan sát chế độ. Điều chỉnh chế độ khi đăng xuất, đổi tài
+     * khoản hoặc đổi vai trò.
      */
     private AppModeRepository() {
         currentMode.addSource(
-                SessionRepository.getInstance().getSessionState(),
-                this::syncWithSession
-        );
+                SessionRepository.getInstance().getSessionState(), this::syncWithSession);
     }
 
-    /**
-     * Trả về nơi quản lý chế độ dùng chung của ứng dụng.
-     */
+    /** Trả về nơi quản lý chế độ dùng chung của ứng dụng. */
     public static AppModeRepository getInstance() {
         return INSTANCE;
     }
 
-    /**
-     * Cho phép ViewModel và màn hình quan sát chế độ hiện tại.
-     */
+    /** Cho phép ViewModel và màn hình quan sát chế độ hiện tại. */
     public LiveData<AppMode> getMode() {
         return currentMode;
     }
 
-    /**
-     * Đọc chế độ sau khi đối chiếu với phiên mới nhất.
-     */
+    /** Đọc chế độ sau khi đối chiếu với phiên mới nhất. */
     @MainThread
     public AppMode getCurrentMode() {
-        syncWithSession(
-                SessionRepository.getInstance().getCurrentSession()
-        );
+        syncWithSession(SessionRepository.getInstance().getCurrentSession());
 
         AppMode mode = currentMode.getValue();
 
@@ -65,13 +52,12 @@ public final class AppModeRepository {
     }
 
     /**
-     * Đổi chế độ khi tài khoản có vai trò tương ứng.
-     * Trả về false nếu là khách hoặc không có quyền dùng chế độ.
+     * Đổi chế độ khi tài khoản có vai trò tương ứng. Trả về false nếu là khách hoặc không có quyền
+     * dùng chế độ.
      */
     @MainThread
     public boolean selectMode(@Nullable AppMode requestedMode) {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         syncWithSession(session);
 
@@ -87,13 +73,10 @@ public final class AppModeRepository {
     }
 
     /**
-     * Kiểm tra vai trò cho chế độ được yêu cầu.
-     * Không yêu cầu xác minh email chỉ để chuyển giao diện.
+     * Kiểm tra vai trò cho chế độ được yêu cầu. Không yêu cầu xác minh email chỉ để chuyển giao
+     * diện.
      */
-    private boolean canUseMode(
-            SessionState session,
-            @Nullable AppMode mode
-    ) {
+    private boolean canUseMode(SessionState session, @Nullable AppMode mode) {
         if (!session.isLoggedIn() || mode == null) {
             return false;
         }
@@ -106,20 +89,16 @@ public final class AppModeRepository {
     }
 
     /**
-     * Đặt lại chế độ khi đổi tài khoản.
-     * Giữ lựa chọn hiện tại nếu tài khoản vẫn có vai trò phù hợp.
+     * Đặt lại chế độ khi đổi tài khoản. Giữ lựa chọn hiện tại nếu tài khoản vẫn có vai trò phù hợp.
      */
     @MainThread
     private void syncWithSession(@Nullable SessionState state) {
-        SessionState session = state == null
-                ? SessionState.guest()
-                : state;
+        SessionState session = state == null ? SessionState.guest() : state;
 
         String nextUserId = session.getUserId();
 
-        boolean accountChanged = modeUserId == null
-                ? nextUserId != null
-                : !modeUserId.equals(nextUserId);
+        boolean accountChanged =
+                modeUserId == null ? nextUserId != null : !modeUserId.equals(nextUserId);
 
         modeUserId = nextUserId;
 
@@ -129,8 +108,7 @@ public final class AppModeRepository {
         if (!session.isLoggedIn()) {
             nextMode = AppMode.TENANT;
 
-        } else if (accountChanged
-                || !canUseMode(session, previousMode)) {
+        } else if (accountChanged || !canUseMode(session, previousMode)) {
             // Ưu tiên Người thuê khi tài khoản có cả hai vai trò.
             if (session.hasRole(UserRole.TENANT)) {
                 nextMode = AppMode.TENANT;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Biểu mẫu chỉnh sửa phòng; mã phòng chỉ được hiển thị. -->
+<!-- Biểu mẫu chỉnh sửa phòng; mã phòng được giữ nguyên. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,7 +9,7 @@
     android:background="@color/roomly_background"
     android:focusableInTouchMode="true">
 
-    <!-- Thanh tiêu đề và nút quay lại. -->
+    <!-- Thanh tiêu đề. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
 
     </LinearLayout>
 
-    <!-- Biểu mẫu cuộn khi bàn phím mở hoặc màn hình nhỏ. -->
+    <!-- Biểu mẫu cuộn khi bàn phím mở. -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_edit_room"
         android:layout_width="match_parent"
@@ -60,7 +60,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Thông báo lỗi hoặc không có quyền truy cập. -->
+            <!-- Thông báo lỗi chung hoặc lỗi truy cập. -->
             <TextView
                 android:id="@+id/tv_edit_room_error"
                 android:layout_width="match_parent"
@@ -72,7 +72,7 @@
                 android:textSize="14sp"
                 android:visibility="gone" />
 
-            <!-- Chỉ hiện khi phòng và quyền truy cập hợp lệ. -->
+            <!-- Chỉ hiển thị khi truy cập được phòng. -->
             <LinearLayout
                 android:id="@+id/layout_edit_room_form"
                 android:layout_width="match_parent"
@@ -80,7 +80,7 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <!-- Mã phòng không được sửa sau khi tạo. -->
+                <!-- Mã phòng chỉ được xem. -->
                 <TextView
                     android:id="@+id/tv_edit_room_code"
                     android:layout_width="match_parent"
@@ -98,7 +98,7 @@
                     android:textColor="@color/roomly_text_secondary"
                     android:textSize="13sp" />
 
-                <!-- Ảnh hiện tại và nút đổi ảnh. -->
+                <!-- Ảnh phòng và nút chọn ảnh. -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -175,6 +175,20 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Loại phòng. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_edit_room_type"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:minHeight="48dp"
+                    android:text="Chọn loại phòng"
+                    android:textAllCaps="false"
+                    android:textColor="@color/roomly_primary"
+                    app:strokeColor="@color/roomly_primary"
+                    app:cornerRadius="12dp" />
+
                 <!-- Địa chỉ phòng. -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/input_edit_room_address"
@@ -183,6 +197,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:hint="Địa chỉ"
+                    app:helperText="Từ 5 đến 300 ký tự."
                     app:boxBackgroundColor="@color/roomly_surface"
                     app:boxCornerRadiusTopStart="12dp"
                     app:boxCornerRadiusTopEnd="12dp"
@@ -210,6 +225,7 @@
                     android:layout_marginTop="16dp"
                     android:hint="Diện tích"
                     app:suffixText="m²"
+                    app:helperText="Từ 2 đến 1.000 m², có thể nhập số thập phân."
                     app:boxBackgroundColor="@color/roomly_surface"
                     app:boxCornerRadiusTopStart="12dp"
                     app:boxCornerRadiusTopEnd="12dp"
@@ -221,6 +237,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="numberDecimal"
+                        android:maxLength="16"
                         android:maxLines="1"
                         android:imeOptions="actionNext"
                         android:textColor="@color/roomly_text_primary"
@@ -228,7 +245,59 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Mô tả phòng có thể nhập nhiều dòng. -->
+                <!-- Số người tối đa. -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/input_edit_room_max_occupants"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:hint="Số người tối đa"
+                    app:helperText="Từ 1 đến 10 người."
+                    app:boxBackgroundColor="@color/roomly_surface"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edt_edit_room_max_occupants"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:maxLength="2"
+                        android:maxLines="1"
+                        android:imeOptions="actionNext"
+                        android:textColor="@color/roomly_text_primary"
+                        android:textSize="16sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Chọn nhiều tiện ích. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_edit_room_amenities"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:minHeight="48dp"
+                    android:text="Chọn tiện ích"
+                    android:textAllCaps="false"
+                    android:textColor="@color/roomly_primary"
+                    app:strokeColor="@color/roomly_primary"
+                    app:cornerRadius="12dp" />
+
+                <TextView
+                    android:id="@+id/tv_edit_room_amenities"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Chưa chọn tiện ích"
+                    android:textColor="@color/roomly_text_secondary"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp" />
+
+                <!-- Mô tả nhiều dòng. -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/input_edit_room_description"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -255,7 +324,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Hiển thị khi đang xử lý cập nhật. -->
+                <!-- Trạng thái đang lưu. -->
                 <ProgressBar
                     android:id="@+id/progress_edit_room"
                     android:layout_width="32dp"

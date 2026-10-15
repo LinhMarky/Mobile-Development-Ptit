@@ -84,6 +84,15 @@
             android:textSize="14sp"
             android:visibility="gone" />
 
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:hint="@string/auth_code_hint">
+            <com.google.android.material.textfield.TextInputEditText android:id="@+id/edt_verification_code"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:inputType="number" android:maxLength="6" android:saveEnabled="false"
+                android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
+
         <ProgressBar
             android:id="@+id/progress_verify_email"
             android:layout_width="32dp"
@@ -100,7 +109,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:minHeight="52dp"
-            android:text="Gửi lại email xác minh"
+            android:text="@string/auth_send_code"
             android:textAllCaps="false"
             android:textColor="@color/roomly_surface"
             android:textSize="15sp"
@@ -115,7 +124,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:minHeight="52dp"
-            android:text="Kiểm tra trạng thái xác minh"
+            android:text="@string/auth_verify_code"
             android:textAllCaps="false"
             android:textColor="@color/roomly_primary"
             android:textSize="15sp"

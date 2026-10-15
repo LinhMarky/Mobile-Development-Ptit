@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="12dp"
-            android:text="Sửa bản nháp"
+            android:text="Sửa bài đăng"
             android:textColor="@color/roomly_text_primary"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -156,7 +156,8 @@
                         android:maxLines="1"
                         android:imeOptions="actionNext"
                         android:textColor="@color/roomly_text_primary"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:maxLength="150"/>
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -188,6 +189,34 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/input_edit_listing_deposit"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:hint="Tiền cọc"
+                        app:suffixText="₫"
+                        app:helperText="Nhập 0 nếu không yêu cầu cọc."
+                        app:boxBackgroundColor="@color/roomly_surface"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/edt_edit_listing_deposit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:imeOptions="actionNext"
+                            android:singleLine="true"
+                            android:maxLength="19"
+                            android:textColor="@color/roomly_text_primary"
+                            android:textSize="16sp" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
                 <!-- Nội dung bài đăng. -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/input_edit_listing_description"
@@ -211,11 +240,14 @@
                         android:inputType="textCapSentences|textMultiLine"
                         android:imeOptions="actionDone"
                         android:textColor="@color/roomly_text_primary"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:maxLength="5000"/>
 
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Trạng thái xử lý cập nhật. -->
+                <include android:id="@+id/listing_fees" layout="@layout/view_listing_fees" />
+
                 <ProgressBar
                     android:id="@+id/progress_edit_listing"
                     android:layout_width="32dp"

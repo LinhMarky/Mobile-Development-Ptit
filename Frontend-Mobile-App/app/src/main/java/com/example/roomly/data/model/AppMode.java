@@ -1,8 +1,8 @@
 package com.example.roomly.data.model;
 
 /**
- * Chế độ giao diện người dùng đang sử dụng.
- * Chế độ không thay đổi vai trò hoặc quyền trong phiên đăng nhập.
+ * Chế độ giao diện người dùng đang sử dụng. Chế độ không thay đổi vai trò hoặc quyền trong phiên
+ * đăng nhập.
  */
 public enum AppMode {
 

@@ -1,0 +1,107 @@
+[
+  {
+    "id": 1,
+    "name": "WiFi",
+    "display_name": "Wi-Fi",
+    "category": "connectivity",
+    "icon": "wifi"
+  },
+  {
+    "id": 2,
+    "name": "Air Conditioning",
+    "display_name": "Điều hòa",
+    "category": "comfort",
+    "icon": "ac_unit"
+  },
+  {
+    "id": 3,
+    "name": "Washing Machine",
+    "display_name": "Máy giặt",
+    "category": "appliance",
+    "icon": "local_laundry_service"
+  },
+  {
+    "id": 4,
+    "name": "Refrigerator",
+    "display_name": "Tủ lạnh",
+    "category": "appliance",
+    "icon": "kitchen"
+  },
+  {
+    "id": 5,
+    "name": "Water Heater",
+    "display_name": "Nóng lạnh",
+    "category": "comfort",
+    "icon": "hot_tub"
+  },
+  {
+    "id": 6,
+    "name": "Parking",
+    "display_name": "Chỗ để xe",
+    "category": "facility",
+    "icon": "local_parking"
+  },
+  {
+    "id": 7,
+    "name": "Security Camera",
+    "display_name": "Camera an ninh",
+    "category": "security",
+    "icon": "videocam"
+  },
+  {
+    "id": 8,
+    "name": "Balcony",
+    "display_name": "Ban công",
+    "category": "feature",
+    "icon": "balcony"
+  },
+  {
+    "id": 9,
+    "name": "Kitchen",
+    "display_name": "Bếp",
+    "category": "feature",
+    "icon": "restaurant"
+  },
+  {
+    "id": 10,
+    "name": "Private Bathroom",
+    "display_name": "Vệ sinh riêng",
+    "category": "feature",
+    "icon": "bathtub"
+  },
+  {
+    "id": 11,
+    "name": "Pet Allowed",
+    "display_name": "Cho nuôi thú cưng",
+    "category": "policy",
+    "icon": "pets"
+  },
+  {
+    "id": 12,
+    "name": "Furnished",
+    "display_name": "Có nội thất",
+    "category": "feature",
+    "icon": "chair"
+  },
+  {
+    "id": 13,
+    "name": "Elevator",
+    "display_name": "Thang máy",
+    "category": "facility",
+    "icon": "elevator"
+  },
+  {
+    "id": 14,
+    "name": "Gym",
+    "display_name": "Phòng gym",
+    "category": "facility",
+    "icon": "fitness_center"
+  },
+  {
+    "id": 15,
+    "name": "Swimming Pool",
+    "display_name": "Hồ bơi",
+    "category": "facility",
+    "icon": "pool"
+  }
+]

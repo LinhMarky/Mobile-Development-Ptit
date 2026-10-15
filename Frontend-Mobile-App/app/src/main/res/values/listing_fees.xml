@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="listing_fees_title">Phụ phí</string>
+    <string name="listing_fee_add">Thêm khoản phí</string>
+    <string name="listing_fee_edit">Sửa khoản phí</string>
+    <string name="listing_fee_type">Loại phí</string>
+    <string name="listing_fee_mode">Cách tính</string>
+    <string name="listing_fee_amount">Số tiền (VNĐ)</string>
+    <string name="listing_fee_unit">Đơn vị (ví dụ kWh, tháng)</string>
+    <string name="listing_fees_empty">Không có phụ phí bổ sung.</string>
+    <string name="listing_fees_loading">Chưa tải được phụ phí. Quay lại và thử lại.</string>
+    <string name="listing_fee_save">Lưu</string>
+    <string name="listing_fee_cancel">Hủy</string>
+    <string name="listing_fee_remove">Xóa</string>
+    <string name="listing_fee_duplicate">Loại phí này đã có. Hãy sửa khoản phí hiện tại.</string>
+    <string-array name="listing_fee_names">
+        <item>Điện</item><item>Nước</item><item>Internet</item><item>Giữ xe</item>
+        <item>Vệ sinh</item><item>Dịch vụ</item><item>Phí khác</item>
+    </string-array>
+    <string-array name="listing_fee_modes"><item>Cố định</item><item>Theo đơn vị sử dụng</item></string-array>
+</resources>

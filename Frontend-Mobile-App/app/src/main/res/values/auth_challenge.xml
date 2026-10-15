@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_code_hint">Mã xác nhận 6 chữ số</string>
+    <string name="auth_send_code">Gửi mã xác nhận</string>
+    <string name="auth_verify_code">Xác minh</string>
+    <string name="auth_new_password">Mật khẩu mới (ít nhất 12 ký tự)</string>
+    <string name="auth_reset_password">Đổi mật khẩu</string>
+</resources>

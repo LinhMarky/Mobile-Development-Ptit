@@ -1,6 +1,5 @@
 package com.example.roomly.ui.host;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,23 +8,26 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.roomly.R;
 import com.example.roomly.data.model.HostListing;
 import com.example.roomly.data.model.HostRoom;
+import com.example.roomly.data.model.RoomCard;
 import com.example.roomly.data.model.SessionState;
 import com.example.roomly.data.model.UserRole;
-import com.example.roomly.data.repository.DemoHostListingRepository;
-import com.example.roomly.data.repository.DemoHostRoomRepository;
+import com.example.roomly.data.repository.HostRepository;
 import com.example.roomly.data.repository.SessionRepository;
 import com.example.roomly.databinding.FragmentHostListingDetailBinding;
 import com.example.roomly.ui.auth.LoginFragment;
 import com.example.roomly.ui.auth.VerifyEmailFragment;
+import com.example.roomly.util.ImageLoader;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 /**
- * Hiển thị chi tiết bản nháp thuộc tài khoản chủ trọ hiện tại.
- * Chỉ truyền ID qua Bundle và đọc lại dữ liệu từ repository.
+ * Hiển thị bài đăng của chủ trọ cùng kết quả kiểm duyệt mới nhất. Chỉ truyền ID qua Bundle và đọc
+ * lại dữ liệu từ repository.
  */
 public class HostListingDetailFragment extends Fragment {
 
@@ -34,12 +36,12 @@ public class HostListingDetailFragment extends Fragment {
     private FragmentHostListingDetailBinding binding;
     private String listingId;
 
-    /**
-     * Tạo màn hình chi tiết với ID bản nháp được chọn.
-     */
+    private AlertDialog submitDialog;
+    private String submitDialogOwnerId;
+
+    /** Tạo màn hình chi tiết với mã bài đăng được chọn. */
     public static HostListingDetailFragment newInstance(String listingId) {
-        HostListingDetailFragment fragment =
-                new HostListingDetailFragment();
+        HostListingDetailFragment fragment = new HostListingDetailFragment();
 
         Bundle args = new Bundle();
         args.putString(ARG_LISTING_ID, listingId);
@@ -48,9 +50,7 @@ public class HostListingDetailFragment extends Fragment {
         return fragment;
     }
 
-    /**
-     * Đọc ID bản nháp khi Fragment được tạo.
-     */
+    /** Đọc mã bài đăng khi Fragment được tạo. */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,205 +60,238 @@ public class HostListingDetailFragment extends Fragment {
         }
     }
 
-    /**
-     * Tạo giao diện chi tiết bài đăng bằng ViewBinding.
-     */
+    /** Tạo giao diện chi tiết bằng ViewBinding. */
     @Nullable
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState
-    ) {
-        binding = FragmentHostListingDetailBinding.inflate(
-                inflater,
-                container,
-                false
-        );
+            @Nullable Bundle savedInstanceState) {
+        binding = FragmentHostListingDetailBinding.inflate(inflater, container, false);
 
         return binding.getRoot();
     }
 
-    /**
-     * Đăng ký thao tác và theo dõi phiên để cập nhật quyền truy cập.
-     */
+    /** Đăng ký nút thao tác và theo dõi thay đổi phiên. */
     @Override
-    public void onViewCreated(
-            @NonNull View view,
-            @Nullable Bundle savedInstanceState
-    ) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         binding.btnListingDetailBack.setOnClickListener(
-                clickedView -> getParentFragmentManager().popBackStack()
-        );
+                clickedView -> getParentFragmentManager().popBackStack());
 
-        binding.btnListingDetailEdit.setOnClickListener(
-                clickedView -> handleEditListing()
-        );
+        binding.btnListingDetailEdit.setOnClickListener(clickedView -> handleEditListing());
+
+        binding.btnListingDetailSubmit.setOnClickListener(clickedView -> handleSubmitListing());
+        binding.btnListingDetailHide.setOnClickListener(clickedView -> hideListing());
 
         SessionRepository.getInstance()
                 .getSessionState()
                 .observe(
                         getViewLifecycleOwner(),
-                        session -> displayListing()
-                );
+                        session -> {
+                            closeSubmitDialogIfAccessChanged();
+                            displayListing();
+                        });
     }
 
-    /**
-     * Đọc lại dữ liệu khi trở về từ màn hình khác.
-     */
+    /** Đọc lại thông tin khi trở về từ màn hình khác. */
     @Override
     public void onResume() {
         super.onResume();
-
+        if (binding == null) {
+            return;
+        }
+        closeSubmitDialogIfAccessChanged();
         displayListing();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
+        if (!session.isLoggedIn() || !session.hasRole(UserRole.HOST)) {
+            return;
+        }
+
+        FragmentHostListingDetailBinding requestBinding = binding;
+        String requestUserId = session.getUserId();
+        binding.btnListingDetailEdit.setEnabled(false);
+        binding.btnListingDetailSubmit.setEnabled(false);
+        HostRepository.getInstance()
+                .fetchListings(
+                        listings -> {
+                            if (!isCurrentRequest(requestBinding, requestUserId)) {
+                                return;
+                            }
+                            closeSubmitDialogIfAccessChanged();
+                            displayListing();
+                        },
+                        message -> {
+                            if (!isCurrentRequest(requestBinding, requestUserId)) {
+                                return;
+                            }
+                            showError("Không thể tải trạng thái tin đăng: " + message);
+                        });
+    }
+
+    private boolean isCurrentRequest(
+            FragmentHostListingDetailBinding requestBinding, String requestUserId) {
+        return binding == requestBinding
+                && isAdded()
+                && requestUserId.equals(
+                        SessionRepository.getInstance().getCurrentSession().getUserId());
     }
 
     /**
-     * Kiểm tra quyền và hiển thị bản nháp cùng phòng liên kết.
+     * Kiểm tra quyền và hiển thị bài đăng cùng trạng thái mới nhất. Chỉ hiện nút chỉnh sửa và gửi
+     * duyệt khi bài còn là bản nháp.
      */
     private void displayListing() {
         if (binding == null) {
             return;
         }
 
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
-        if (!session.isLoggedIn()
-                || !session.hasRole(UserRole.HOST)) {
-            showError(
-                    "Bạn cần đăng nhập bằng tài khoản chủ trọ "
-                            + "để xem bài đăng của mình."
-            );
+        if (!session.isLoggedIn() || !session.hasRole(UserRole.HOST)) {
+            showError("Bạn cần đăng nhập bằng tài khoản chủ trọ " + "để xem bài đăng của mình.");
             return;
         }
 
-        HostListing listing = DemoHostListingRepository.getInstance()
-                .getMyListingById(listingId);
+        HostListing listing = HostRepository.getInstance().getMyListingById(listingId);
 
         if (listing == null) {
             showError(
-                    "Không tìm thấy bản nháp thuộc tài khoản của bạn. "
-                            + "Dữ liệu mẫu có thể đã mất khi app khởi động lại."
-            );
+                    "Không tìm thấy bài đăng thuộc tài khoản của bạn. "
+                            + "Bạn quay lại danh sách để tải lại dữ liệu.");
             return;
         }
 
-        HostRoom room = DemoHostRoomRepository.getInstance()
-                .getMyRoomById(listing.getRoomId());
+        HostRoom room = HostRepository.getInstance().getMyRoomById(listing.getRoomId());
 
         binding.tvListingDetailError.setText("");
         binding.tvListingDetailError.setVisibility(View.GONE);
         binding.layoutListingDetailContent.setVisibility(View.VISIBLE);
 
-        binding.tvListingDetailStatus.setText("Bản nháp mẫu");
+        binding.tvListingDetailStatus.setText(listing.getStatusLabel());
         binding.tvListingDetailTitle.setText(listing.getTitle());
         binding.tvListingDetailPrice.setText(
-                listing.getFormattedPrice()
-        );
+                listing.getFormattedPrice() + "\nTiền cọc: " + listing.getFormattedDeposit());
+        org.json.JSONArray fees = HostRepository.getInstance().getListingFees(listing.getId());
+        StringBuilder text = new StringBuilder(listing.getDescription()).append("\n\nPhụ phí:\n");
+        try {
+            java.util.List<com.example.roomly.data.model.ListingFee> feeRows =
+                    com.example.roomly.data.model.ListingFee.fromJson(fees);
+            if (feeRows.isEmpty()) text.append("Không có phụ phí bổ sung.");
+            for (com.example.roomly.data.model.ListingFee fee : feeRows) {
+                text.append(com.example.roomly.data.api.ApiMapper.feeName(fee.getCode())).append(": ")
+                        .append(com.example.roomly.data.api.ApiMapper.vnd(fee.getAmount()))
+                        .append(fee.getUnit().isEmpty() ? "" : "/" + fee.getUnit())
+                        .append("PER_UNIT".equals(fee.getMode()) ? " (theo sử dụng)" : " (cố định)").append("\n");
+            }
+        } catch (Exception error) {
+            text.append("Chưa tải được phụ phí.");
+        }
+        binding.tvListingDetailDescription.setText(text);
 
-        binding.tvListingDetailDescription.setText(
-                listing.getDescription()
-        );
+        String reason = listing.getModerationReason().trim();
 
-        // Chỉ cho phép chỉnh sửa khi phòng liên kết còn truy cập được.
-        binding.btnListingDetailEdit.setEnabled(room != null);
+        binding.tvListingDetailModerationReason.setText(
+                reason.isEmpty() ? "" : "Thông tin kiểm duyệt:\n" + reason);
+
+        binding.tvListingDetailModerationReason.setVisibility(
+                reason.isEmpty() ? View.GONE : View.VISIBLE);
+
+        boolean draft = listing.getStatus() == HostListing.Status.DRAFT;
+        boolean rejected = listing.getStatus() == HostListing.Status.REJECTED;
+        boolean editable = listing.getStatus().canEdit();
+        boolean submittable = listing.getStatus().canSubmit();
+
+        binding.btnListingDetailEdit.setText(rejected ? "Chỉnh sửa và gửi lại" : "Chỉnh sửa");
+
+        binding.btnListingDetailEdit.setVisibility(editable ? View.VISIBLE : View.GONE);
+
+        binding.btnListingDetailSubmit.setVisibility(submittable ? View.VISIBLE : View.GONE);
+        binding.btnListingDetailHide.setVisibility(listing.getStatus().canHide() ? View.VISIBLE : View.GONE);
+
+        binding.btnListingDetailEdit.setEnabled(editable && room != null && submitDialog == null);
+
+        binding.btnListingDetailSubmit.setEnabled(submittable && room != null && submitDialog == null);
 
         clearImage();
 
         if (room == null) {
-            binding.tvListingDetailRoomCode.setText(
-                    "Không tìm thấy phòng liên kết"
-            );
+            closeSubmitDialog();
+
+            binding.tvListingDetailRoomCode.setText("Không tìm thấy phòng liên kết");
             binding.tvListingDetailAddress.setText("");
             return;
         }
 
-        binding.tvListingDetailRoomCode.setText(
-                "Mã phòng: " + room.getUnitCode()
-        );
-
+        binding.tvListingDetailRoomCode.setText("Mã phòng: " + room.getUnitCode());
         binding.tvListingDetailAddress.setText(room.getAddress());
 
         displayImage(room);
     }
 
     /**
-     * Hiển thị ảnh của phòng liên kết.
-     * Giữ phần thay thế khi ảnh không còn đọc được.
+     * Kiểm tra quyền sở hữu, trạng thái nháp và xác minh email trước khi cho chỉnh sửa hoặc gửi
+     * duyệt.
      */
-    private void displayImage(HostRoom room) {
-        String imageUri = room.getImageUri();
+    @Nullable
+    private HostListing requireListingForSubmit() {
+        if (binding == null) {
+            return null;
+        }
 
-        if (imageUri == null || imageUri.trim().isEmpty()) {
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
+
+        if (!session.isLoggedIn()) {
+            openScreen(new LoginFragment());
+            return null;
+        }
+
+        if (!session.hasRole(UserRole.HOST)) {
+            displayListing();
+            showMessage("Tài khoản chưa có quyền chủ trọ.");
+            return null;
+        }
+
+        HostListing listing = HostRepository.getInstance().getMyListingById(listingId);
+
+        if (listing == null) {
+            displayListing();
+            return null;
+        }
+
+        if (!listing.getStatus().canSubmit()) {
+            displayListing();
+            showMessage("Trạng thái hiện tại không cho phép gửi duyệt.");
+            return null;
+        }
+
+        HostRoom room = HostRepository.getInstance().getMyRoomById(listing.getRoomId());
+
+        if (room == null) {
+            displayListing();
+            showMessage("Không tìm thấy phòng liên kết.");
+            return null;
+        }
+
+        if (!session.isEmailVerified()) {
+            openScreen(VerifyEmailFragment.newInstance(session.getEmail()));
+            return null;
+        }
+
+        return listing;
+    }
+
+    /** Mở chỉnh sửa sau khi kiểm tra lại bản nháp hiện tại. */
+    private void handleEditListing() {
+        if (binding == null
+                || submitDialog != null
+                || !isAdded()
+                || getParentFragmentManager().isStateSaved()) {
             return;
         }
 
-        try {
-            binding.imgListingDetailRoom.setImageURI(
-                    Uri.parse(imageUri)
-            );
-
-            boolean imageLoaded =
-                    binding.imgListingDetailRoom.getDrawable() != null;
-
-            binding.imgListingDetailRoom.setVisibility(
-                    imageLoaded ? View.VISIBLE : View.GONE
-            );
-
-            binding.tvListingDetailImagePlaceholder.setVisibility(
-                    imageLoaded ? View.GONE : View.VISIBLE
-            );
-
-            binding.imgListingDetailRoom.setContentDescription(
-                    "Ảnh phòng " + room.getName()
-            );
-
-        } catch (SecurityException exception) {
-            clearImage();
-        }
-    }
-
-    /**
-     * Xóa ảnh cũ và hiển thị phần thay thế.
-     */
-    private void clearImage() {
-        binding.imgListingDetailRoom.setImageDrawable(null);
-        binding.imgListingDetailRoom.setVisibility(View.GONE);
-
-        binding.tvListingDetailImagePlaceholder.setVisibility(
-                View.VISIBLE
-        );
-    }
-
-    /**
-     * Xóa nội dung riêng tư và hiển thị lỗi khi không còn quyền truy cập.
-     */
-    private void showError(String message) {
-        binding.layoutListingDetailContent.setVisibility(View.GONE);
-        binding.btnListingDetailEdit.setEnabled(false);
-
-        binding.tvListingDetailTitle.setText("");
-        binding.tvListingDetailPrice.setText("");
-        binding.tvListingDetailDescription.setText("");
-        binding.tvListingDetailRoomCode.setText("");
-        binding.tvListingDetailAddress.setText("");
-
-        clearImage();
-
-        binding.tvListingDetailError.setText(message);
-        binding.tvListingDetailError.setVisibility(View.VISIBLE);
-    }
-
-    /**
-     * Kiểm tra quyền, bản nháp, phòng liên kết và xác minh email.
-     * Màn hình chỉnh sửa bản nháp sẽ được nối ở bước tiếp theo.
-     */
-    private void handleEditListing() {
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
 
         if (!session.isLoggedIn()) {
             openScreen(new LoginFragment());
@@ -267,42 +300,187 @@ public class HostListingDetailFragment extends Fragment {
 
         if (!session.hasRole(UserRole.HOST)) {
             displayListing();
+            showMessage("Tài khoản chưa có quyền chủ trọ.");
             return;
         }
 
-        HostListing listing = DemoHostListingRepository.getInstance()
-                .getMyListingById(listingId);
+        HostListing listing = HostRepository.getInstance().getMyListingById(listingId);
 
         if (listing == null) {
             displayListing();
             return;
         }
 
-        HostRoom room = DemoHostRoomRepository.getInstance()
-                .getMyRoomById(listing.getRoomId());
-
-        if (room == null) {
-            displayListing();
-            return;
-        }
-
         if (!session.isEmailVerified()) {
-            openScreen(
-                    VerifyEmailFragment.newInstance(session.getEmail())
-            );
+            openScreen(VerifyEmailFragment.newInstance(session.getEmail()));
             return;
         }
 
-        // Mở màn hình chỉnh sửa bản nháp đang xem.
-        openScreen(
-                HostEditListingFragment.newInstance(listingId)
-        );
+        HostRoom room = HostRepository.getInstance().getMyRoomById(listing.getRoomId());
+        if (!listing.getStatus().canEdit() || room == null
+                || room.getAvailability() != com.example.roomly.data.model.RoomCard.Availability.AVAILABLE) {
+            showMessage("Trạng thái tin hoặc phòng không cho phép sửa.");
+            return;
+        }
+        openScreen(HostEditListingFragment.newInstance(listing.getId()));
+    }
+
+    private void handleSubmitListing() {
+        if (submitDialog != null) {
+            return;
+        }
+
+        HostListing listing = requireListingForSubmit();
+
+        if (listing == null) {
+            return;
+        }
+
+        AlertDialog dialog =
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Gửi bài đăng để duyệt?")
+                        .setMessage(
+                                listing.getTitle()
+                                        + "\n\nSau khi gửi, bài chuyển sang "
+                                        + "Chờ duyệt và không thể chỉnh sửa "
+                                        + "bằng chức năng sửa bản nháp.")
+                        .setNegativeButton("Quay lại", null)
+                        .setPositiveButton("Gửi duyệt", null)
+                        .create();
+
+        submitDialog = dialog;
+        submitDialogOwnerId = listing.getOwnerId();
+
+        dialog.setOnDismissListener(
+                dismissedDialog -> {
+                    if (submitDialog == dialog) {
+                        submitDialog = null;
+                        submitDialogOwnerId = null;
+
+                        if (binding != null) {
+                            displayListing();
+                        }
+                    }
+                });
+
+        dialog.show();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setOnClickListener(clickedView -> submitCurrentDraft(dialog));
     }
 
     /**
-     * Mở màn hình xác thực và giữ chi tiết bài đăng trong back stack.
+     * Kiểm tra lại tài khoản mở hộp thoại và gửi bản nháp. Repository tiếp tục kiểm tra quyền,
+     * phòng và dữ liệu khi lưu.
      */
+    private void submitCurrentDraft(AlertDialog dialog) {
+        if (binding == null || requireListingForSubmit() == null) return;
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+        HostRepository.getInstance()
+                .submit(
+                        listingId,
+                        () -> {
+                            if (binding == null) return;
+                            closeSubmitDialog();
+                            displayListing();
+                            showMessage("Đã gửi bài đăng đến admin duyệt.");
+                        },
+                        text -> {
+                            if (binding == null) return;
+                            closeSubmitDialog();
+                            showMessage(text);
+                        });
+    }
+
+    /** Hiển thị ảnh phòng; dùng phần thay thế nếu không đọc được ảnh. */
+    private void displayImage(HostRoom room) {
+        String imageUri = room.getImageUri();
+
+        if (imageUri == null || imageUri.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            ImageLoader.load(
+                    binding.imgListingDetailRoom, imageUri, android.R.drawable.ic_menu_gallery);
+
+            boolean loaded = binding.imgListingDetailRoom.getDrawable() != null;
+
+            binding.imgListingDetailRoom.setVisibility(loaded ? View.VISIBLE : View.GONE);
+            binding.tvListingDetailImagePlaceholder.setVisibility(
+                    loaded ? View.GONE : View.VISIBLE);
+            binding.imgListingDetailRoom.setContentDescription("Ảnh phòng " + room.getName());
+        } catch (SecurityException | IllegalArgumentException exception) {
+            clearImage();
+        }
+    }
+
+    /** Xóa ảnh cũ và hiển thị phần thay thế. */
+    private void clearImage() {
+        binding.imgListingDetailRoom.setImageDrawable(null);
+        binding.imgListingDetailRoom.setVisibility(View.GONE);
+        binding.tvListingDetailImagePlaceholder.setVisibility(View.VISIBLE);
+    }
+
+    /** Xóa thông tin riêng tư khi không còn quyền truy cập. */
+    private void showError(String message) {
+        closeSubmitDialog();
+
+        binding.layoutListingDetailContent.setVisibility(View.GONE);
+
+        binding.btnListingDetailEdit.setEnabled(false);
+        binding.btnListingDetailEdit.setVisibility(View.GONE);
+        binding.btnListingDetailSubmit.setEnabled(false);
+        binding.btnListingDetailSubmit.setVisibility(View.GONE);
+
+        binding.tvListingDetailStatus.setText("");
+        binding.tvListingDetailTitle.setText("");
+        binding.tvListingDetailPrice.setText("");
+        binding.tvListingDetailDescription.setText("");
+        binding.tvListingDetailRoomCode.setText("");
+        binding.tvListingDetailAddress.setText("");
+        binding.tvListingDetailModerationReason.setText("");
+        binding.tvListingDetailModerationReason.setVisibility(View.GONE);
+
+        clearImage();
+
+        binding.tvListingDetailError.setText(message);
+        binding.tvListingDetailError.setVisibility(View.VISIBLE);
+    }
+
+    /** Đóng hộp thoại nếu tài khoản hoặc điều kiện truy cập thay đổi. */
+    private void closeSubmitDialogIfAccessChanged() {
+        if (submitDialog == null) {
+            return;
+        }
+
+        SessionState session = SessionRepository.getInstance().getCurrentSession();
+
+        if (!session.isLoggedIn()
+                || !session.hasRole(UserRole.HOST)
+                || !session.isEmailVerified()
+                || !session.getUserId().equals(submitDialogOwnerId)) {
+            closeSubmitDialog();
+        }
+    }
+
+    /** Đóng hộp thoại và gỡ listener trước khi giải phóng tham chiếu. */
+    private void closeSubmitDialog() {
+        AlertDialog dialog = submitDialog;
+
+        submitDialog = null;
+        submitDialogOwnerId = null;
+
+        if (dialog != null) {
+            dialog.setOnDismissListener(null);
+            dialog.dismiss();
+        }
+    }
+
+    /** Mở màn hình tiếp theo và giữ chi tiết bài đăng trong back stack. */
     private void openScreen(Fragment fragment) {
+        closeSubmitDialog();
+
         getParentFragmentManager()
                 .beginTransaction()
                 .setReorderingAllowed(true)
@@ -311,14 +489,28 @@ public class HostListingDetailFragment extends Fragment {
                 .commit();
     }
 
-    /**
-     * Gỡ listener, giải phóng ảnh và binding khi giao diện bị hủy.
-     */
+    /** Hiển thị thông báo khi giao diện vẫn còn hoạt động. */
+    private void showMessage(@Nullable String message) {
+        if (binding == null || !isAdded()) {
+            return;
+        }
+
+        Toast.makeText(
+                        requireContext(),
+                        message == null ? "Không thể xử lý bài đăng." : message,
+                        Toast.LENGTH_LONG)
+                .show();
+    }
+
+    /** Đóng hộp thoại, gỡ listener và giải phóng ảnh, binding. */
     @Override
     public void onDestroyView() {
+        closeSubmitDialog();
+
         if (binding != null) {
             binding.btnListingDetailBack.setOnClickListener(null);
             binding.btnListingDetailEdit.setOnClickListener(null);
+            binding.btnListingDetailSubmit.setOnClickListener(null);
             binding.imgListingDetailRoom.setImageDrawable(null);
         }
 
@@ -326,4 +518,21 @@ public class HostListingDetailFragment extends Fragment {
 
         super.onDestroyView();
     }
+
+    private void hideListing() {
+        HostListing listing = HostRepository.getInstance().getMyListingById(listingId);
+        if (binding == null || listing == null || !listing.getStatus().canHide()) return;
+        binding.btnListingDetailHide.setEnabled(false);
+        HostRepository.getInstance().hideListing(listingId, () -> {
+            if (binding == null) return;
+            binding.btnListingDetailHide.setEnabled(true);
+            displayListing();
+            showMessage("Đã ẩn tin khỏi danh sách công khai.");
+        }, message -> {
+            if (binding == null) return;
+            binding.btnListingDetailHide.setEnabled(true);
+            showMessage(message);
+        });
+    }
+
 }

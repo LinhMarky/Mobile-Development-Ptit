@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="20dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/listing_fee_type" android:labelFor="@id/spinner_fee_code" />
+        <Spinner android:id="@+id/spinner_fee_code" android:layout_width="match_parent"
+            android:layout_height="48dp" android:spinnerMode="dropdown" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/listing_fee_mode" android:labelFor="@id/spinner_fee_mode" />
+        <Spinner android:id="@+id/spinner_fee_mode" android:layout_width="match_parent"
+            android:layout_height="48dp" android:spinnerMode="dropdown" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="@string/listing_fee_amount">
+            <com.google.android.material.textfield.TextInputEditText android:id="@+id/edt_fee_amount"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:inputType="number" android:maxLength="18" android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="@string/listing_fee_unit">
+            <com.google.android.material.textfield.TextInputEditText android:id="@+id/edt_fee_unit"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:inputType="text" android:maxLength="50" android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <TextView android:id="@+id/tv_fee_error" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:textColor="?attr/colorError"
+            android:accessibilityLiveRegion="polite" />
+    </LinearLayout>
+</ScrollView>

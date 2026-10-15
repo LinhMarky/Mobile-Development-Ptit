@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.example.roomly.data.model.HostRoom;
 import com.example.roomly.data.model.HostViewingSlot;
+import com.example.roomly.data.model.RoomCard;
 import com.example.roomly.data.model.SessionState;
 
 import java.util.ArrayList;
@@ -12,10 +13,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Quản lý khung giờ xem phòng trong dữ liệu mẫu.
- * Dữ liệu chưa được gửi đến backend và mất khi tiến trình app kết thúc.
- */
+/** Quản lý khung giờ xem phòng trong bộ nhớ. */
 public class DemoHostViewingRepository {
 
     private static final DemoHostViewingRepository INSTANCE =
@@ -23,23 +21,16 @@ public class DemoHostViewingRepository {
 
     private final List<HostViewingSlot> slots = new ArrayList<>();
 
-    /**
-     * Khởi tạo repository dùng chung, không tạo sẵn khung giờ giả.
-     */
+    /** Không tạo sẵn khung giờ giả. */
     private DemoHostViewingRepository() {
     }
 
-    /**
-     * Trả về repository khung giờ dùng chung trong ứng dụng.
-     */
+    /** Trả về repository dùng chung. */
     public static DemoHostViewingRepository getInstance() {
         return INSTANCE;
     }
 
-    /**
-     * Lấy các khung giờ của một phòng thuộc chủ trọ hiện tại.
-     * Sắp xếp theo thời gian bắt đầu từ sớm đến muộn.
-     */
+    /** Lấy các khung giờ của phòng thuộc chủ trọ hiện tại. */
     @MainThread
     public List<HostViewingSlot> getMySlots(String roomId) {
         List<HostViewingSlot> results = new ArrayList<>();
@@ -67,10 +58,7 @@ public class DemoHostViewingRepository {
         return results;
     }
 
-    /**
-     * Lấy một khung giờ nếu phòng liên kết thuộc chủ trọ hiện tại.
-     * Trả về null nếu khung giờ không tồn tại hoặc không có quyền xem.
-     */
+    /** Lấy một khung giờ thuộc phòng của chủ trọ hiện tại. */
     @Nullable
     @MainThread
     public HostViewingSlot getMySlotById(String slotId) {
@@ -96,9 +84,58 @@ public class DemoHostViewingRepository {
     }
 
     /**
-     * Tạo khung giờ mới cho phòng thuộc chủ trọ hiện tại.
-     * Khung giờ phải bắt đầu trong tương lai và kết thúc sau lúc bắt đầu.
+     * Lấy khung giờ công khai của một bài đang hiển thị.
+     * Không dùng dữ liệu mã chủ trọ do người gọi tự truyền vào.
      */
+    @MainThread
+    public List<HostViewingSlot> getOpenSlotsForListing(
+            String listingId
+    ) {
+        List<HostViewingSlot> results = new ArrayList<>();
+
+        if (listingId == null || listingId.trim().isEmpty()) {
+            return results;
+        }
+
+        RoomCard publishedRoom = null;
+
+        for (RoomCard card : DemoAdminListingRepository.getInstance()
+                .getPublishedRoomCards()) {
+            if (listingId.equals(card.getListingId())) {
+                publishedRoom = card;
+                break;
+            }
+        }
+
+        if (publishedRoom == null) {
+            return results;
+        }
+
+        long now = System.currentTimeMillis();
+
+        for (HostViewingSlot slot : slots) {
+            if (slot.isOpen()
+                    && slot.getStartTimeMillis() > now
+                    && slot.getRoomId().equals(
+                    publishedRoom.getRoomId()
+            )
+                    && slot.getOwnerId().equals(
+                    publishedRoom.getOwnerId()
+            )) {
+                results.add(slot);
+            }
+        }
+
+        results.sort(
+                Comparator.comparingLong(
+                        HostViewingSlot::getStartTimeMillis
+                )
+        );
+
+        return results;
+    }
+
+    /** Tạo khung giờ tương lai cho phòng thuộc chủ trọ hiện tại. */
     @MainThread
     public HostViewingSlot createSlot(
             String roomId,
@@ -129,44 +166,38 @@ public class DemoHostViewingRepository {
         );
 
         slots.add(slot);
-
         return slot;
     }
 
     /**
-     * Mở hoặc đóng nhận lịch cho một khung giờ thuộc chủ trọ hiện tại.
-     * Không cho mở lại khung giờ đã bắt đầu.
-     * Thao tác này chỉ đổi trạng thái khung giờ, không hủy lịch hẹn.
+     * Mở hoặc đóng nhận yêu cầu cho khung giờ của chủ trọ.
+     * Đóng khung giờ không tự hủy yêu cầu đã gửi.
      */
     @MainThread
-    public HostViewingSlot setSlotOpen(
-            String slotId,
-            boolean open
-    ) {
-        HostViewingSlot currentSlot = getMySlotById(slotId);
+    public HostViewingSlot setSlotOpen(String slotId, boolean open) {
+        HostViewingSlot current = getMySlotById(slotId);
 
-        if (currentSlot == null) {
+        if (current == null) {
             throw new IllegalStateException(
                     "Không tìm thấy khung giờ thuộc tài khoản của bạn."
             );
         }
 
-        requireEditableRoom(currentSlot.getRoomId());
+        requireEditableRoom(current.getRoomId());
 
-        if (open
-                && currentSlot.getStartTimeMillis()
+        if (open && current.getStartTimeMillis()
                 <= System.currentTimeMillis()) {
             throw new IllegalArgumentException(
                     "Không thể mở khung giờ đã bắt đầu."
             );
         }
 
-        HostViewingSlot updatedSlot = currentSlot.withOpen(open);
+        HostViewingSlot updated = current.withOpen(open);
 
         for (int index = 0; index < slots.size(); index++) {
             if (slots.get(index).getId().equals(slotId)) {
-                slots.set(index, updatedSlot);
-                return updatedSlot;
+                slots.set(index, updated);
+                return updated;
             }
         }
 
@@ -175,13 +206,10 @@ public class DemoHostViewingRepository {
         );
     }
 
-    /**
-     * Kiểm tra đăng nhập, xác minh email và quyền sở hữu phòng.
-     * Repository phòng chỉ trả về phòng của tài khoản có quyền chủ trọ.
-     */
+    /** Kiểm tra đăng nhập, xác minh email và quyền sở hữu phòng. */
     private HostRoom requireEditableRoom(String roomId) {
-        SessionState session =
-                SessionRepository.getInstance().getCurrentSession();
+        SessionState session = SessionRepository.getInstance()
+                .getCurrentSession();
 
         if (!session.isLoggedIn()) {
             throw new IllegalStateException(
