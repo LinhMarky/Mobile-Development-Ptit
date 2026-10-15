@@ -32,15 +32,6 @@ import com.example.roomly.ui.auth.VerifyEmailFragment;
 import com.example.roomly.ui.detail.RoomDetailFragment;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-
-import com.example.roomly.data.repository.LocalSearchHistoryRepository;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,17 +55,6 @@ public class ExploreFragment extends Fragment {
     private RoomAdapter roomAdapter;
     private TextWatcher searchWatcher;
 
-    private static final ExecutorService HISTORY_EXECUTOR =
-            Executors.newSingleThreadExecutor();
-
-    private final Handler historyHandler =
-            new Handler(Looper.getMainLooper());
-
-    private LocalSearchHistoryRepository searchHistoryRepository;
-    private SearchHistoryAdapter searchHistoryAdapter;
-
-    private int historyRequestVersion = 0;
-
     // Bảng lọc đang mở, nếu có.
     private BottomSheetDialog filterDialog;
 
@@ -91,10 +71,6 @@ public class ExploreFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        searchHistoryRepository = new LocalSearchHistoryRepository(
-                requireContext().getApplicationContext()
-        );
 
         if (savedInstanceState == null) {
             return;
@@ -164,28 +140,8 @@ public class ExploreFragment extends Fragment {
 
         setupRoomList();
         setupSearch();
-        setupSearchHistory();
         setupRoomTypeFilters();
         setupAdvancedFilter();
-
-        binding.btnViewedRooms.setOnClickListener(clicked -> {
-            if (binding == null
-                    || getParentFragmentManager().isStateSaved()) {
-                return;
-            }
-
-            hideSearchKeyboard();
-
-            getParentFragmentManager()
-                    .beginTransaction()
-                    .setReorderingAllowed(true)
-                    .replace(
-                            R.id.fragment_container,
-                            new ViewedRoomsFragment()
-                    )
-                    .addToBackStack(null)
-                    .commit();
-        });
     }
 
     /**
@@ -200,215 +156,6 @@ public class ExploreFragment extends Fragment {
         if (binding != null) {
             filterRooms(binding.edtSearch.getText().toString());
         }
-    }
-
-    /**
-     * Chỉ lưu lịch sử cho tài khoản đã đăng nhập.
-     */
-    private String getHistoryUserId() {
-        com.example.roomly.data.model.SessionState session =
-                SessionRepository.getInstance().getCurrentSession();
-
-        if (!session.isLoggedIn() || session.getUserId() == null) {
-            return "";
-        }
-
-        return session.getUserId().trim();
-    }
-
-    private void setupSearchHistory() {
-        binding.rvSearchHistory.setLayoutManager(
-                new LinearLayoutManager(requireContext())
-        );
-
-        searchHistoryAdapter = new SearchHistoryAdapter();
-        binding.rvSearchHistory.setAdapter(searchHistoryAdapter);
-
-        searchHistoryAdapter.setListener(
-                new SearchHistoryAdapter.Listener() {
-                    @Override
-                    public void onKeywordSelected(String keyword) {
-                        if (binding == null || getHistoryUserId().isEmpty()) {
-                            return;
-                        }
-
-                        binding.edtSearch.setText(keyword);
-                        binding.edtSearch.setSelection(
-                                binding.edtSearch.length()
-                        );
-
-                        filterRooms(keyword);
-                        saveSearchKeyword(keyword);
-                        hideSearchKeyboard();
-                    }
-
-                    @Override
-                    public void onKeywordDeleteRequested(String keyword) {
-                        String ownerId = getHistoryUserId();
-
-                        if (ownerId.isEmpty()) {
-                            return;
-                        }
-
-                        runHistoryOperation(
-                                ownerId,
-                                () -> searchHistoryRepository.deleteSearch(
-                                        ownerId,
-                                        keyword
-                                )
-                        );
-                    }
-                }
-        );
-
-        binding.btnClearSearchHistory.setOnClickListener(view -> {
-            String ownerId = getHistoryUserId();
-
-            if (!ownerId.isEmpty()) {
-                runHistoryOperation(
-                        ownerId,
-                        () -> searchHistoryRepository.clearHistory(ownerId)
-                );
-            }
-        });
-
-        binding.edtSearch.setOnFocusChangeListener(
-                (view, hasFocus) -> updateSearchHistoryVisibility()
-        );
-
-        SessionRepository.getInstance()
-                .getSessionState()
-                .observe(
-                        getViewLifecycleOwner(),
-                        session -> reloadSearchHistory()
-                );
-    }
-
-    private void reloadSearchHistory() {
-        if (binding == null || searchHistoryAdapter == null) {
-            return;
-        }
-
-        // Xóa ngay dữ liệu trên giao diện khi phiên thay đổi.
-        historyRequestVersion++;
-        searchHistoryAdapter.submitKeywords(new ArrayList<>());
-        updateSearchHistoryVisibility();
-
-        String ownerId = getHistoryUserId();
-
-        if (!ownerId.isEmpty()) {
-            runHistoryOperation(ownerId, () -> {
-                // Chỉ đọc lại, không sửa dữ liệu.
-            });
-        }
-    }
-
-    private void saveSearchKeyword(String keyword) {
-        String ownerId = getHistoryUserId();
-
-        if (ownerId.isEmpty()
-                || keyword == null
-                || keyword.trim().isEmpty()) {
-            return;
-        }
-
-        runHistoryOperation(
-                ownerId,
-                () -> searchHistoryRepository.saveSearch(ownerId, keyword)
-        );
-    }
-
-    /**
-     * Thực hiện ghi/xóa rồi đọc lại trên cùng một hàng đợi.
-     * Chỉ cập nhật đúng giao diện và tài khoản đã yêu cầu.
-     */
-    private void runHistoryOperation(
-            String ownerId,
-            Runnable operation
-    ) {
-        if (binding == null
-                || searchHistoryAdapter == null
-                || !ownerId.equals(getHistoryUserId())) {
-            return;
-        }
-
-        final int requestVersion = ++historyRequestVersion;
-        final View originalRoot = binding.getRoot();
-        final LocalSearchHistoryRepository repository =
-                searchHistoryRepository;
-
-        HISTORY_EXECUTOR.execute(() -> {
-            try {
-                operation.run();
-
-                List<String> history = repository.getHistory(ownerId);
-
-                historyHandler.post(() -> {
-                    if (!isCurrentHistoryRequest(
-                            originalRoot,
-                            requestVersion,
-                            ownerId
-                    )) {
-                        return;
-                    }
-
-                    searchHistoryAdapter.submitKeywords(history);
-                    updateSearchHistoryVisibility();
-                });
-
-            } catch (RuntimeException exception) {
-                Log.e(
-                        "ROOMLY_SEARCH_HISTORY",
-                        "Không xử lý được lịch sử tìm kiếm.",
-                        exception
-                );
-
-                historyHandler.post(() -> {
-                    if (!isCurrentHistoryRequest(
-                            originalRoot,
-                            requestVersion,
-                            ownerId
-                    )) {
-                        return;
-                    }
-
-                    Toast.makeText(
-                            requireContext(),
-                            "Không xử lý được lịch sử tìm kiếm.",
-                            Toast.LENGTH_SHORT
-                    ).show();
-                });
-            }
-        });
-    }
-
-    private boolean isCurrentHistoryRequest(
-            View originalRoot,
-            int requestVersion,
-            String ownerId
-    ) {
-        return binding != null
-                && binding.getRoot() == originalRoot
-                && searchHistoryAdapter != null
-                && historyRequestVersion == requestVersion
-                && ownerId.equals(getHistoryUserId());
-    }
-
-    /**
-     * Chỉ hiện khi đang chọn ô tìm kiếm và có lịch sử.
-     */
-    private void updateSearchHistoryVisibility() {
-        if (binding == null || searchHistoryAdapter == null) {
-            return;
-        }
-
-        boolean visible = !getHistoryUserId().isEmpty()
-                && binding.edtSearch.hasFocus()
-                && searchHistoryAdapter.getItemCount() > 0;
-
-        binding.layoutSearchHistory.setVisibility(
-                visible ? View.VISIBLE : View.GONE
-        );
     }
 
     /**
@@ -613,10 +360,7 @@ public class ExploreFragment extends Fragment {
         binding.edtSearch.setOnEditorActionListener(
                 (textView, actionId, event) -> {
                     if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                        String keyword = textView.getText().toString();
-
-                        filterRooms(keyword);
-                        saveSearchKeyword(keyword);
+                        filterRooms(textView.getText().toString());
                         hideSearchKeyboard();
 
                         return true;
@@ -1060,12 +804,6 @@ public class ExploreFragment extends Fragment {
      */
     @Override
     public void onDestroyView() {
-        historyRequestVersion++;
-
-        if (searchHistoryAdapter != null) {
-            searchHistoryAdapter.setListener(null);
-        }
-
         if (filterDialog != null) {
             filterDialog.dismiss();
             filterDialog = null;
@@ -1078,13 +816,7 @@ public class ExploreFragment extends Fragment {
                 );
             }
 
-            binding.edtSearch.setOnFocusChangeListener(null);
             binding.edtSearch.setOnEditorActionListener(null);
-
-            binding.btnClearSearchHistory.setOnClickListener(null);
-            binding.rvSearchHistory.setAdapter(null);
-
-            binding.btnViewedRooms.setOnClickListener(null);
 
             binding.btnFilter.setOnClickListener(null);
             binding.btnFilterAll.setOnClickListener(null);
@@ -1101,7 +833,6 @@ public class ExploreFragment extends Fragment {
             roomAdapter.setOnSaveChangedListener(null);
         }
 
-        searchHistoryAdapter = null;
         searchWatcher = null;
         roomAdapter = null;
         binding = null;

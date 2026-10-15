@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -9,7 +8,7 @@
     android:paddingStart="20dp"
     android:paddingEnd="20dp">
 
-    <!-- Thương hiệu và nút tài khoản. -->
+    <!-- Header: thương hiệu ROOMLY và nút tài khoản -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -40,6 +39,7 @@
 
     </LinearLayout>
 
+    <!-- Lời chào kèm bàn tay vẫy -->
     <TextView
         android:id="@+id/tv_greeting"
         android:layout_width="match_parent"
@@ -49,7 +49,7 @@
         android:textColor="@color/roomly_text_secondary"
         android:textSize="14sp" />
 
-    <!-- Tiêu đề màn hình. -->
+    <!-- Tiêu đề: dòng đầu có chữ "phù hợp" màu xanh ngọc -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -82,6 +82,7 @@
 
         </LinearLayout>
 
+        <!-- Dòng thứ hai của tiêu đề -->
         <TextView
             android:id="@+id/tv_home_title"
             android:layout_width="match_parent"
@@ -94,7 +95,7 @@
 
     </LinearLayout>
 
-    <!-- Ô tìm kiếm và nút lọc nâng cao. -->
+    <!-- Ô nhập tìm kiếm phòng theo khu vực hoặc tên phòng -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -105,6 +106,7 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp">
 
+        <!-- Kính lúp mang tính trang trí -->
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
@@ -122,13 +124,13 @@
             android:hint="Tìm phòng, khu vực..."
             android:inputType="text"
             android:imeOptions="actionSearch"
-            android:maxLength="200"
             android:maxLines="1"
             android:singleLine="true"
             android:textColor="@color/roomly_text_primary"
             android:textColorHint="@color/roomly_text_secondary"
             android:textSize="14sp" />
 
+        <!-- Nút mở bảng lọc phòng -->
         <ImageButton
             android:id="@+id/btn_filter"
             android:layout_width="48dp"
@@ -141,57 +143,9 @@
 
     </LinearLayout>
 
-    <!-- Lịch sử nằm ngoài hàng bộ lọc cuộn ngang. -->
-    <LinearLayout
-        android:id="@+id/layout_search_history"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Tìm kiếm gần đây"
-                android:textColor="@color/roomly_text_secondary"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btn_clear_search_history"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:minWidth="48dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:text="Xóa tất cả"
-                android:textAllCaps="false"
-                android:textColor="@color/roomly_primary"
-                android:textSize="13sp" />
-
-        </LinearLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_search_history"
-            android:layout_width="match_parent"
-            android:layout_height="96dp"
-            android:clipToPadding="false"
-            android:overScrollMode="ifContentScrolls"
-            android:scrollbars="vertical" />
-
-    </LinearLayout>
-
-    <!-- Bộ lọc loại phòng. -->
+    <!-- Hàng bộ lọc nhỏ gọn, có thể cuộn ngang -->
     <HorizontalScrollView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -202,6 +156,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
+            <!-- Bộ lọc được chọn: nền xanh ngọc, chữ trắng -->
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_filter_all"
                 android:layout_width="wrap_content"
@@ -219,6 +174,7 @@
                 android:textColor="@color/roomly_surface"
                 android:textSize="13sp" />
 
+            <!-- Các bộ lọc chưa chọn: nền trắng, chữ xám -->
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_filter_room"
                 android:layout_width="wrap_content"
@@ -277,6 +233,7 @@
 
     </HorizontalScrollView>
 
+    <!-- Tiêu đề cho danh sách phòng bên dưới -->
     <TextView
         android:id="@+id/tv_room_list_title"
         android:layout_width="match_parent"
@@ -287,24 +244,14 @@
         android:textSize="20sp"
         android:textStyle="bold" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_viewed_rooms"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_gravity="end"
-        android:text="Phòng đã xem"
-        android:textAllCaps="false"
-        android:textColor="@color/roomly_primary"
-        android:textSize="14sp" />
-
-    <!-- Danh sách phòng và trạng thái trống. -->
+    <!-- Vùng hiển thị danh sách hoặc thông báo không có kết quả -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_marginTop="12dp">
 
+        <!-- Danh sách phòng cuộn dọc -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_rooms"
             android:layout_width="match_parent"
@@ -313,6 +260,7 @@
             android:clipToPadding="false"
             android:scrollbars="vertical" />
 
+        <!-- Chỉ hiện khi không có phòng phù hợp -->
         <LinearLayout
             android:id="@+id/layout_search_empty"
             android:layout_width="match_parent"
@@ -353,3 +301,4 @@
     </FrameLayout>
 
 </LinearLayout>
+

@@ -43,16 +43,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.example.roomly.ui.report.ReportListingDialogFragment;
 
-import android.content.Context;
-import android.util.Log;
-
-import com.example.roomly.data.local.RoomCardJsonCodec;
-import com.example.roomly.data.model.ViewedRoomCache;
-import com.example.roomly.data.repository.LocalViewedRoomRepository;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -81,23 +71,10 @@ public class RoomDetailFragment extends Fragment {
     private static final String ARG_AVAILABILITY = "room_availability";
     private static final String ARG_FEES = "room_fees";
     private static final String ARG_IMAGES = "room_images";
-    private static final String ARG_CACHE_ONLY = "room_cache_only";
-    private static final String ARG_CACHE_USER_ID = "room_cache_user_id";
-    private static final String ARG_CACHE_TIME = "room_cache_time";
 
     private static final String STATE_IMAGE_POSITION = "image_position";
 
     private FragmentRoomDetailBinding binding;
-
-    private static final ExecutorService ROOM_CACHE_EXECUTOR =
-            Executors.newSingleThreadExecutor();
-
-    private LocalViewedRoomRepository localViewedRoomRepository;
-
-    // Tránh ghi lặp khi displayRoomDetails() được gọi nhiều lần.
-    private String lastCachedOwnerId = "";
-    private String lastCachedPayload = "";
-    private long cacheWriteVersion = 0;
 
     private RoomImageAdapter imageAdapter;
     private LinearLayoutManager imageLayoutManager;
@@ -177,166 +154,10 @@ public class RoomDetailFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        localViewedRoomRepository = new LocalViewedRoomRepository(
-                requireContext().getApplicationContext()
-        );
-
         if (savedInstanceState != null) {
             imagePosition = savedInstanceState.getInt(
                     STATE_IMAGE_POSITION,
                     0
-            );
-        }
-    }
-
-    /**
-     * Mở bản lưu của đúng tài khoản, không dùng để thực hiện giao dịch.
-     */
-    public static RoomDetailFragment newCachedInstance(
-            RoomCard room,
-            String userId,
-            long cachedAtMillis
-    ) {
-        if (userId == null || userId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Thiếu mã tài khoản.");
-        }
-
-        RoomDetailFragment fragment = newInstance(room);
-        Bundle args = fragment.requireArguments();
-
-        args.putBoolean(ARG_CACHE_ONLY, true);
-        args.putString(ARG_CACHE_USER_ID, userId.trim());
-        args.putLong(ARG_CACHE_TIME, cachedAtMillis);
-
-        return fragment;
-    }
-
-    private boolean isCacheOnly() {
-        Bundle args = getArguments();
-
-        return args != null
-                && args.getBoolean(ARG_CACHE_ONLY, false);
-    }
-
-    private boolean canReadCachedRoom() {
-        Bundle args = getArguments();
-
-        if (args == null) {
-            return false;
-        }
-
-        String ownerId = args.getString(ARG_CACHE_USER_ID, "");
-
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
-
-        return session.isLoggedIn()
-                && !ownerId.isEmpty()
-                && ownerId.equals(session.getUserId());
-    }
-
-    private boolean blockCachedAction() {
-        if (!isCacheOnly()) {
-            return false;
-        }
-
-        closeBookingDialog();
-
-        showMessage(
-                "Đây là bản lưu chỉ để xem. "
-                        + "Bạn hãy mở bài đăng từ Khám phá "
-                        + "để kiểm tra thông tin mới và thực hiện thao tác."
-        );
-
-        return true;
-    }
-
-    /**
-     * Lưu bản sao từ nguồn dữ liệu hiện tại.
-     * Chỉ cache bài đăng có ID và tài khoản đã đăng nhập.
-     */
-    private void cacheViewedRoom(RoomCard room) {
-        if (!isAdded()
-                || localViewedRoomRepository == null
-                || room == null
-                || room.getListingId().trim().isEmpty()
-                || room.getRoomId().trim().isEmpty()) {
-            return;
-        }
-
-        SessionState session = SessionRepository.getInstance()
-                .getCurrentSession();
-
-        if (!session.isLoggedIn()
-                || session.getUserId() == null
-                || session.getUserId().trim().isEmpty()) {
-            return;
-        }
-
-        final String ownerId = session.getUserId().trim();
-        final String listingId = room.getListingId();
-        final Context appContext =
-                requireContext().getApplicationContext();
-
-        final LocalViewedRoomRepository repository =
-                localViewedRoomRepository;
-
-        try {
-            // Tạo bản sao JSON trước khi đưa sang luồng nền.
-            // Không chuyển RoomCard đang thay đổi sang luồng SQLite.
-            final String payload = RoomCardJsonCodec.encode(
-                    appContext,
-                    room
-            );
-
-            if (ownerId.equals(lastCachedOwnerId)
-                    && payload.equals(lastCachedPayload)) {
-                return;
-            }
-
-            long now = System.currentTimeMillis();
-
-            final ViewedRoomCache cache = new ViewedRoomCache(
-                    ownerId,
-                    listingId,
-                    room.getRoomId(),
-                    payload,
-                    now,
-                    now
-            );
-
-            lastCachedOwnerId = ownerId;
-            lastCachedPayload = payload;
-
-            final long writeVersion = ++cacheWriteVersion;
-
-            ROOM_CACHE_EXECUTOR.execute(() -> {
-                try {
-                    repository.saveCache(cache);
-                } catch (RuntimeException exception) {
-                    Log.e(
-                            "ROOMLY_VIEWED_ROOM",
-                            "Không lưu được cache phòng đã xem.",
-                            exception
-                    );
-
-                    new android.os.Handler(
-                            android.os.Looper.getMainLooper()
-                    ).post(() -> {
-                        // Không xóa dấu ghi nhận của một yêu cầu mới hơn.
-                        if (cacheWriteVersion == writeVersion) {
-                            lastCachedOwnerId = "";
-                            lastCachedPayload = "";
-                        }
-                    });
-                }
-            });
-
-        } catch (RuntimeException exception) {
-            Log.e(
-                    "ROOMLY_VIEWED_ROOM",
-                    "Không tạo được dữ liệu cache phòng.",
-                    exception
             );
         }
     }
@@ -353,8 +174,6 @@ public class RoomDetailFragment extends Fragment {
                 container,
                 false
         );
-        lastCachedOwnerId = "";
-        lastCachedPayload = "";
 
         return binding.getRoot();
     }
@@ -575,13 +394,9 @@ public class RoomDetailFragment extends Fragment {
             return null;
         }
 
-        if (isCacheOnly() && !canReadCachedRoom()) {
-            return null;
-        }
-
         String listingId = args.getString(ARG_LISTING_ID, "");
 
-        if (!isCacheOnly() && !listingId.trim().isEmpty()) {
+        if (!listingId.trim().isEmpty()) {
             return DemoAdminListingRepository.getInstance()
                     .getPublishedRoomCardById(listingId);
         }
@@ -609,7 +424,6 @@ public class RoomDetailFragment extends Fragment {
                 args.getString(ARG_UNIT_CODE, "")
         );
 
-        room.setListingId(listingId);
         room.setImageUri(args.getString(ARG_IMAGE_URI, ""));
         room.setDescription(args.getString(ARG_DESCRIPTION, ""));
         room.setHostName(args.getString(ARG_HOST_NAME, ""));
@@ -716,10 +530,6 @@ public class RoomDetailFragment extends Fragment {
             return;
         }
 
-        if (!isCacheOnly()) {
-            cacheViewedRoom(room);
-        }
-
         binding.tvDetailTitle.setText(room.getTitle());
         binding.tvDetailPrice.setText(room.getPrice());
         binding.tvDetailAddress.setText(room.getAddress());
@@ -752,46 +562,6 @@ public class RoomDetailFragment extends Fragment {
 
         renderFees(room);
         displayRoomImages(room);
-
-        binding.btnDetailReport.setEnabled(!isCacheOnly());
-
-        if (isCacheOnly()) {
-            closeBookingDialog();
-
-            long cachedAt = requireArguments().getLong(
-                    ARG_CACHE_TIME,
-                    0
-            );
-
-            String cacheTime = cachedAt > 0
-                    ? formatTime(cachedAt, "dd/MM/yyyy HH:mm")
-                    : "không xác định";
-
-            binding.tvDetailAvailability.setText(
-                    "Bản lưu lúc " + cacheTime
-                            + " • Chưa xác nhận tình trạng hiện tại"
-            );
-
-            binding.tvDetailDescription.setText(
-                    "Thông tin lưu trên điện thoại có thể đã thay đổi."
-                            + "\n\n"
-                            + (room.getDescription().isEmpty()
-                            ? "Chủ trọ chưa cung cấp mô tả."
-                            : room.getDescription())
-            );
-
-            binding.btnDetailMessage.setEnabled(false);
-            binding.btnDetailSchedule.setEnabled(false);
-            binding.btnDetailRequestBooking.setEnabled(false);
-            binding.btnDetailReport.setEnabled(false);
-
-            binding.btnDetailSchedule.setText("Bản lưu chỉ xem");
-            binding.btnDetailRequestBooking.setText(
-                    "Mở Khám phá để yêu cầu thuê"
-            );
-
-            return;
-        }
 
         boolean blocked = isViewingBlocked(room);
         boolean ownRoom = isOwnRoom(room);
@@ -833,10 +603,6 @@ public class RoomDetailFragment extends Fragment {
      * Chưa gửi booking nên cho phép khách thử giao diện.
      */
     private void openBookingForm() {
-        if (blockCachedAction()) {
-            return;
-        }
-
         RoomCard room = getCurrentRoom();
 
         if (room == null) {
@@ -939,7 +705,6 @@ public class RoomDetailFragment extends Fragment {
 
         binding.btnDetailRequestBooking.setText("Không thể yêu cầu thuê");
         binding.btnDetailRequestBooking.setEnabled(false);
-        binding.btnDetailReport.setEnabled(false);
     }
 
     private boolean checkViewingPermission() {
@@ -977,10 +742,6 @@ public class RoomDetailFragment extends Fragment {
     }
 
     private void showBookingDialog() {
-        if (blockCachedAction()) {
-            return;
-        }
-
         if (binding == null
                 || bookingDialog != null
                 || !checkViewingPermission()) {
@@ -1179,9 +940,6 @@ public class RoomDetailFragment extends Fragment {
             @Nullable String slotId,
             String requestingUserId
     ) {
-        if (blockCachedAction()) {
-            return;
-        }
         if (!dialog.isShowing()
                 || !sheet.btnConfirmBooking.isEnabled()
                 || !checkViewingPermission()) {
@@ -1272,10 +1030,6 @@ public class RoomDetailFragment extends Fragment {
     }
 
     private void openConversation() {
-        if (blockCachedAction()) {
-            return;
-        }
-
         if (SessionAccess.requireLogin()
                 != SessionAccess.Result.ALLOWED) {
             showMessage("Bạn cần đăng nhập để nhắn tin với chủ trọ.");
@@ -1387,9 +1141,6 @@ public class RoomDetailFragment extends Fragment {
     }
 
     private void openReportListingDialog() {
-        if (blockCachedAction()) {
-            return;
-        }
         if (binding == null || !isAdded()) {
             return;
         }
