@@ -34,9 +34,6 @@ public class AuthChallengeService {
     private final EmailService emailService;
     private final SecureRandom secureRandom = new SecureRandom();
 
-    @Value("${student14.mock-mail-enabled:false}")
-    private boolean mockMailEnabled;
-
     @Value("${student14.mail-enabled:false}")
     private boolean mailEnabled;
 
@@ -78,36 +75,29 @@ public class AuthChallengeService {
     }
 
     private EmailCodeResponse issueCode(EmailCodeDTO request, String purpose) {
-        if (!mockMailEnabled && !mailEnabled) {
+        if (!mailEnabled) {
             throw new ResponseStatusException(
                     HttpStatus.SERVICE_UNAVAILABLE,
-                    "Chưa cấu hình gửi email thật hoặc email mô phỏng.");
+                    "Dịch vụ gửi email chưa được cấu hình. Vui lòng thử lại sau.");
         }
 
         Map<String, Object> currentUser = findActiveUserForUpdate(request.getEmail());
         long userId = DatabaseRepository.id(currentUser.get("id"));
-        if (!mockMailEnabled) {
-            checkResendLimit(userId, purpose);
-        }
+        checkResendLimit(userId, purpose);
         authRepository.revokeUnusedCodes(userId, purpose);
 
         String code = Integer.toString(100000 + secureRandom.nextInt(900000));
         String tokenHash = AuthService.hash(userId + ":" + purpose + ":" + code);
         authRepository.createEmailCode(userId, purpose, tokenHash);
 
-        EmailCodeResponse response = new EmailCodeResponse();
-        if (mockMailEnabled) {
-            response.setMessage("Email mô phỏng phục vụ báo cáo; mã có hiệu lực 10 phút.");
-            response.setDemoCode(code);
+        String email = currentUser.get("email").toString();
+        if (EMAIL_VERIFICATION.equals(purpose)) {
+            emailService.sendVerificationCode(email, code);
         } else {
-            String email = currentUser.get("email").toString();
-            if (EMAIL_VERIFICATION.equals(purpose)) {
-                emailService.sendVerificationCode(email, code);
-            } else {
-                emailService.sendRecoveryCode(email, code);
-            }
-            response.setMessage("Mã đã được gửi qua email và có hiệu lực trong 10 phút.");
+            emailService.sendRecoveryCode(email, code);
         }
+        EmailCodeResponse response = new EmailCodeResponse();
+        response.setMessage("Mã đã được gửi qua email và có hiệu lực trong 10 phút.");
         return response;
     }
 

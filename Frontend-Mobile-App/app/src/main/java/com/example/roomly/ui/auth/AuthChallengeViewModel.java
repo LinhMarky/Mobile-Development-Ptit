@@ -37,11 +37,9 @@ public class AuthChallengeViewModel extends ViewModel {
         state.set("email", email);
         message = "";
         state.set("phase", SENDING);
-        repository.requestCode(email, recovery, response -> {
+        repository.requestCode(email, recovery, () -> {
             state.set("code_requested", true);
-            message = response.optString("message", "Hãy kiểm tra hộp thư của bạn.");
-            String demoCode = response.optString("demo_code", "");
-            if (!demoCode.isEmpty()) message += "\nMã thử (email mô phỏng): " + demoCode;
+            message = "Hãy kiểm tra hộp thư của bạn.";
             state.set("phase", CODE_SENT);
         }, this::failed);
     }

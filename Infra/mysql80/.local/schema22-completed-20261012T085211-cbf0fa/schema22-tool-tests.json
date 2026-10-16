@@ -1,0 +1,19 @@
+{
+  "suites": {
+    "native_helper": {
+      "tests": 24,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "pass": true
+    },
+    "release_packager": {
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "pass": true
+    }
+  },
+  "pass": true
+}

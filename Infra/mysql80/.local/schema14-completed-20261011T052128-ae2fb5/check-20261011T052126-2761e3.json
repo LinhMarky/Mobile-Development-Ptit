@@ -1,0 +1,12 @@
+{
+  "completed_at_utc" : "2026-10-11T05:21:28.016364600Z",
+  "mysql_version" : "8.0.45",
+  "schema" : "roomly_local80",
+  "migration_version" : "19",
+  "applied_migrations" : 19,
+  "pending_migrations" : 0,
+  "clean_disabled" : true,
+  "baseline_on_migrate" : false,
+  "physical_tables" : 14,
+  "pass" : true
+}

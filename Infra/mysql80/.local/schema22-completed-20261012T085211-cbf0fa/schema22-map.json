@@ -1,0 +1,2819 @@
+{
+  "REFRESH_TOKEN": {
+    "entity": "RefreshToken",
+    "table": "refresh_tokens",
+    "root": "account_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "tokenHash",
+        "column": "token_hash",
+        "source": "token_hash",
+        "expression": "s.`token_hash`",
+        "type": "varchar(64)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "user",
+        "column": "user_id",
+        "source": "user_id",
+        "expression": "s.`user_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "installationId",
+        "column": "installation_id",
+        "source": "installation_id",
+        "expression": "s.`installation_id`",
+        "type": "varchar(36)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "expiresAt",
+        "column": "expires_at",
+        "source": "expires_at",
+        "expression": "s.`expires_at`",
+        "type": "datetime(3)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "revoked",
+        "column": "revoked",
+        "source": "revoked",
+        "expression": "s.`revoked`",
+        "type": "tinyint(1)",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "deviceName",
+        "column": "device_name",
+        "source": "device_name",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.deviceName') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.deviceName'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.deviceName')) END",
+        "type": "varchar(100)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "ONE_TIME_TOKEN": {
+    "entity": "OneTimeToken",
+    "table": "one_time_tokens",
+    "root": "account_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "tokenHash",
+        "column": "token_hash",
+        "source": "token_hash",
+        "expression": "s.`token_hash`",
+        "type": "varchar(64)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "user",
+        "column": "user_id",
+        "source": "user_id",
+        "expression": "s.`user_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "purpose",
+        "column": "purpose",
+        "source": "token_purpose",
+        "expression": "s.`token_purpose`",
+        "type": "varchar(30)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "used",
+        "column": "used",
+        "source": "used",
+        "expression": "s.`used`",
+        "type": "tinyint(1)",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "expiresAt",
+        "column": "expires_at",
+        "source": "expires_at",
+        "expression": "s.`expires_at`",
+        "type": "datetime(3)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      }
+    ]
+  },
+  "DEVICE_TOKEN": {
+    "entity": "DeviceToken",
+    "table": "device_tokens",
+    "root": "account_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "user",
+        "column": "user_id",
+        "source": "device_user_id",
+        "expression": "s.`device_user_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "token",
+        "column": "token",
+        "source": "fcm_token",
+        "expression": "s.`fcm_token`",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "platform",
+        "column": "platform",
+        "source": "platform",
+        "expression": "s.`platform`",
+        "type": "varchar(10)",
+        "nullable": false,
+        "default": "ANDROID",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "installationId",
+        "column": "installation_id",
+        "source": "installation_id",
+        "expression": "s.`installation_id`",
+        "type": "varchar(36)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "active",
+        "column": "active",
+        "source": "device_active",
+        "expression": "s.`device_active`",
+        "type": "tinyint(1)",
+        "nullable": false,
+        "default": "1",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "updatedAt",
+        "column": "updated_at",
+        "source": "updated_at",
+        "expression": "s.`updated_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+        "relation": null
+      },
+      {
+        "property": "deviceName",
+        "column": "device_name",
+        "source": "device_name",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.deviceName') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.deviceName'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.deviceName')) END",
+        "type": "varchar(100)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "PREFERENCES": {
+    "entity": "NotificationPreference",
+    "table": "notification_preferences",
+    "root": "account_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "user",
+        "column": "user_id",
+        "source": "preference_user_id",
+        "expression": "s.`preference_user_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "updatedAt",
+        "column": "updated_at",
+        "source": "updated_at",
+        "expression": "s.`updated_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+        "relation": null
+      },
+      {
+        "property": "transactionPush",
+        "column": "transaction_push",
+        "source": "transaction_push",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.transactionPush') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.transactionPush'))='NULL' THEN NULL ELSE IF(JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.transactionPush'))='true',1,0) END",
+        "type": "tinyint(1)",
+        "nullable": false,
+        "default": "1",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "transactionEmail",
+        "column": "transaction_email",
+        "source": "transaction_email",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.transactionEmail') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.transactionEmail'))='NULL' THEN NULL ELSE IF(JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.transactionEmail'))='true',1,0) END",
+        "type": "tinyint(1)",
+        "nullable": false,
+        "default": "1",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "chatPush",
+        "column": "chat_push",
+        "source": "chat_push",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.chatPush') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.chatPush'))='NULL' THEN NULL ELSE IF(JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.chatPush'))='true',1,0) END",
+        "type": "tinyint(1)",
+        "nullable": false,
+        "default": "1",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "recommendationPush",
+        "column": "recommendation_push",
+        "source": "recommendation_push",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.recommendationPush') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.recommendationPush'))='NULL' THEN NULL ELSE IF(JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.recommendationPush'))='true',1,0) END",
+        "type": "tinyint(1)",
+        "nullable": false,
+        "default": "1",
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "DELETION_REQUEST": {
+    "entity": "AccountDeletionRequest",
+    "table": "account_deletion_requests",
+    "root": "account_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "user",
+        "column": "user_id",
+        "source": "deletion_user_id",
+        "expression": "s.`deletion_user_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "status",
+        "column": "status",
+        "source": "deletion_status",
+        "expression": "s.`deletion_status`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": "PENDING",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "updatedAt",
+        "column": "updated_at",
+        "source": "updated_at",
+        "expression": "s.`updated_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+        "relation": null
+      },
+      {
+        "property": "reason",
+        "column": "reason",
+        "source": "deletion_reason",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.reason') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.reason'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.reason')) END",
+        "type": "varchar(1000)",
+        "nullable": false,
+        "default": "",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "failureCode",
+        "column": "failure_code",
+        "source": "deletion_failure_code",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.failureCode') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.failureCode'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.failureCode')) END",
+        "type": "varchar(100)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "completedAt",
+        "column": "completed_at",
+        "source": "deletion_completed_at",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.completedAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.completedAt'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.completedAt')) END",
+        "type": "varchar(40)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "LIFECYCLE_LOCK": {
+    "entity": "AccountLifecycleLock",
+    "table": "account_lifecycle_locks",
+    "root": "account_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "user",
+        "column": "user_id",
+        "source": "lifecycle_user_id",
+        "expression": "s.`lifecycle_user_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      }
+    ]
+  },
+  "AMENITY": {
+    "entity": "Amenity",
+    "table": "amenities",
+    "root": "catalog_items",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "name",
+        "column": "name",
+        "source": "name",
+        "expression": "s.`name`",
+        "type": "varchar(100)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "category",
+        "column": "category",
+        "source": "category",
+        "expression": "s.`category`",
+        "type": "varchar(50)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "icon",
+        "column": "icon",
+        "source": "icon",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.icon') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.icon'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.icon')) END",
+        "type": "varchar(100)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "LISTING_FEE": {
+    "entity": "ListingFee",
+    "table": "listing_fees",
+    "root": "catalog_items",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "listing",
+        "column": "listing_id",
+        "source": "listing_id",
+        "expression": "s.`listing_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "Listing",
+        "references": "listings"
+      },
+      {
+        "property": "feeCode",
+        "column": "fee_code",
+        "source": "fee_code",
+        "expression": "s.`fee_code`",
+        "type": "varchar(50)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "feeMode",
+        "column": "fee_mode",
+        "source": "fee_mode",
+        "expression": "s.`fee_mode`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": "FIXED",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "amountVnd",
+        "column": "amount_vnd",
+        "source": "amount_vnd",
+        "expression": "s.`amount_vnd`",
+        "type": "decimal(18,0)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "sortOrder",
+        "column": "sort_order",
+        "source": "sort_order",
+        "expression": "s.`sort_order`",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "unitName",
+        "column": "unit_name",
+        "source": "unit_name",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.unitName') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.unitName'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.unitName')) END",
+        "type": "varchar(50)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "note",
+        "column": "note",
+        "source": "note",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.note') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.note'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.note')) END",
+        "type": "varchar(500)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "WISHLIST_ITEM": {
+    "entity": "WishlistItem",
+    "table": "wishlist_items",
+    "root": "catalog_items",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "user",
+        "column": "user_id",
+        "source": "user_id",
+        "expression": "s.`user_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "room",
+        "column": "room_id",
+        "source": "room_id",
+        "expression": "s.`room_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "Room",
+        "references": "rooms"
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      }
+    ]
+  },
+  "BOOKING": {
+    "entity": "Booking",
+    "table": "bookings",
+    "root": "rental_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "tenant",
+        "column": "tenant_id",
+        "source": "tenant_id",
+        "expression": "s.`tenant_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "host",
+        "column": "host_id",
+        "source": "host_id",
+        "expression": "s.`host_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "room",
+        "column": "room_id",
+        "source": "room_id",
+        "expression": "s.`room_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "Room",
+        "references": "rooms"
+      },
+      {
+        "property": "listing",
+        "column": "listing_id",
+        "source": "listing_id",
+        "expression": "s.`listing_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "Listing",
+        "references": "listings"
+      },
+      {
+        "property": "status",
+        "column": "status",
+        "source": "booking_status",
+        "expression": "s.`booking_status`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": "PENDING",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "occupantCount",
+        "column": "occupant_count",
+        "source": "occupant_count",
+        "expression": "s.`occupant_count`",
+        "type": "int",
+        "nullable": false,
+        "default": "1",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "rentVnd",
+        "column": "rent_vnd",
+        "source": "rent_vnd",
+        "expression": "s.`rent_vnd`",
+        "type": "decimal(18,0)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "depositVnd",
+        "column": "deposit_vnd",
+        "source": "deposit_vnd",
+        "expression": "s.`deposit_vnd`",
+        "type": "decimal(18,0)",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "termsSnapshot",
+        "column": "terms_snapshot",
+        "source": "terms_snapshot",
+        "expression": "s.`terms_snapshot`",
+        "type": "json",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "snapshotSchemaVersion",
+        "column": "snapshot_schema_version",
+        "source": "snapshot_schema_version",
+        "expression": "s.`snapshot_schema_version`",
+        "type": "int",
+        "nullable": false,
+        "default": "1",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "requestExpiresAt",
+        "column": "request_expires_at",
+        "source": "request_expires_at",
+        "expression": "s.`request_expires_at`",
+        "type": "datetime(3)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "holdExpiresAt",
+        "column": "hold_expires_at",
+        "source": "hold_expires_at",
+        "expression": "s.`hold_expires_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "handoverDueAt",
+        "column": "handover_due_at",
+        "source": "handover_due_at",
+        "expression": "s.`handover_due_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "allocatedPaymentId",
+        "column": "allocated_payment_id",
+        "source": "allocated_payment_id",
+        "expression": "s.`allocated_payment_id`",
+        "type": "bigint",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null,
+        "references": "payments"
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "updatedAt",
+        "column": "updated_at",
+        "source": "updated_at",
+        "expression": "s.`updated_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+        "relation": null
+      },
+      {
+        "property": "desiredMoveIn",
+        "column": "desired_move_in",
+        "source": "desired_move_in",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.desiredMoveIn') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.desiredMoveIn'))='NULL' THEN NULL ELSE STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.desiredMoveIn')),'%Y-%m-%d') END",
+        "type": "date",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "note",
+        "column": "note",
+        "source": "note",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.note') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.note'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.note')) END",
+        "type": "varchar(1000)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "tenantTermsAcceptedAt",
+        "column": "tenant_terms_accepted_at",
+        "source": "tenant_terms_accepted_at",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.tenantTermsAcceptedAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.tenantTermsAcceptedAt'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.tenantTermsAcceptedAt')) END",
+        "type": "varchar(40)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "tenantHandoverConfirmedAt",
+        "column": "tenant_handover_confirmed_at",
+        "source": "tenant_handover_confirmed_at",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.tenantHandoverConfirmedAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.tenantHandoverConfirmedAt'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.tenantHandoverConfirmedAt')) END",
+        "type": "varchar(40)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "hostHandoverConfirmedAt",
+        "column": "host_handover_confirmed_at",
+        "source": "host_handover_confirmed_at",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.hostHandoverConfirmedAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.hostHandoverConfirmedAt'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.hostHandoverConfirmedAt')) END",
+        "type": "varchar(40)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "completedAt",
+        "column": "completed_at",
+        "source": "completed_at",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.completedAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.completedAt'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.completedAt')) END",
+        "type": "varchar(40)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "cancelledAt",
+        "column": "cancelled_at",
+        "source": "cancelled_at",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.cancelledAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.cancelledAt'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.cancelledAt')) END",
+        "type": "varchar(40)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "lastReason",
+        "column": "last_reason",
+        "source": "last_reason",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.lastReason') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.lastReason'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.lastReason')) END",
+        "type": "varchar(1000)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "BOOKING_CASE": {
+    "entity": "BookingCase",
+    "table": "booking_cases",
+    "root": "rental_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "booking",
+        "column": "booking_id",
+        "source": "booking_id",
+        "expression": "s.`booking_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "Booking",
+        "references": "bookings"
+      },
+      {
+        "property": "type",
+        "column": "type",
+        "source": "case_type",
+        "expression": "s.`case_type`",
+        "type": "varchar(30)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "openedBy",
+        "column": "opened_by",
+        "source": "opened_by",
+        "expression": "s.`opened_by`",
+        "type": "bigint",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "status",
+        "column": "status",
+        "source": "case_status",
+        "expression": "s.`case_status`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": "OPEN",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "decision",
+        "column": "decision",
+        "source": "case_decision",
+        "expression": "s.`case_decision`",
+        "type": "varchar(30)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "tenantRefundVnd",
+        "column": "tenant_refund_vnd",
+        "source": "tenant_refund_vnd",
+        "expression": "s.`tenant_refund_vnd`",
+        "type": "decimal(18,0)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "hostRetainedVnd",
+        "column": "host_retained_vnd",
+        "source": "host_retained_vnd",
+        "expression": "s.`host_retained_vnd`",
+        "type": "decimal(18,0)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "resolvedBy",
+        "column": "resolved_by",
+        "source": "resolved_by",
+        "expression": "s.`resolved_by`",
+        "type": "bigint",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "updatedAt",
+        "column": "updated_at",
+        "source": "updated_at",
+        "expression": "s.`updated_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+        "relation": null
+      },
+      {
+        "property": "description",
+        "column": "description",
+        "source": "description",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.description') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.description'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.description')) END",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "resolutionNote",
+        "column": "resolution_note",
+        "source": "resolution_note",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.resolutionNote') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.resolutionNote'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.resolutionNote')) END",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "resolvedAt",
+        "column": "resolved_at",
+        "source": "resolved_at",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.resolvedAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.resolvedAt'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.resolvedAt')) END",
+        "type": "varchar(40)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "BOOKING_HISTORY": {
+    "entity": "BookingStatusHistory",
+    "table": "booking_status_history",
+    "root": "rental_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "booking",
+        "column": "booking_id",
+        "source": "booking_id",
+        "expression": "s.`booking_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "Booking",
+        "references": "bookings"
+      },
+      {
+        "property": "fromStatus",
+        "column": "from_status",
+        "source": "from_status",
+        "expression": "s.`from_status`",
+        "type": "varchar(30)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "toStatus",
+        "column": "to_status",
+        "source": "to_status",
+        "expression": "s.`to_status`",
+        "type": "varchar(30)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "actor",
+        "column": "actor_id",
+        "source": "actor_id",
+        "expression": "s.`actor_id`",
+        "type": "bigint",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "actorType",
+        "column": "actor_type",
+        "source": "actor_type",
+        "expression": "s.`actor_type`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "reason",
+        "column": "reason",
+        "source": "history_reason",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.reason') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.reason'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.reason')) END",
+        "type": "varchar(1000)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "traceId",
+        "column": "trace_id",
+        "source": "trace_id",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.traceId') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.traceId'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.traceId')) END",
+        "type": "varchar(64)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "VIEWING_SLOT": {
+    "entity": "ViewingSlot",
+    "table": "viewing_slots",
+    "root": "rental_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "room",
+        "column": "room_id",
+        "source": "room_id",
+        "expression": "s.`room_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "Room",
+        "references": "rooms"
+      },
+      {
+        "property": "host",
+        "column": "host_id",
+        "source": "host_id",
+        "expression": "s.`host_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "startAt",
+        "column": "start_at",
+        "source": "start_at",
+        "expression": "s.`start_at`",
+        "type": "datetime(3)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "endAt",
+        "column": "end_at",
+        "source": "end_at",
+        "expression": "s.`end_at`",
+        "type": "datetime(3)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "status",
+        "column": "status",
+        "source": "slot_status",
+        "expression": "s.`slot_status`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": "OPEN",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "updatedAt",
+        "column": "updated_at",
+        "source": "updated_at",
+        "expression": "s.`updated_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+        "relation": null
+      }
+    ]
+  },
+  "VIEWING": {
+    "entity": "Viewing",
+    "table": "viewings",
+    "root": "rental_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "viewingSlot",
+        "column": "viewing_slot_id",
+        "source": "viewing_slot_id",
+        "expression": "s.`viewing_slot_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "ViewingSlot",
+        "references": "viewing_slots"
+      },
+      {
+        "property": "tenant",
+        "column": "tenant_id",
+        "source": "tenant_id",
+        "expression": "s.`tenant_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "room",
+        "column": "room_id",
+        "source": "room_id",
+        "expression": "s.`room_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "Room",
+        "references": "rooms"
+      },
+      {
+        "property": "host",
+        "column": "host_id",
+        "source": "host_id",
+        "expression": "s.`host_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "status",
+        "column": "status",
+        "source": "viewing_status",
+        "expression": "s.`viewing_status`",
+        "type": "varchar(30)",
+        "nullable": false,
+        "default": "REQUESTED",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "updatedAt",
+        "column": "updated_at",
+        "source": "updated_at",
+        "expression": "s.`updated_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+        "relation": null
+      },
+      {
+        "property": "note",
+        "column": "note",
+        "source": "note",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.note') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.note'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.note')) END",
+        "type": "varchar(1000)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "cancelledReason",
+        "column": "cancelled_reason",
+        "source": "cancelled_reason",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.cancelledReason') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.cancelledReason'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.cancelledReason')) END",
+        "type": "varchar(1000)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "completedAt",
+        "column": "completed_at",
+        "source": "completed_at",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.completedAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.completedAt'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.completedAt')) END",
+        "type": "varchar(40)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "PAYMENT": {
+    "entity": "Payment",
+    "table": "payments",
+    "root": "rental_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "booking",
+        "column": "booking_id",
+        "source": "booking_id",
+        "expression": "s.`booking_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "Booking",
+        "references": "bookings"
+      },
+      {
+        "property": "payer",
+        "column": "payer_id",
+        "source": "payer_id",
+        "expression": "s.`payer_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "provider",
+        "column": "provider",
+        "source": "provider",
+        "expression": "s.`provider`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": "MOCK_SANDBOX",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "providerPaymentId",
+        "column": "provider_payment_id",
+        "source": "provider_payment_id",
+        "expression": "s.`provider_payment_id`",
+        "type": "varchar(100)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "amountVnd",
+        "column": "amount_vnd",
+        "source": "amount_vnd",
+        "expression": "s.`amount_vnd`",
+        "type": "decimal(18,0)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "currency",
+        "column": "currency",
+        "source": "currency",
+        "expression": "s.`currency`",
+        "type": "char(3)",
+        "nullable": false,
+        "default": "VND",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "status",
+        "column": "status",
+        "source": "payment_status",
+        "expression": "s.`payment_status`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": "PENDING",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "expiresAt",
+        "column": "expires_at",
+        "source": "expires_at",
+        "expression": "s.`expires_at`",
+        "type": "datetime(3)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "updatedAt",
+        "column": "updated_at",
+        "source": "updated_at",
+        "expression": "s.`updated_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+        "relation": null
+      },
+      {
+        "property": "succeededAt",
+        "column": "succeeded_at",
+        "source": "succeeded_at",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.succeededAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.succeededAt'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.succeededAt')) END",
+        "type": "varchar(40)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "failureCode",
+        "column": "failure_code",
+        "source": "failure_code",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.failureCode') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.failureCode'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.failureCode')) END",
+        "type": "varchar(100)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "isTest",
+        "column": "is_test",
+        "source": "is_test",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.isTest') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.isTest'))='NULL' THEN NULL ELSE IF(JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.isTest'))='true',1,0) END",
+        "type": "tinyint(1)",
+        "nullable": false,
+        "default": "1",
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "REFUND": {
+    "entity": "Refund",
+    "table": "refunds",
+    "root": "rental_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "payment",
+        "column": "payment_id",
+        "source": "refund_payment_id",
+        "expression": "s.`refund_payment_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "Payment",
+        "references": "payments"
+      },
+      {
+        "property": "providerRefundId",
+        "column": "provider_refund_id",
+        "source": "provider_refund_id",
+        "expression": "s.`provider_refund_id`",
+        "type": "varchar(100)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "amountVnd",
+        "column": "amount_vnd",
+        "source": "amount_vnd",
+        "expression": "s.`amount_vnd`",
+        "type": "decimal(18,0)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "reason",
+        "column": "refund_reason",
+        "source": "refund_reason",
+        "expression": "s.`refund_reason`",
+        "type": "varchar(30)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "status",
+        "column": "status",
+        "source": "refund_status",
+        "expression": "s.`refund_status`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": "PENDING",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "attemptCount",
+        "column": "attempt_count",
+        "source": "attempt_count",
+        "expression": "s.`attempt_count`",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "nextAttemptAt",
+        "column": "next_attempt_at",
+        "source": "next_attempt_at",
+        "expression": "s.`next_attempt_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "updatedAt",
+        "column": "updated_at",
+        "source": "updated_at",
+        "expression": "s.`updated_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+        "relation": null
+      },
+      {
+        "property": "lastErrorCode",
+        "column": "last_error_code",
+        "source": "last_error_code",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.lastErrorCode') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.lastErrorCode'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.lastErrorCode')) END",
+        "type": "varchar(100)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "completedAt",
+        "column": "completed_at",
+        "source": "completed_at",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.completedAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.completedAt'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.completedAt')) END",
+        "type": "varchar(40)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "WEBHOOK_RECEIPT": {
+    "entity": "WebhookReceipt",
+    "table": "payment_webhook_receipts",
+    "root": "rental_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "provider",
+        "column": "provider",
+        "source": "event_provider",
+        "expression": "s.`event_provider`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "eventId",
+        "column": "event_id",
+        "source": "event_id",
+        "expression": "s.`event_id`",
+        "type": "char(36)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "payment",
+        "column": "payment_id",
+        "source": "webhook_payment_id",
+        "expression": "s.`webhook_payment_id`",
+        "type": "bigint",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": "Payment",
+        "references": "payments"
+      },
+      {
+        "property": "payloadHash",
+        "column": "payload_hash",
+        "source": "payload_hash",
+        "expression": "s.`payload_hash`",
+        "type": "binary(32)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "outcome",
+        "column": "outcome",
+        "source": "outcome",
+        "expression": "s.`outcome`",
+        "type": "varchar(30)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "processedAt",
+        "column": "processed_at",
+        "source": "processed_at",
+        "expression": "s.`processed_at`",
+        "type": "datetime(3)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      }
+    ]
+  },
+  "NOTIFICATION": {
+    "entity": "Notification",
+    "table": "notifications",
+    "root": "activity_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "user",
+        "column": "user_id",
+        "source": "user_id",
+        "expression": "s.`user_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "type",
+        "column": "notification_type",
+        "source": "notification_type",
+        "expression": "s.`notification_type`",
+        "type": "varchar(50)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "refType",
+        "column": "ref_type",
+        "source": "ref_type",
+        "expression": "s.`ref_type`",
+        "type": "varchar(50)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "refId",
+        "column": "ref_id",
+        "source": "ref_id",
+        "expression": "s.`ref_id`",
+        "type": "bigint",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "isRead",
+        "column": "is_read",
+        "source": "is_read",
+        "expression": "s.`is_read`",
+        "type": "tinyint(1)",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "title",
+        "column": "title",
+        "source": "title",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.title') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.title'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.title')) END",
+        "type": "varchar(255)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "body",
+        "column": "body",
+        "source": "body",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.body') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.body'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.body')) END",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "PUSH_DELIVERY": {
+    "entity": "PushDelivery",
+    "table": "push_deliveries",
+    "root": "activity_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "notificationId",
+        "column": "notification_id",
+        "source": "notification_id",
+        "expression": "s.`notification_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null,
+        "references": "notifications"
+      },
+      {
+        "property": "deviceId",
+        "column": "device_id",
+        "source": "device_id",
+        "expression": "s.`device_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null,
+        "references": "device_tokens"
+      },
+      {
+        "property": "status",
+        "column": "status",
+        "source": "delivery_status",
+        "expression": "s.`delivery_status`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": "PENDING",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "attempts",
+        "column": "attempts",
+        "source": "attempts",
+        "expression": "s.`attempts`",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "nextAttemptAt",
+        "column": "next_attempt_at",
+        "source": "next_attempt_at",
+        "expression": "s.`next_attempt_at`",
+        "type": "datetime(3)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": false,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "lastError",
+        "column": "last_error",
+        "source": "last_error",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.lastError') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.lastError'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.lastError')) END",
+        "type": "varchar(100)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "AUDIT_LOG": {
+    "entity": "AuditLog",
+    "table": "audit_logs",
+    "root": "activity_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "actor",
+        "column": "actor_id",
+        "source": "actor_id",
+        "expression": "s.`actor_id`",
+        "type": "bigint",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "actorType",
+        "column": "actor_type",
+        "source": "actor_type",
+        "expression": "s.`actor_type`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "action",
+        "column": "action",
+        "source": "action",
+        "expression": "s.`action`",
+        "type": "varchar(100)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "targetType",
+        "column": "target_type",
+        "source": "target_type",
+        "expression": "s.`target_type`",
+        "type": "varchar(50)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "targetId",
+        "column": "target_id",
+        "source": "target_id",
+        "expression": "s.`target_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "detail",
+        "column": "detail",
+        "source": "detail",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.detail') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.detail'))='NULL' THEN NULL ELSE CAST(JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.detail')) AS JSON) END",
+        "type": "json",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "ipAddress",
+        "column": "ip_address",
+        "source": "ip_address",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.ipAddress') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.ipAddress'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.ipAddress')) END",
+        "type": "varchar(45)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "traceId",
+        "column": "trace_id",
+        "source": "trace_id",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.traceId') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.traceId'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.traceId')) END",
+        "type": "varchar(64)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "IDEMPOTENCY": {
+    "entity": "IdempotencyKeyEntity",
+    "table": "idempotency_keys",
+    "root": "activity_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "idempotencyKey",
+        "column": "idempotency_key",
+        "source": "idempotency_key",
+        "expression": "s.`idempotency_key`",
+        "type": "varchar(512)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "requestHash",
+        "column": "request_hash",
+        "source": "request_hash",
+        "expression": "s.`request_hash`",
+        "type": "varchar(64)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "status",
+        "column": "status",
+        "source": "request_status",
+        "expression": "s.`request_status`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": "PROCESSING",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "expiresAt",
+        "column": "expires_at",
+        "source": "expires_at",
+        "expression": "s.`expires_at`",
+        "type": "datetime(3)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "responseContentType",
+        "column": "response_content_type",
+        "source": "response_content_type",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.responseContentType') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.responseContentType'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.responseContentType')) END",
+        "type": "varchar(255)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "responseLocation",
+        "column": "response_location",
+        "source": "response_location",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.responseLocation') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.responseLocation'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.responseLocation')) END",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "responseStatusCode",
+        "column": "response_status_code",
+        "source": "response_status_code",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.responseStatusCode') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.responseStatusCode'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.responseStatusCode')) END",
+        "type": "int",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "responseBody",
+        "column": "response_body",
+        "source": "response_body",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.responseBody') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.responseBody'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.responseBody')) END",
+        "type": "longtext",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "REVIEW": {
+    "entity": "Review",
+    "table": "reviews",
+    "root": "activity_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "bookingId",
+        "column": "booking_id",
+        "source": "booking_id",
+        "expression": "s.`booking_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null,
+        "references": "bookings"
+      },
+      {
+        "property": "reviewer",
+        "column": "reviewer_id",
+        "source": "actor_id",
+        "expression": "s.`actor_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "room",
+        "column": "room_id",
+        "source": "room_id",
+        "expression": "s.`room_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "Room",
+        "references": "rooms"
+      },
+      {
+        "property": "rating",
+        "column": "rating",
+        "source": "rating",
+        "expression": "s.`rating`",
+        "type": "int",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "visible",
+        "column": "visible",
+        "source": "visible",
+        "expression": "s.`visible`",
+        "type": "tinyint(1)",
+        "nullable": false,
+        "default": "1",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "updatedAt",
+        "column": "updated_at",
+        "source": "updated_at",
+        "expression": "s.`updated_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+        "relation": null
+      },
+      {
+        "property": "comment",
+        "column": "comment",
+        "source": "comment",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.comment') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.comment'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.comment')) END",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "hideReason",
+        "column": "hide_reason",
+        "source": "hide_reason",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.hideReason') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.hideReason'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.hideReason')) END",
+        "type": "varchar(500)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  },
+  "REPORT": {
+    "entity": "Report",
+    "table": "reports",
+    "root": "activity_records",
+    "fields": [
+      {
+        "property": "id",
+        "column": "id",
+        "source": "id",
+        "expression": "s.id",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "auto_increment",
+        "relation": null
+      },
+      {
+        "property": "version",
+        "column": "version",
+        "source": "version",
+        "expression": "s.version",
+        "type": "int",
+        "nullable": false,
+        "default": "0",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "reporter",
+        "column": "reporter_id",
+        "source": "actor_id",
+        "expression": "s.`actor_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "targetType",
+        "column": "target_type",
+        "source": "target_type",
+        "expression": "s.`target_type`",
+        "type": "varchar(50)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "targetId",
+        "column": "target_id",
+        "source": "target_id",
+        "expression": "s.`target_id`",
+        "type": "bigint",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "reasonCode",
+        "column": "reason_code",
+        "source": "reason_code",
+        "expression": "s.`reason_code`",
+        "type": "varchar(50)",
+        "nullable": false,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "status",
+        "column": "status",
+        "source": "report_status",
+        "expression": "s.`report_status`",
+        "type": "varchar(20)",
+        "nullable": false,
+        "default": "PENDING",
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "resolvedBy",
+        "column": "resolved_by",
+        "source": "resolved_by",
+        "expression": "s.`resolved_by`",
+        "type": "bigint",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": "User",
+        "references": "users"
+      },
+      {
+        "property": "createdAt",
+        "column": "created_at",
+        "source": "created_at",
+        "expression": "s.`created_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED",
+        "relation": null
+      },
+      {
+        "property": "updatedAt",
+        "column": "updated_at",
+        "source": "updated_at",
+        "expression": "s.`updated_at`",
+        "type": "datetime(3)",
+        "nullable": true,
+        "default": "CURRENT_TIMESTAMP(3)",
+        "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+        "relation": null
+      },
+      {
+        "property": "description",
+        "column": "description",
+        "source": "description",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.description') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.description'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.description')) END",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "resolutionNote",
+        "column": "resolution_note",
+        "source": "resolution_note",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.resolutionNote') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.resolutionNote'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.resolutionNote')) END",
+        "type": "varchar(1000)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      },
+      {
+        "property": "resolvedAt",
+        "column": "resolved_at",
+        "source": "resolved_at",
+        "expression": "CASE WHEN JSON_EXTRACT(s.details,'$.resolvedAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(s.details,'$.resolvedAt'))='NULL' THEN NULL ELSE JSON_UNQUOTE(JSON_EXTRACT(s.details,'$.resolvedAt')) END",
+        "type": "varchar(40)",
+        "nullable": true,
+        "default": null,
+        "extra": "",
+        "relation": null
+      }
+    ]
+  }
+}

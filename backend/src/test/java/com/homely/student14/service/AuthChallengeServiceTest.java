@@ -2,12 +2,12 @@ package com.homely.student14.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -74,13 +74,14 @@ class AuthChallengeServiceTest {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         JsonNode json = objectMapper.valueToTree(response);
-        assertNull(response.getDemoCode());
+        assertEquals(1, json.size());
+        assertTrue(json.has("message"));
         assertFalse(json.has("demo_code"));
         assertFalse(json.toString().contains(code));
     }
 
     @Test
-    void realRecoveryUsesItsOwnPurposeAndSendsCodeByEmail() {
+    void realRecoveryUsesItsOwnPurposeAndSendsCodeByEmail() throws Exception {
         prepareUser();
         when(authRepository.findRecentEmailCodeStats(1L, "PASSWORD_RESET"))
                 .thenReturn(recentCodes(1, Instant.now().minusSeconds(90)));
@@ -93,19 +94,41 @@ class AuthChallengeServiceTest {
                         1L,
                         "PASSWORD_RESET",
                         AuthService.hash("1:PASSWORD_RESET:" + codeCaptor.getValue()));
-        assertNull(response.getDemoCode());
+        JsonNode json = new ObjectMapper().valueToTree(response);
+        assertEquals(1, json.size());
+        assertTrue(json.has("message"));
+        assertFalse(json.toString().contains(codeCaptor.getValue()));
     }
 
     @Test
-    void mockModeReturnsDemoCodeWithoutSendingEmail() {
+    void disabledEmailDoesNotIssueRecoveryCode() {
+        ReflectionTestUtils.setField(authChallengeService, "mailEnabled", false);
+
+        ResponseStatusException exception =
+                assertThrows(
+                        ResponseStatusException.class,
+                        () -> authChallengeService.requestRecoveryCode(emailRequest()));
+
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, exception.getStatusCode());
+        verifyNoInteractions(authRepository, emailService);
+    }
+
+    @Test
+    void smtpFailureDoesNotReturnSuccessfulCodeResponse() {
         prepareUser();
-        ReflectionTestUtils.setField(authChallengeService, "mockMailEnabled", true);
+        when(authRepository.findRecentEmailCodeStats(1L, "EMAIL_VERIFICATION"))
+                .thenReturn(recentCodes(0, null));
+        doThrow(new ResponseStatusException(
+                        HttpStatus.SERVICE_UNAVAILABLE, "Không gửi được email lúc này."))
+                .when(emailService).sendVerificationCode(anyString(), anyString());
 
-        EmailCodeResponse response = authChallengeService.requestVerificationCode(emailRequest());
+        ResponseStatusException exception =
+                assertThrows(
+                        ResponseStatusException.class,
+                        () -> authChallengeService.requestVerificationCode(emailRequest()));
 
-        assertTrue(response.getDemoCode().matches("[0-9]{6}"));
-        verifyNoInteractions(emailService);
-        verify(authRepository, never()).findRecentEmailCodeStats(anyLong(), anyString());
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, exception.getStatusCode());
+        assertEquals("Không gửi được email lúc này.", exception.getReason());
     }
 
     @Test
@@ -142,7 +165,7 @@ class AuthChallengeServiceTest {
     }
 
     @Test
-    void disabledRealAndMockEmailDoNotCreateCodes() {
+    void disabledEmailDoesNotIssueVerificationCode() {
         ReflectionTestUtils.setField(authChallengeService, "mailEnabled", false);
 
         ResponseStatusException exception =

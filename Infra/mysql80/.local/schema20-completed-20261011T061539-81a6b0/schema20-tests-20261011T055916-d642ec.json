@@ -1,0 +1,48 @@
+{
+  "completed_at_utc": "2026-10-11T05:59:15.804173+00:00",
+  "isolated_mysql_port": 13307,
+  "mysql_version": "8.0.45",
+  "application_mysql_service_untouched": true,
+  "tests": {
+    "tests": 275,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "tables": [
+    "account_records",
+    "activity_records",
+    "catalog_items",
+    "conversations",
+    "flyway_schema_history",
+    "listings",
+    "media",
+    "messages",
+    "read_markers",
+    "rental_records",
+    "room_amenities",
+    "rooms",
+    "user_roles",
+    "users"
+  ],
+  "column_counts": {
+    "account_records": 31,
+    "activity_records": 48,
+    "catalog_items": 15,
+    "conversations": 11,
+    "flyway_schema_history": 10,
+    "listings": 15,
+    "media": 17,
+    "messages": 8,
+    "read_markers": 4,
+    "rental_records": 82,
+    "room_amenities": 3,
+    "rooms": 20,
+    "user_roles": 3,
+    "users": 16
+  },
+  "migration_version": 20,
+  "migration_sha256": "0652eebb5aa555992ef8eac256d26cf58e67ed5d7372a54c2b62de7af926a5ff",
+  "backend_jar_sha256": "2b67b876804da49f3420ec7e1457ec24715525be707deda86bdb6c6acacb1c5a",
+  "pass": true
+}

@@ -1,0 +1,17 @@
+{
+  "created_at_utc": "2026-10-11T05:21:28.940424+00:00",
+  "database": "roomly_local80",
+  "physical_tables": 14,
+  "migration_version": 19,
+  "source_files": 548,
+  "backend_jar_sha256": "e5e16cd379dcf9baffcf50c1db5ad5a9d5368b5cdcde994eec7249ad41e2e4a9",
+  "files_sha256": {
+    "check-20261011T052126-2761e3.json": "3343baea636c3f777de684e59ab225b7e18c483fa426c1bf13460d30424536bc",
+    "compact-20261010T155537-906fbd.json": "2e79b18db657d531cdea31bc836a2d6f5e16c0f7b03eb804514a4c15ee226e0a",
+    "schema-20261011T052128-4811b8.sql": "94a5d722d73318e18709fd9eca6497f4e2fba28fc3ca6abd2a6597237ad108d9",
+    "schema14-runtime-20261011T052124-d9c854.json": "605f09c3bd451f3f61fa90b2101ace48888c4e4a23dad08513d795bb1cc1f0ce",
+    "schema14-tests-20261010T155349-64fc7f.json": "6dfed5f98497f7932d79bc0ae966cfcf152285dad651fc339b64956e540342c0",
+    "sources-schema14.zip": "01a5fc7f96f29deede93a5914d27c45f6b9c2e1ce48ae67501a228b3ee526053"
+  },
+  "pass": true
+}

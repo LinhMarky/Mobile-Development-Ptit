@@ -1,0 +1,27 @@
+{
+  "completed_at_utc" : "2026-10-11T12:22:26.054976600Z",
+  "mysql_version" : "8.0.45",
+  "schema" : "roomly_local80",
+  "migration_version" : "21",
+  "applied_migrations" : 21,
+  "pending_migrations" : 0,
+  "clean_disabled" : true,
+  "baseline_on_migrate" : false,
+  "physical_tables" : 13,
+  "columns_by_table" : {
+    "account_records" : 24,
+    "activity_records" : 34,
+    "catalog_items" : 13,
+    "conversations" : 15,
+    "flyway_schema_history" : 10,
+    "listings" : 15,
+    "media" : 17,
+    "messages" : 8,
+    "rental_records" : 65,
+    "room_amenities" : 3,
+    "rooms" : 20,
+    "user_roles" : 3,
+    "users" : 16
+  },
+  "pass" : true
+}

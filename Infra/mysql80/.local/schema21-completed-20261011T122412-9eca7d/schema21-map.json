@@ -1,0 +1,502 @@
+{
+  "kinds": {
+    "REFRESH_TOKEN": {
+      "table": "account_records",
+      "entity": "RefreshToken",
+      "fields": [
+        {
+          "property": "deviceName",
+          "column": "device_name",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(100)"
+        }
+      ]
+    },
+    "DEVICE_TOKEN": {
+      "table": "account_records",
+      "entity": "DeviceToken",
+      "fields": [
+        {
+          "property": "deviceName",
+          "column": "device_name",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(100)"
+        }
+      ]
+    },
+    "PREFERENCES": {
+      "table": "account_records",
+      "entity": "NotificationPreference",
+      "fields": [
+        {
+          "property": "transactionPush",
+          "column": "transaction_push",
+          "java_type": "boolean",
+          "initial": " = true",
+          "db_type": "tinyint(1)"
+        },
+        {
+          "property": "transactionEmail",
+          "column": "transaction_email",
+          "java_type": "boolean",
+          "initial": " = true",
+          "db_type": "tinyint(1)"
+        },
+        {
+          "property": "chatPush",
+          "column": "chat_push",
+          "java_type": "boolean",
+          "initial": " = true",
+          "db_type": "tinyint(1)"
+        },
+        {
+          "property": "recommendationPush",
+          "column": "recommendation_push",
+          "java_type": "boolean",
+          "initial": " = true",
+          "db_type": "tinyint(1)"
+        }
+      ]
+    },
+    "DELETION_REQUEST": {
+      "table": "account_records",
+      "entity": "AccountDeletionRequest",
+      "fields": [
+        {
+          "property": "reason",
+          "column": "deletion_reason",
+          "java_type": "String",
+          "initial": " = \"\"",
+          "db_type": "varchar(1000)"
+        },
+        {
+          "property": "failureCode",
+          "column": "deletion_failure_code",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(100)"
+        },
+        {
+          "property": "completedAt",
+          "column": "deletion_completed_at",
+          "java_type": "Instant",
+          "initial": "",
+          "db_type": "datetime(3)"
+        }
+      ]
+    },
+    "AMENITY": {
+      "table": "catalog_items",
+      "entity": "Amenity",
+      "fields": [
+        {
+          "property": "icon",
+          "column": "icon",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(100)"
+        }
+      ]
+    },
+    "LISTING_FEE": {
+      "table": "catalog_items",
+      "entity": "ListingFee",
+      "fields": [
+        {
+          "property": "unitName",
+          "column": "unit_name",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(50)"
+        },
+        {
+          "property": "note",
+          "column": "note",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(500)"
+        }
+      ]
+    },
+    "BOOKING": {
+      "table": "rental_records",
+      "entity": "Booking",
+      "fields": [
+        {
+          "property": "desiredMoveIn",
+          "column": "desired_move_in",
+          "java_type": "LocalDate",
+          "initial": "",
+          "db_type": "date"
+        },
+        {
+          "property": "note",
+          "column": "note",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(1000)"
+        },
+        {
+          "property": "tenantTermsAcceptedAt",
+          "column": "tenant_terms_accepted_at",
+          "java_type": "Instant",
+          "initial": "",
+          "db_type": "datetime(3)"
+        },
+        {
+          "property": "tenantHandoverConfirmedAt",
+          "column": "tenant_handover_confirmed_at",
+          "java_type": "Instant",
+          "initial": "",
+          "db_type": "datetime(3)"
+        },
+        {
+          "property": "hostHandoverConfirmedAt",
+          "column": "host_handover_confirmed_at",
+          "java_type": "Instant",
+          "initial": "",
+          "db_type": "datetime(3)"
+        },
+        {
+          "property": "completedAt",
+          "column": "completed_at",
+          "java_type": "Instant",
+          "initial": "",
+          "db_type": "datetime(3)"
+        },
+        {
+          "property": "cancelledAt",
+          "column": "cancelled_at",
+          "java_type": "Instant",
+          "initial": "",
+          "db_type": "datetime(3)"
+        },
+        {
+          "property": "lastReason",
+          "column": "last_reason",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(1000)"
+        }
+      ]
+    },
+    "BOOKING_CASE": {
+      "table": "rental_records",
+      "entity": "BookingCase",
+      "fields": [
+        {
+          "property": "description",
+          "column": "description",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "text"
+        },
+        {
+          "property": "resolutionNote",
+          "column": "resolution_note",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "text"
+        },
+        {
+          "property": "resolvedAt",
+          "column": "resolved_at",
+          "java_type": "Instant",
+          "initial": "",
+          "db_type": "datetime(3)"
+        }
+      ]
+    },
+    "BOOKING_HISTORY": {
+      "table": "rental_records",
+      "entity": "BookingStatusHistory",
+      "fields": [
+        {
+          "property": "reason",
+          "column": "history_reason",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(1000)"
+        },
+        {
+          "property": "traceId",
+          "column": "trace_id",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(64)"
+        }
+      ]
+    },
+    "VIEWING": {
+      "table": "rental_records",
+      "entity": "Viewing",
+      "fields": [
+        {
+          "property": "note",
+          "column": "note",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(1000)"
+        },
+        {
+          "property": "cancelledReason",
+          "column": "cancelled_reason",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(1000)"
+        },
+        {
+          "property": "completedAt",
+          "column": "completed_at",
+          "java_type": "Instant",
+          "initial": "",
+          "db_type": "datetime(3)"
+        }
+      ]
+    },
+    "PAYMENT": {
+      "table": "rental_records",
+      "entity": "Payment",
+      "fields": [
+        {
+          "property": "succeededAt",
+          "column": "succeeded_at",
+          "java_type": "Instant",
+          "initial": "",
+          "db_type": "datetime(3)"
+        },
+        {
+          "property": "failureCode",
+          "column": "failure_code",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(100)"
+        },
+        {
+          "property": "isTest",
+          "column": "is_test",
+          "java_type": "boolean",
+          "initial": " = true",
+          "db_type": "tinyint(1)"
+        }
+      ]
+    },
+    "REFUND": {
+      "table": "rental_records",
+      "entity": "Refund",
+      "fields": [
+        {
+          "property": "lastErrorCode",
+          "column": "last_error_code",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(100)"
+        },
+        {
+          "property": "completedAt",
+          "column": "completed_at",
+          "java_type": "Instant",
+          "initial": "",
+          "db_type": "datetime(3)"
+        }
+      ]
+    },
+    "NOTIFICATION": {
+      "table": "activity_records",
+      "entity": "Notification",
+      "fields": [
+        {
+          "property": "title",
+          "column": "title",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(255)"
+        },
+        {
+          "property": "body",
+          "column": "body",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "text"
+        }
+      ]
+    },
+    "PUSH_DELIVERY": {
+      "table": "activity_records",
+      "entity": "PushDelivery",
+      "fields": [
+        {
+          "property": "lastError",
+          "column": "last_error",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(100)"
+        }
+      ]
+    },
+    "REVIEW": {
+      "table": "activity_records",
+      "entity": "Review",
+      "fields": [
+        {
+          "property": "comment",
+          "column": "comment",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "text"
+        },
+        {
+          "property": "hideReason",
+          "column": "hide_reason",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(500)"
+        }
+      ]
+    },
+    "REPORT": {
+      "table": "activity_records",
+      "entity": "Report",
+      "fields": [
+        {
+          "property": "description",
+          "column": "description",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "text"
+        },
+        {
+          "property": "resolutionNote",
+          "column": "resolution_note",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(1000)"
+        },
+        {
+          "property": "resolvedAt",
+          "column": "resolved_at",
+          "java_type": "Instant",
+          "initial": "",
+          "db_type": "datetime(3)"
+        }
+      ]
+    },
+    "AUDIT_LOG": {
+      "table": "activity_records",
+      "entity": "AuditLog",
+      "fields": [
+        {
+          "property": "detail",
+          "column": "detail",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "json"
+        },
+        {
+          "property": "ipAddress",
+          "column": "ip_address",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(45)"
+        },
+        {
+          "property": "traceId",
+          "column": "trace_id",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(64)"
+        }
+      ]
+    },
+    "IDEMPOTENCY": {
+      "table": "activity_records",
+      "entity": "IdempotencyKeyEntity",
+      "fields": [
+        {
+          "property": "responseContentType",
+          "column": "response_content_type",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "varchar(255)"
+        },
+        {
+          "property": "responseLocation",
+          "column": "response_location",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "text"
+        },
+        {
+          "property": "responseStatusCode",
+          "column": "response_status_code",
+          "java_type": "Integer",
+          "initial": "",
+          "db_type": "int"
+        },
+        {
+          "property": "responseBody",
+          "column": "response_body",
+          "java_type": "String",
+          "initial": "",
+          "db_type": "longtext"
+        }
+      ]
+    }
+  },
+  "tables": {
+    "account_records": {
+      "device_name": "deviceName",
+      "transaction_push": "transactionPush",
+      "transaction_email": "transactionEmail",
+      "chat_push": "chatPush",
+      "recommendation_push": "recommendationPush",
+      "deletion_reason": "reason",
+      "deletion_failure_code": "failureCode",
+      "deletion_completed_at": "completedAt"
+    },
+    "catalog_items": {
+      "icon": "icon",
+      "unit_name": "unitName",
+      "note": "note"
+    },
+    "rental_records": {
+      "desired_move_in": "desiredMoveIn",
+      "note": "note",
+      "tenant_terms_accepted_at": "tenantTermsAcceptedAt",
+      "tenant_handover_confirmed_at": "tenantHandoverConfirmedAt",
+      "host_handover_confirmed_at": "hostHandoverConfirmedAt",
+      "completed_at": "completedAt",
+      "cancelled_at": "cancelledAt",
+      "last_reason": "lastReason",
+      "description": "description",
+      "resolution_note": "resolutionNote",
+      "resolved_at": "resolvedAt",
+      "history_reason": "reason",
+      "trace_id": "traceId",
+      "cancelled_reason": "cancelledReason",
+      "succeeded_at": "succeededAt",
+      "failure_code": "failureCode",
+      "is_test": "isTest",
+      "last_error_code": "lastErrorCode"
+    },
+    "activity_records": {
+      "title": "title",
+      "body": "body",
+      "last_error": "lastError",
+      "comment": "comment",
+      "hide_reason": "hideReason",
+      "description": "description",
+      "resolution_note": "resolutionNote",
+      "resolved_at": "resolvedAt",
+      "detail": "detail",
+      "ip_address": "ipAddress",
+      "trace_id": "traceId",
+      "response_content_type": "responseContentType",
+      "response_location": "responseLocation",
+      "response_status_code": "responseStatusCode",
+      "response_body": "responseBody"
+    }
+  }
+}

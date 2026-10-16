@@ -1,0 +1,5646 @@
+{
+  "columns": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "extra": "auto_increment",
+      "table": "account_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "record_type",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "account_records",
+      "charset": "ascii",
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "extra": "",
+      "table": "account_records",
+      "charset": null,
+      "default": "0",
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "user_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "account_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 4,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "expires_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "account_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 5,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "installation_id",
+      "type": "varchar(36)",
+      "extra": "",
+      "table": "account_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 6,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "token_hash",
+      "type": "varchar(64)",
+      "extra": "",
+      "table": "account_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 7,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "deletion_status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "account_records",
+      "charset": "utf8mb4",
+      "default": "PENDING",
+      "ordinal": 8,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "deletion_user_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "account_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 9,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "device_active",
+      "type": "tinyint(1)",
+      "extra": "",
+      "table": "account_records",
+      "charset": null,
+      "default": "1",
+      "ordinal": 10,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "device_user_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "account_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 11,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "fcm_token",
+      "type": "text",
+      "extra": "",
+      "table": "account_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 12,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "lifecycle_user_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "account_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 13,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "platform",
+      "type": "varchar(10)",
+      "extra": "",
+      "table": "account_records",
+      "charset": "utf8mb4",
+      "default": "ANDROID",
+      "ordinal": 14,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "preference_user_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "account_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 15,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "revoked",
+      "type": "tinyint(1)",
+      "extra": "",
+      "table": "account_records",
+      "charset": null,
+      "default": "0",
+      "ordinal": 16,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "role_name",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "account_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 17,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "token_purpose",
+      "type": "varchar(30)",
+      "extra": "",
+      "table": "account_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 18,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "used",
+      "type": "tinyint(1)",
+      "extra": "",
+      "table": "account_records",
+      "charset": null,
+      "default": "0",
+      "ordinal": 19,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "created_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED",
+      "table": "account_records",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 20,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "updated_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+      "table": "account_records",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 21,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "active_fcm_token_hash",
+      "type": "varchar(64)",
+      "extra": "STORED GENERATED",
+      "table": "account_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 22,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": "if((`record_type` = _ascii\\'DEVICE_TOKEN\\'),if(`device_active`,sha2(`fcm_token`,256),NULL),NULL)"
+    },
+    {
+      "name": "active_installation_id",
+      "type": "varchar(36)",
+      "extra": "STORED GENERATED",
+      "table": "account_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 23,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": "if((`record_type` = _ascii\\'DEVICE_TOKEN\\'),if(`device_active`,`installation_id`,NULL),NULL)"
+    },
+    {
+      "name": "details",
+      "type": "json",
+      "extra": "",
+      "table": "account_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 24,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "id",
+      "type": "bigint",
+      "extra": "auto_increment",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "record_type",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "ascii",
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": "0",
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "user_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 4,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "actor_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 5,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "room_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 6,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "booking_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 7,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "target_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 8,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "target_type",
+      "type": "varchar(50)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 9,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "action",
+      "type": "varchar(100)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 10,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "actor_type",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 11,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "attempts",
+      "type": "int",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": "0",
+      "ordinal": 12,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "delivery_status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "utf8mb4",
+      "default": "PENDING",
+      "ordinal": 13,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "device_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 14,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "expires_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 15,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "idempotency_key",
+      "type": "varchar(512)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 16,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "is_read",
+      "type": "tinyint(1)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": "0",
+      "ordinal": 17,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "next_attempt_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 18,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "notification_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 19,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "notification_type",
+      "type": "varchar(50)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 20,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "rating",
+      "type": "int",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 21,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "reason_code",
+      "type": "varchar(50)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 22,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "ref_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 23,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "ref_type",
+      "type": "varchar(50)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 24,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "report_status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "utf8mb4",
+      "default": "PENDING",
+      "ordinal": 25,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "request_hash",
+      "type": "varchar(64)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 26,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "request_status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "utf8mb4",
+      "default": "PROCESSING",
+      "ordinal": 27,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "resolved_by",
+      "type": "bigint",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 28,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "visible",
+      "type": "tinyint(1)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": "1",
+      "ordinal": 29,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "created_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED",
+      "table": "activity_records",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 30,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "updated_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+      "table": "activity_records",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 31,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "device_id_kind",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "ascii",
+      "default": "DEVICE_TOKEN",
+      "ordinal": 32,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "notification_id_kind",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "activity_records",
+      "charset": "ascii",
+      "default": "NOTIFICATION",
+      "ordinal": 33,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "details",
+      "type": "json",
+      "extra": "",
+      "table": "activity_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 34,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "id",
+      "type": "bigint",
+      "extra": "auto_increment",
+      "table": "catalog_items",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "record_type",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "catalog_items",
+      "charset": "ascii",
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "user_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "catalog_items",
+      "charset": null,
+      "default": null,
+      "ordinal": 3,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "room_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "catalog_items",
+      "charset": null,
+      "default": null,
+      "ordinal": 4,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "listing_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "catalog_items",
+      "charset": null,
+      "default": null,
+      "ordinal": 5,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "amount_vnd",
+      "type": "decimal(18,0)",
+      "extra": "",
+      "table": "catalog_items",
+      "charset": null,
+      "default": null,
+      "ordinal": 6,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "category",
+      "type": "varchar(50)",
+      "extra": "",
+      "table": "catalog_items",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 7,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "fee_code",
+      "type": "varchar(50)",
+      "extra": "",
+      "table": "catalog_items",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 8,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "fee_mode",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "catalog_items",
+      "charset": "utf8mb4",
+      "default": "FIXED",
+      "ordinal": 9,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "name",
+      "type": "varchar(100)",
+      "extra": "",
+      "table": "catalog_items",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 10,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "sort_order",
+      "type": "int",
+      "extra": "",
+      "table": "catalog_items",
+      "charset": null,
+      "default": "0",
+      "ordinal": 11,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "created_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED",
+      "table": "catalog_items",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 12,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "details",
+      "type": "json",
+      "extra": "",
+      "table": "catalog_items",
+      "charset": null,
+      "default": null,
+      "ordinal": 13,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "id",
+      "type": "bigint",
+      "extra": "auto_increment",
+      "table": "conversations",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "room_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "conversations",
+      "charset": null,
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "tenant_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "conversations",
+      "charset": null,
+      "default": null,
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "host_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "conversations",
+      "charset": null,
+      "default": null,
+      "ordinal": 4,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "room_title",
+      "type": "varchar(150)",
+      "extra": "",
+      "table": "conversations",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 5,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "last_message_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "conversations",
+      "charset": null,
+      "default": null,
+      "ordinal": 6,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "last_message_preview",
+      "type": "varchar(200)",
+      "extra": "",
+      "table": "conversations",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 7,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "sequence",
+      "type": "bigint",
+      "extra": "",
+      "table": "conversations",
+      "charset": null,
+      "default": "0",
+      "ordinal": 8,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "extra": "",
+      "table": "conversations",
+      "charset": null,
+      "default": "0",
+      "ordinal": 9,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "created_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED",
+      "table": "conversations",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 10,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "updated_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED",
+      "table": "conversations",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 11,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "tenant_read_sequence",
+      "type": "bigint",
+      "extra": "",
+      "table": "conversations",
+      "charset": null,
+      "default": "0",
+      "ordinal": 12,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "tenant_read_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "conversations",
+      "charset": null,
+      "default": null,
+      "ordinal": 13,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "host_read_sequence",
+      "type": "bigint",
+      "extra": "",
+      "table": "conversations",
+      "charset": null,
+      "default": "0",
+      "ordinal": 14,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "host_read_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "conversations",
+      "charset": null,
+      "default": null,
+      "ordinal": 15,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "installed_rank",
+      "type": "int",
+      "extra": "",
+      "table": "flyway_schema_history",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "version",
+      "type": "varchar(50)",
+      "extra": "",
+      "table": "flyway_schema_history",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 2,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "description",
+      "type": "varchar(200)",
+      "extra": "",
+      "table": "flyway_schema_history",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "type",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "flyway_schema_history",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 4,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "script",
+      "type": "varchar(1000)",
+      "extra": "",
+      "table": "flyway_schema_history",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 5,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "checksum",
+      "type": "int",
+      "extra": "",
+      "table": "flyway_schema_history",
+      "charset": null,
+      "default": null,
+      "ordinal": 6,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "installed_by",
+      "type": "varchar(100)",
+      "extra": "",
+      "table": "flyway_schema_history",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 7,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "installed_on",
+      "type": "timestamp",
+      "extra": "DEFAULT_GENERATED",
+      "table": "flyway_schema_history",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP",
+      "ordinal": 8,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "execution_time",
+      "type": "int",
+      "extra": "",
+      "table": "flyway_schema_history",
+      "charset": null,
+      "default": null,
+      "ordinal": 9,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "success",
+      "type": "tinyint(1)",
+      "extra": "",
+      "table": "flyway_schema_history",
+      "charset": null,
+      "default": null,
+      "ordinal": 10,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "id",
+      "type": "bigint",
+      "extra": "auto_increment",
+      "table": "listings",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "room_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "listings",
+      "charset": null,
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "title",
+      "type": "varchar(150)",
+      "extra": "",
+      "table": "listings",
+      "charset": "utf8mb4",
+      "default": "",
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "description",
+      "type": "varchar(5000)",
+      "extra": "",
+      "table": "listings",
+      "charset": "utf8mb4",
+      "default": "",
+      "ordinal": 4,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "rent_vnd",
+      "type": "decimal(18,0)",
+      "extra": "",
+      "table": "listings",
+      "charset": null,
+      "default": null,
+      "ordinal": 5,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "deposit_vnd",
+      "type": "decimal(18,0)",
+      "extra": "",
+      "table": "listings",
+      "charset": null,
+      "default": null,
+      "ordinal": 6,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "listings",
+      "charset": "utf8mb4",
+      "default": "DRAFT",
+      "ordinal": 7,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "terms_version",
+      "type": "int",
+      "extra": "",
+      "table": "listings",
+      "charset": null,
+      "default": "1",
+      "ordinal": 8,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "published_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "listings",
+      "charset": null,
+      "default": null,
+      "ordinal": 9,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "expires_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "listings",
+      "charset": null,
+      "default": null,
+      "ordinal": 10,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "extra": "",
+      "table": "listings",
+      "charset": null,
+      "default": "0",
+      "ordinal": 11,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "created_by",
+      "type": "varchar(255)",
+      "extra": "",
+      "table": "listings",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 12,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "created_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED",
+      "table": "listings",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 13,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "updated_by",
+      "type": "varchar(255)",
+      "extra": "",
+      "table": "listings",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 14,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "updated_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+      "table": "listings",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 15,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "id",
+      "type": "bigint",
+      "extra": "auto_increment",
+      "table": "media",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "uploader_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "media",
+      "charset": null,
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "purpose",
+      "type": "varchar(30)",
+      "extra": "",
+      "table": "media",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "resource_type",
+      "type": "varchar(50)",
+      "extra": "",
+      "table": "media",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 4,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "resource_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "media",
+      "charset": null,
+      "default": null,
+      "ordinal": 5,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "content_type",
+      "type": "varchar(100)",
+      "extra": "",
+      "table": "media",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 6,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "file_size_bytes",
+      "type": "bigint",
+      "extra": "",
+      "table": "media",
+      "charset": null,
+      "default": null,
+      "ordinal": 7,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "storage_key",
+      "type": "varchar(512)",
+      "extra": "",
+      "table": "media",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 8,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "original_filename",
+      "type": "varchar(255)",
+      "extra": "",
+      "table": "media",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 9,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "width",
+      "type": "int",
+      "extra": "",
+      "table": "media",
+      "charset": null,
+      "default": null,
+      "ordinal": 10,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "height",
+      "type": "int",
+      "extra": "",
+      "table": "media",
+      "charset": null,
+      "default": null,
+      "ordinal": 11,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "duration_secs",
+      "type": "int",
+      "extra": "",
+      "table": "media",
+      "charset": null,
+      "default": null,
+      "ordinal": 12,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "media",
+      "charset": "utf8mb4",
+      "default": "READY",
+      "ordinal": 13,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "display_order",
+      "type": "int",
+      "extra": "",
+      "table": "media",
+      "charset": null,
+      "default": "0",
+      "ordinal": 14,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "extra": "",
+      "table": "media",
+      "charset": null,
+      "default": "0",
+      "ordinal": 15,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "created_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED",
+      "table": "media",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 16,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "updated_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+      "table": "media",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 17,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "id",
+      "type": "bigint",
+      "extra": "auto_increment",
+      "table": "messages",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "conversation_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "messages",
+      "charset": null,
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "sender_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "messages",
+      "charset": null,
+      "default": null,
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "content",
+      "type": "text",
+      "extra": "",
+      "table": "messages",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 4,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "client_message_id",
+      "type": "varchar(36)",
+      "extra": "",
+      "table": "messages",
+      "charset": "ascii",
+      "default": null,
+      "ordinal": 5,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "sequence",
+      "type": "bigint",
+      "extra": "",
+      "table": "messages",
+      "charset": null,
+      "default": null,
+      "ordinal": 6,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "content_type",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "messages",
+      "charset": "utf8mb4",
+      "default": "TEXT",
+      "ordinal": 7,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "created_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED",
+      "table": "messages",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 8,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "id",
+      "type": "bigint",
+      "extra": "auto_increment",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "record_type",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "ascii",
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": "0",
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "actor_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 4,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "room_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 5,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "host_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 6,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "tenant_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 7,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "booking_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 8,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "listing_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 9,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "amount_vnd",
+      "type": "decimal(18,0)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 10,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "actor_type",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 11,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "allocated_payment_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 12,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "attempt_count",
+      "type": "int",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": "0",
+      "ordinal": 13,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "booking_status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": "PENDING",
+      "ordinal": 14,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "case_decision",
+      "type": "varchar(30)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 15,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "case_status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": "OPEN",
+      "ordinal": 16,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "case_type",
+      "type": "varchar(30)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 17,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "currency",
+      "type": "char(3)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": "VND",
+      "ordinal": 18,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "deposit_vnd",
+      "type": "decimal(18,0)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": "0",
+      "ordinal": 19,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "end_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 20,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "event_id",
+      "type": "char(36)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 21,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "event_provider",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 22,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "expires_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 23,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "from_status",
+      "type": "varchar(30)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 24,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "handover_due_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 25,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "hold_expires_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 26,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "host_retained_vnd",
+      "type": "decimal(18,0)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 27,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "next_attempt_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 28,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "occupant_count",
+      "type": "int",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": "1",
+      "ordinal": 29,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "opened_by",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 30,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "outcome",
+      "type": "varchar(30)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 31,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "payer_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 32,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "payload_hash",
+      "type": "binary(32)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 33,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "payment_status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": "PENDING",
+      "ordinal": 34,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "processed_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 35,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "provider",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": "MOCK_SANDBOX",
+      "ordinal": 36,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "provider_payment_id",
+      "type": "varchar(100)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 37,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "provider_refund_id",
+      "type": "varchar(100)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 38,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "refund_payment_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 39,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "refund_reason",
+      "type": "varchar(30)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 40,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "refund_status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": "PENDING",
+      "ordinal": 41,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "rent_vnd",
+      "type": "decimal(18,0)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 42,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "request_expires_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 43,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "resolved_by",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 44,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "slot_status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": "OPEN",
+      "ordinal": 45,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "snapshot_schema_version",
+      "type": "int",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": "1",
+      "ordinal": 46,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "start_at",
+      "type": "datetime(3)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 47,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "tenant_refund_vnd",
+      "type": "decimal(18,0)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 48,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "terms_snapshot",
+      "type": "json",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 49,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "to_status",
+      "type": "varchar(30)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 50,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "viewing_slot_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 51,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "viewing_status",
+      "type": "varchar(30)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "utf8mb4",
+      "default": "REQUESTED",
+      "ordinal": 52,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "webhook_payment_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 53,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "created_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED",
+      "table": "rental_records",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 54,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "updated_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+      "table": "rental_records",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 55,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "active_room_id",
+      "type": "bigint",
+      "extra": "STORED GENERATED",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 56,
+      "nullable": "YES",
+      "collation": null,
+      "generation": "if((`record_type` = _ascii\\'BOOKING\\'),(case when (`booking_status` in (_utf8mb4\\'APPROVED\\',_utf8mb4\\'CONFIRMED\\')) then `room_id` else NULL end),NULL)"
+    },
+    {
+      "name": "allocated_payment_id_kind",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "ascii",
+      "default": "PAYMENT",
+      "ordinal": 57,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "booking_id_kind",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "ascii",
+      "default": "BOOKING",
+      "ordinal": 58,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "open_case_booking_id",
+      "type": "bigint",
+      "extra": "STORED GENERATED",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 59,
+      "nullable": "YES",
+      "collation": null,
+      "generation": "if((`record_type` = _ascii\\'BOOKING_CASE\\'),(case when (`case_status` in (_utf8mb4\\'OPEN\\',_utf8mb4\\'IN_REVIEW\\')) then `booking_id` else NULL end),NULL)"
+    },
+    {
+      "name": "open_room_id",
+      "type": "bigint",
+      "extra": "STORED GENERATED",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 60,
+      "nullable": "YES",
+      "collation": null,
+      "generation": "if((`record_type` = _ascii\\'BOOKING\\'),(case when (`booking_status` in (_utf8mb4\\'PENDING\\',_utf8mb4\\'APPROVED\\',_utf8mb4\\'CONFIRMED\\')) then `room_id` else NULL end),NULL)"
+    },
+    {
+      "name": "pending_booking_id",
+      "type": "bigint",
+      "extra": "STORED GENERATED",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 61,
+      "nullable": "YES",
+      "collation": null,
+      "generation": "if((`record_type` = _ascii\\'PAYMENT\\'),(case when (`payment_status` = _utf8mb4\\'PENDING\\') then `booking_id` else NULL end),NULL)"
+    },
+    {
+      "name": "refund_payment_id_kind",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "ascii",
+      "default": "PAYMENT",
+      "ordinal": 62,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "viewing_slot_id_kind",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "ascii",
+      "default": "VIEWING_SLOT",
+      "ordinal": 63,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "webhook_payment_id_kind",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "rental_records",
+      "charset": "ascii",
+      "default": "PAYMENT",
+      "ordinal": 64,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "details",
+      "type": "json",
+      "extra": "",
+      "table": "rental_records",
+      "charset": null,
+      "default": null,
+      "ordinal": 65,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "room_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "room_amenities",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "amenity_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "room_amenities",
+      "charset": null,
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "amenity_id_kind",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "room_amenities",
+      "charset": "ascii",
+      "default": "AMENITY",
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "id",
+      "type": "bigint",
+      "extra": "auto_increment",
+      "table": "rooms",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "host_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "rooms",
+      "charset": null,
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "unit_code",
+      "type": "varchar(30)",
+      "extra": "",
+      "table": "rooms",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "room_type",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rooms",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 4,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "area_m2",
+      "type": "decimal(6,1)",
+      "extra": "",
+      "table": "rooms",
+      "charset": null,
+      "default": null,
+      "ordinal": 5,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "max_occupants",
+      "type": "int",
+      "extra": "",
+      "table": "rooms",
+      "charset": null,
+      "default": "1",
+      "ordinal": 6,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "address_line",
+      "type": "varchar(300)",
+      "extra": "",
+      "table": "rooms",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 7,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "province_code",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rooms",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 8,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "province_name",
+      "type": "varchar(100)",
+      "extra": "",
+      "table": "rooms",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 9,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "ward_code",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rooms",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 10,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "ward_name",
+      "type": "varchar(100)",
+      "extra": "",
+      "table": "rooms",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 11,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "latitude",
+      "type": "double",
+      "extra": "",
+      "table": "rooms",
+      "charset": null,
+      "default": null,
+      "ordinal": 12,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "longitude",
+      "type": "double",
+      "extra": "",
+      "table": "rooms",
+      "charset": null,
+      "default": null,
+      "ordinal": 13,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "availability",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "rooms",
+      "charset": "utf8mb4",
+      "default": "AVAILABLE",
+      "ordinal": 14,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "terms_version",
+      "type": "int",
+      "extra": "",
+      "table": "rooms",
+      "charset": null,
+      "default": "1",
+      "ordinal": 15,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "extra": "",
+      "table": "rooms",
+      "charset": null,
+      "default": "0",
+      "ordinal": 16,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "created_by",
+      "type": "varchar(255)",
+      "extra": "",
+      "table": "rooms",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 17,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "created_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED",
+      "table": "rooms",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 18,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "updated_by",
+      "type": "varchar(255)",
+      "extra": "",
+      "table": "rooms",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 19,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "updated_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+      "table": "rooms",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 20,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "user_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "user_roles",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "role_id",
+      "type": "bigint",
+      "extra": "",
+      "table": "user_roles",
+      "charset": null,
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "role_id_kind",
+      "type": "varchar(32)",
+      "extra": "",
+      "table": "user_roles",
+      "charset": "ascii",
+      "default": "ROLE",
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": "ascii_bin",
+      "generation": ""
+    },
+    {
+      "name": "id",
+      "type": "bigint",
+      "extra": "auto_increment",
+      "table": "users",
+      "charset": null,
+      "default": null,
+      "ordinal": 1,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "email",
+      "type": "varchar(255)",
+      "extra": "",
+      "table": "users",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 2,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "password",
+      "type": "varchar(200)",
+      "extra": "",
+      "table": "users",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 3,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "full_name",
+      "type": "varchar(100)",
+      "extra": "",
+      "table": "users",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 4,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "phone",
+      "type": "varchar(15)",
+      "extra": "",
+      "table": "users",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 5,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "avatar_url",
+      "type": "varchar(512)",
+      "extra": "",
+      "table": "users",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 6,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "email_verified",
+      "type": "tinyint(1)",
+      "extra": "",
+      "table": "users",
+      "charset": null,
+      "default": "0",
+      "ordinal": 7,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "status",
+      "type": "varchar(20)",
+      "extra": "",
+      "table": "users",
+      "charset": "utf8mb4",
+      "default": "ACTIVE",
+      "ordinal": 8,
+      "nullable": "NO",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "suspended",
+      "type": "tinyint(1)",
+      "extra": "",
+      "table": "users",
+      "charset": null,
+      "default": "0",
+      "ordinal": 9,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "suspend_reason",
+      "type": "varchar(500)",
+      "extra": "",
+      "table": "users",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 10,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "refresh_token",
+      "type": "text",
+      "extra": "",
+      "table": "users",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 11,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "extra": "",
+      "table": "users",
+      "charset": null,
+      "default": "0",
+      "ordinal": 12,
+      "nullable": "NO",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "created_by",
+      "type": "varchar(255)",
+      "extra": "",
+      "table": "users",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 13,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "created_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED",
+      "table": "users",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 14,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    },
+    {
+      "name": "updated_by",
+      "type": "varchar(255)",
+      "extra": "",
+      "table": "users",
+      "charset": "utf8mb4",
+      "default": null,
+      "ordinal": 15,
+      "nullable": "YES",
+      "collation": "utf8mb4_unicode_ci",
+      "generation": ""
+    },
+    {
+      "name": "updated_at",
+      "type": "datetime(3)",
+      "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)",
+      "table": "users",
+      "charset": null,
+      "default": "CURRENT_TIMESTAMP(3)",
+      "ordinal": 16,
+      "nullable": "YES",
+      "collation": null,
+      "generation": ""
+    }
+  ],
+  "indexes": [
+    {
+      "name": "fk_account_deletion_user",
+      "table": "account_records",
+      "column": "deletion_user_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "fk_account_device_user",
+      "table": "account_records",
+      "column": "device_user_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "fk_account_lifecycle_user",
+      "table": "account_records",
+      "column": "lifecycle_user_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "fk_account_preference_user",
+      "table": "account_records",
+      "column": "preference_user_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_account_kind_deletion_status",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_account_kind_deletion_status",
+      "table": "account_records",
+      "column": "deletion_status",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_account_kind_device_user_id_device_active",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_account_kind_device_user_id_device_active",
+      "table": "account_records",
+      "column": "device_user_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_account_kind_device_user_id_device_active",
+      "table": "account_records",
+      "column": "device_active",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_account_kind_expires_at",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_account_kind_expires_at",
+      "table": "account_records",
+      "column": "expires_at",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_account_kind_user_id",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_account_kind_user_id",
+      "table": "account_records",
+      "column": "user_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_account_user_id",
+      "table": "account_records",
+      "column": "user_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "account_records",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_id_kind",
+      "table": "account_records",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_id_kind",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_active_fcm_token_hash",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_active_fcm_token_hash",
+      "table": "account_records",
+      "column": "active_fcm_token_hash",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_active_installation_id",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_active_installation_id",
+      "table": "account_records",
+      "column": "active_installation_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_deletion_user_id",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_deletion_user_id",
+      "table": "account_records",
+      "column": "deletion_user_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_device_user_id_installation_id",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_device_user_id_installation_id",
+      "table": "account_records",
+      "column": "device_user_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_device_user_id_installation_id",
+      "table": "account_records",
+      "column": "installation_id",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_lifecycle_user_id",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_lifecycle_user_id",
+      "table": "account_records",
+      "column": "lifecycle_user_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_preference_user_id",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_preference_user_id",
+      "table": "account_records",
+      "column": "preference_user_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_role_name",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_role_name",
+      "table": "account_records",
+      "column": "role_name",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_token_hash",
+      "table": "account_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_account_kind_token_hash",
+      "table": "account_records",
+      "column": "token_hash",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "ix_activity_actor_id",
+      "table": "activity_records",
+      "column": "actor_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_device_id_device_id_kind",
+      "table": "activity_records",
+      "column": "device_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_device_id_device_id_kind",
+      "table": "activity_records",
+      "column": "device_id_kind",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_actor_id_created_at",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_actor_id_created_at",
+      "table": "activity_records",
+      "column": "actor_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_actor_id_created_at",
+      "table": "activity_records",
+      "column": "created_at",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_delivery_status_created_at_id",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_delivery_status_created_at_id",
+      "table": "activity_records",
+      "column": "delivery_status",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_delivery_status_created_at_id",
+      "table": "activity_records",
+      "column": "created_at",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_delivery_status_created_at_id",
+      "table": "activity_records",
+      "column": "id",
+      "sequence": 4,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_delivery_status_next_attempt_at",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_delivery_status_next_attempt_at",
+      "table": "activity_records",
+      "column": "delivery_status",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_delivery_status_next_attempt_at",
+      "table": "activity_records",
+      "column": "next_attempt_at",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_device_id",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_device_id",
+      "table": "activity_records",
+      "column": "device_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_expires_at",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_expires_at",
+      "table": "activity_records",
+      "column": "expires_at",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_report_status",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_report_status",
+      "table": "activity_records",
+      "column": "report_status",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_request_status_expires_at_id",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_request_status_expires_at_id",
+      "table": "activity_records",
+      "column": "request_status",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_request_status_expires_at_id",
+      "table": "activity_records",
+      "column": "expires_at",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_request_status_expires_at_id",
+      "table": "activity_records",
+      "column": "id",
+      "sequence": 4,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_resolved_by",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_resolved_by",
+      "table": "activity_records",
+      "column": "resolved_by",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_room_id_visible_created_at",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_room_id_visible_created_at",
+      "table": "activity_records",
+      "column": "room_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_room_id_visible_created_at",
+      "table": "activity_records",
+      "column": "visible",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_room_id_visible_created_at",
+      "table": "activity_records",
+      "column": "created_at",
+      "sequence": 4,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_target_type_target_id_created_at",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_target_type_target_id_created_at",
+      "table": "activity_records",
+      "column": "target_type",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_target_type_target_id_created_at",
+      "table": "activity_records",
+      "column": "target_id",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_target_type_target_id_created_at",
+      "table": "activity_records",
+      "column": "created_at",
+      "sequence": 4,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_user_id_is_read_created_at",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_user_id_is_read_created_at",
+      "table": "activity_records",
+      "column": "user_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_user_id_is_read_created_at",
+      "table": "activity_records",
+      "column": "is_read",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_kind_user_id_is_read_created_at",
+      "table": "activity_records",
+      "column": "created_at",
+      "sequence": 4,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_notification_id_notification_id_kind",
+      "table": "activity_records",
+      "column": "notification_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_notification_id_notification_id_kind",
+      "table": "activity_records",
+      "column": "notification_id_kind",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_resolved_by",
+      "table": "activity_records",
+      "column": "resolved_by",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_room_id",
+      "table": "activity_records",
+      "column": "room_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_activity_user_id",
+      "table": "activity_records",
+      "column": "user_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "activity_records",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_activity_id_kind",
+      "table": "activity_records",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_activity_id_kind",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_activity_kind_booking_id",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_activity_kind_booking_id",
+      "table": "activity_records",
+      "column": "booking_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_activity_kind_idempotency_key",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_activity_kind_idempotency_key",
+      "table": "activity_records",
+      "column": "idempotency_key",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_activity_kind_notification_id_device_id",
+      "table": "activity_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_activity_kind_notification_id_device_id",
+      "table": "activity_records",
+      "column": "notification_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_activity_kind_notification_id_device_id",
+      "table": "activity_records",
+      "column": "device_id",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "fk_catalog_user",
+      "table": "catalog_items",
+      "column": "user_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_catalog_kind_listing_id",
+      "table": "catalog_items",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_catalog_kind_listing_id",
+      "table": "catalog_items",
+      "column": "listing_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_catalog_kind_room_id",
+      "table": "catalog_items",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_catalog_kind_room_id",
+      "table": "catalog_items",
+      "column": "room_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_catalog_listing_id",
+      "table": "catalog_items",
+      "column": "listing_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_catalog_room_id",
+      "table": "catalog_items",
+      "column": "room_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "catalog_items",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_catalog_id_kind",
+      "table": "catalog_items",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_catalog_id_kind",
+      "table": "catalog_items",
+      "column": "record_type",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_catalog_kind_name",
+      "table": "catalog_items",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_catalog_kind_name",
+      "table": "catalog_items",
+      "column": "name",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_catalog_kind_user_id_room_id",
+      "table": "catalog_items",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_catalog_kind_user_id_room_id",
+      "table": "catalog_items",
+      "column": "user_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_catalog_kind_user_id_room_id",
+      "table": "catalog_items",
+      "column": "room_id",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "idx_conversation_host",
+      "table": "conversations",
+      "column": "host_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_conversation_host",
+      "table": "conversations",
+      "column": "last_message_at",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_conversation_host",
+      "table": "conversations",
+      "column": "id",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_conversation_tenant",
+      "table": "conversations",
+      "column": "tenant_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_conversation_tenant",
+      "table": "conversations",
+      "column": "last_message_at",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_conversation_tenant",
+      "table": "conversations",
+      "column": "id",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "conversations",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_conversation_room_tenant",
+      "table": "conversations",
+      "column": "room_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_conversation_room_tenant",
+      "table": "conversations",
+      "column": "tenant_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "flyway_schema_history_s_idx",
+      "table": "flyway_schema_history",
+      "column": "success",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "flyway_schema_history",
+      "column": "installed_rank",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "idx_listings_expires",
+      "table": "listings",
+      "column": "status",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_listings_expires",
+      "table": "listings",
+      "column": "expires_at",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_listings_published",
+      "table": "listings",
+      "column": "published_at",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_listings_room",
+      "table": "listings",
+      "column": "room_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_listings_status",
+      "table": "listings",
+      "column": "status",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "listings",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_listings_room",
+      "table": "listings",
+      "column": "room_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "idx_media_purpose",
+      "table": "media",
+      "column": "purpose",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_media_resource",
+      "table": "media",
+      "column": "resource_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_media_resource",
+      "table": "media",
+      "column": "resource_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_media_resource",
+      "table": "media",
+      "column": "status",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_media_status_created",
+      "table": "media",
+      "column": "status",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_media_status_created",
+      "table": "media",
+      "column": "created_at",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_media_uploader",
+      "table": "media",
+      "column": "uploader_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "media",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "storage_key",
+      "table": "media",
+      "column": "storage_key",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "fk_message_sender",
+      "table": "messages",
+      "column": "sender_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "messages",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_message_client",
+      "table": "messages",
+      "column": "conversation_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_message_client",
+      "table": "messages",
+      "column": "client_message_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_message_sequence",
+      "table": "messages",
+      "column": "conversation_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_message_sequence",
+      "table": "messages",
+      "column": "sequence",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "ix_rental_actor_id",
+      "table": "rental_records",
+      "column": "actor_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_allocated_payment_id_allocated_payment_id_kind",
+      "table": "rental_records",
+      "column": "allocated_payment_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_allocated_payment_id_allocated_payment_id_kind",
+      "table": "rental_records",
+      "column": "allocated_payment_id_kind",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_booking_id_booking_id_kind",
+      "table": "rental_records",
+      "column": "booking_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_booking_id_booking_id_kind",
+      "table": "rental_records",
+      "column": "booking_id_kind",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_host_id",
+      "table": "rental_records",
+      "column": "host_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_actor_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_actor_id",
+      "table": "rental_records",
+      "column": "actor_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_id_case_status",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_id_case_status",
+      "table": "rental_records",
+      "column": "booking_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_id_case_status",
+      "table": "rental_records",
+      "column": "case_status",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_id_created_at",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_id_created_at",
+      "table": "rental_records",
+      "column": "booking_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_id_created_at",
+      "table": "rental_records",
+      "column": "created_at",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_status_handover_due_at",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_status_handover_due_at",
+      "table": "rental_records",
+      "column": "booking_status",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_status_handover_due_at",
+      "table": "rental_records",
+      "column": "handover_due_at",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_status_hold_expires_at",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_status_hold_expires_at",
+      "table": "rental_records",
+      "column": "booking_status",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_status_hold_expires_at",
+      "table": "rental_records",
+      "column": "hold_expires_at",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_status_request_expires_at",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_status_request_expires_at",
+      "table": "rental_records",
+      "column": "booking_status",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_booking_status_request_expires_at",
+      "table": "rental_records",
+      "column": "request_expires_at",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_host_id_booking_status_created_at_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_host_id_booking_status_created_at_id",
+      "table": "rental_records",
+      "column": "host_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_host_id_booking_status_created_at_id",
+      "table": "rental_records",
+      "column": "booking_status",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_host_id_booking_status_created_at_id",
+      "table": "rental_records",
+      "column": "created_at",
+      "sequence": 4,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_host_id_booking_status_created_at_id",
+      "table": "rental_records",
+      "column": "id",
+      "sequence": 5,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_host_id_slot_status",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_host_id_slot_status",
+      "table": "rental_records",
+      "column": "host_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_host_id_slot_status",
+      "table": "rental_records",
+      "column": "slot_status",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_host_id_viewing_status",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_host_id_viewing_status",
+      "table": "rental_records",
+      "column": "host_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_host_id_viewing_status",
+      "table": "rental_records",
+      "column": "viewing_status",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_listing_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_listing_id",
+      "table": "rental_records",
+      "column": "listing_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_opened_by",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_opened_by",
+      "table": "rental_records",
+      "column": "opened_by",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_payer_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_payer_id",
+      "table": "rental_records",
+      "column": "payer_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_payment_status_expires_at",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_payment_status_expires_at",
+      "table": "rental_records",
+      "column": "payment_status",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_payment_status_expires_at",
+      "table": "rental_records",
+      "column": "expires_at",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_refund_status_next_attempt_at",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_refund_status_next_attempt_at",
+      "table": "rental_records",
+      "column": "refund_status",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_refund_status_next_attempt_at",
+      "table": "rental_records",
+      "column": "next_attempt_at",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_resolved_by",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_resolved_by",
+      "table": "rental_records",
+      "column": "resolved_by",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_room_id_slot_status_start_at",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_room_id_slot_status_start_at",
+      "table": "rental_records",
+      "column": "room_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_room_id_slot_status_start_at",
+      "table": "rental_records",
+      "column": "slot_status",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_room_id_slot_status_start_at",
+      "table": "rental_records",
+      "column": "start_at",
+      "sequence": 4,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_room_id_viewing_status",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_room_id_viewing_status",
+      "table": "rental_records",
+      "column": "room_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_room_id_viewing_status",
+      "table": "rental_records",
+      "column": "viewing_status",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_tenant_id_booking_status_created_at_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_tenant_id_booking_status_created_at_id",
+      "table": "rental_records",
+      "column": "tenant_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_tenant_id_booking_status_created_at_id",
+      "table": "rental_records",
+      "column": "booking_status",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_tenant_id_booking_status_created_at_id",
+      "table": "rental_records",
+      "column": "created_at",
+      "sequence": 4,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_tenant_id_booking_status_created_at_id",
+      "table": "rental_records",
+      "column": "id",
+      "sequence": 5,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_tenant_id_viewing_status",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_tenant_id_viewing_status",
+      "table": "rental_records",
+      "column": "tenant_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_tenant_id_viewing_status",
+      "table": "rental_records",
+      "column": "viewing_status",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_viewing_slot_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_viewing_slot_id",
+      "table": "rental_records",
+      "column": "viewing_slot_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_webhook_payment_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_kind_webhook_payment_id",
+      "table": "rental_records",
+      "column": "webhook_payment_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_listing_id",
+      "table": "rental_records",
+      "column": "listing_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_opened_by",
+      "table": "rental_records",
+      "column": "opened_by",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_payer_id",
+      "table": "rental_records",
+      "column": "payer_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_refund_payment_id_refund_payment_id_kind",
+      "table": "rental_records",
+      "column": "refund_payment_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_refund_payment_id_refund_payment_id_kind",
+      "table": "rental_records",
+      "column": "refund_payment_id_kind",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_resolved_by",
+      "table": "rental_records",
+      "column": "resolved_by",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_room_id",
+      "table": "rental_records",
+      "column": "room_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_tenant_id",
+      "table": "rental_records",
+      "column": "tenant_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_viewing_slot_id_viewing_slot_id_kind",
+      "table": "rental_records",
+      "column": "viewing_slot_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_viewing_slot_id_viewing_slot_id_kind",
+      "table": "rental_records",
+      "column": "viewing_slot_id_kind",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_webhook_payment_id_webhook_payment_id_kind",
+      "table": "rental_records",
+      "column": "webhook_payment_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "ix_rental_webhook_payment_id_webhook_payment_id_kind",
+      "table": "rental_records",
+      "column": "webhook_payment_id_kind",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "rental_records",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_id_kind",
+      "table": "rental_records",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_id_kind",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_active_room_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_active_room_id",
+      "table": "rental_records",
+      "column": "active_room_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_allocated_payment_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_allocated_payment_id",
+      "table": "rental_records",
+      "column": "allocated_payment_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_event_provider_event_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_event_provider_event_id",
+      "table": "rental_records",
+      "column": "event_provider",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_event_provider_event_id",
+      "table": "rental_records",
+      "column": "event_id",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_open_case_booking_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_open_case_booking_id",
+      "table": "rental_records",
+      "column": "open_case_booking_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_pending_booking_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_pending_booking_id",
+      "table": "rental_records",
+      "column": "pending_booking_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_provider_payment_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_provider_payment_id",
+      "table": "rental_records",
+      "column": "provider_payment_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_provider_refund_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_provider_refund_id",
+      "table": "rental_records",
+      "column": "provider_refund_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_refund_payment_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_refund_payment_id",
+      "table": "rental_records",
+      "column": "refund_payment_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_tenant_id_open_room_id",
+      "table": "rental_records",
+      "column": "record_type",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_tenant_id_open_room_id",
+      "table": "rental_records",
+      "column": "tenant_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rental_kind_tenant_id_open_room_id",
+      "table": "rental_records",
+      "column": "open_room_id",
+      "sequence": 3,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "fk_room_amenities_amenity",
+      "table": "room_amenities",
+      "column": "amenity_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "fk_room_amenities_amenity",
+      "table": "room_amenities",
+      "column": "amenity_id_kind",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "room_amenities",
+      "column": "room_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "PRIMARY",
+      "table": "room_amenities",
+      "column": "amenity_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "idx_rooms_availability",
+      "table": "rooms",
+      "column": "availability",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_rooms_host",
+      "table": "rooms",
+      "column": "host_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_rooms_location",
+      "table": "rooms",
+      "column": "latitude",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_rooms_location",
+      "table": "rooms",
+      "column": "longitude",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "rooms",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rooms_host_unit",
+      "table": "rooms",
+      "column": "host_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "uk_rooms_host_unit",
+      "table": "rooms",
+      "column": "unit_code",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "fk_user_roles_role",
+      "table": "user_roles",
+      "column": "role_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "fk_user_roles_role",
+      "table": "user_roles",
+      "column": "role_id_kind",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "user_roles",
+      "column": "user_id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "PRIMARY",
+      "table": "user_roles",
+      "column": "role_id",
+      "sequence": 2,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "email",
+      "table": "users",
+      "column": "email",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    },
+    {
+      "name": "idx_users_email",
+      "table": "users",
+      "column": "email",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "idx_users_status",
+      "table": "users",
+      "column": "status",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 1
+    },
+    {
+      "name": "PRIMARY",
+      "table": "users",
+      "column": "id",
+      "sequence": 1,
+      "sub_part": null,
+      "non_unique": 0
+    }
+  ],
+  "foreign_keys": [
+    {
+      "name": "fk_account_deletion_user",
+      "table": "account_records",
+      "column": "deletion_user_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_account_device_user",
+      "table": "account_records",
+      "column": "device_user_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_account_lifecycle_user",
+      "table": "account_records",
+      "column": "lifecycle_user_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_account_preference_user",
+      "table": "account_records",
+      "column": "preference_user_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_account_user",
+      "table": "account_records",
+      "column": "user_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_activity_actor",
+      "table": "activity_records",
+      "column": "actor_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_activity_device",
+      "table": "activity_records",
+      "column": "device_id",
+      "ordinal": 1,
+      "referenced_table": "account_records",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_activity_device",
+      "table": "activity_records",
+      "column": "device_id_kind",
+      "ordinal": 2,
+      "referenced_table": "account_records",
+      "referenced_column": "record_type"
+    },
+    {
+      "name": "fk_activity_notification",
+      "table": "activity_records",
+      "column": "notification_id",
+      "ordinal": 1,
+      "referenced_table": "activity_records",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_activity_notification",
+      "table": "activity_records",
+      "column": "notification_id_kind",
+      "ordinal": 2,
+      "referenced_table": "activity_records",
+      "referenced_column": "record_type"
+    },
+    {
+      "name": "fk_activity_resolved_by",
+      "table": "activity_records",
+      "column": "resolved_by",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_activity_room",
+      "table": "activity_records",
+      "column": "room_id",
+      "ordinal": 1,
+      "referenced_table": "rooms",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_activity_user",
+      "table": "activity_records",
+      "column": "user_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_catalog_listing",
+      "table": "catalog_items",
+      "column": "listing_id",
+      "ordinal": 1,
+      "referenced_table": "listings",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_catalog_room",
+      "table": "catalog_items",
+      "column": "room_id",
+      "ordinal": 1,
+      "referenced_table": "rooms",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_catalog_user",
+      "table": "catalog_items",
+      "column": "user_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_conversation_host",
+      "table": "conversations",
+      "column": "host_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_conversation_room",
+      "table": "conversations",
+      "column": "room_id",
+      "ordinal": 1,
+      "referenced_table": "rooms",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_conversation_tenant",
+      "table": "conversations",
+      "column": "tenant_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_listings_room",
+      "table": "listings",
+      "column": "room_id",
+      "ordinal": 1,
+      "referenced_table": "rooms",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_media_uploader",
+      "table": "media",
+      "column": "uploader_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_message_conversation",
+      "table": "messages",
+      "column": "conversation_id",
+      "ordinal": 1,
+      "referenced_table": "conversations",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_message_sender",
+      "table": "messages",
+      "column": "sender_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_actor",
+      "table": "rental_records",
+      "column": "actor_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_allocated_payment",
+      "table": "rental_records",
+      "column": "allocated_payment_id",
+      "ordinal": 1,
+      "referenced_table": "rental_records",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_allocated_payment",
+      "table": "rental_records",
+      "column": "allocated_payment_id_kind",
+      "ordinal": 2,
+      "referenced_table": "rental_records",
+      "referenced_column": "record_type"
+    },
+    {
+      "name": "fk_rental_booking",
+      "table": "rental_records",
+      "column": "booking_id",
+      "ordinal": 1,
+      "referenced_table": "rental_records",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_booking",
+      "table": "rental_records",
+      "column": "booking_id_kind",
+      "ordinal": 2,
+      "referenced_table": "rental_records",
+      "referenced_column": "record_type"
+    },
+    {
+      "name": "fk_rental_host",
+      "table": "rental_records",
+      "column": "host_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_listing",
+      "table": "rental_records",
+      "column": "listing_id",
+      "ordinal": 1,
+      "referenced_table": "listings",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_opened_by",
+      "table": "rental_records",
+      "column": "opened_by",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_payer",
+      "table": "rental_records",
+      "column": "payer_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_refund_payment",
+      "table": "rental_records",
+      "column": "refund_payment_id",
+      "ordinal": 1,
+      "referenced_table": "rental_records",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_refund_payment",
+      "table": "rental_records",
+      "column": "refund_payment_id_kind",
+      "ordinal": 2,
+      "referenced_table": "rental_records",
+      "referenced_column": "record_type"
+    },
+    {
+      "name": "fk_rental_resolved_by",
+      "table": "rental_records",
+      "column": "resolved_by",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_room",
+      "table": "rental_records",
+      "column": "room_id",
+      "ordinal": 1,
+      "referenced_table": "rooms",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_tenant",
+      "table": "rental_records",
+      "column": "tenant_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_viewing_slot",
+      "table": "rental_records",
+      "column": "viewing_slot_id",
+      "ordinal": 1,
+      "referenced_table": "rental_records",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_viewing_slot",
+      "table": "rental_records",
+      "column": "viewing_slot_id_kind",
+      "ordinal": 2,
+      "referenced_table": "rental_records",
+      "referenced_column": "record_type"
+    },
+    {
+      "name": "fk_rental_webhook_payment",
+      "table": "rental_records",
+      "column": "webhook_payment_id",
+      "ordinal": 1,
+      "referenced_table": "rental_records",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rental_webhook_payment",
+      "table": "rental_records",
+      "column": "webhook_payment_id_kind",
+      "ordinal": 2,
+      "referenced_table": "rental_records",
+      "referenced_column": "record_type"
+    },
+    {
+      "name": "fk_room_amenities_amenity",
+      "table": "room_amenities",
+      "column": "amenity_id",
+      "ordinal": 1,
+      "referenced_table": "catalog_items",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_room_amenities_amenity",
+      "table": "room_amenities",
+      "column": "amenity_id_kind",
+      "ordinal": 2,
+      "referenced_table": "catalog_items",
+      "referenced_column": "record_type"
+    },
+    {
+      "name": "fk_room_amenities_room",
+      "table": "room_amenities",
+      "column": "room_id",
+      "ordinal": 1,
+      "referenced_table": "rooms",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_rooms_host",
+      "table": "rooms",
+      "column": "host_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_user_roles_role",
+      "table": "user_roles",
+      "column": "role_id",
+      "ordinal": 1,
+      "referenced_table": "account_records",
+      "referenced_column": "id"
+    },
+    {
+      "name": "fk_user_roles_role",
+      "table": "user_roles",
+      "column": "role_id_kind",
+      "ordinal": 2,
+      "referenced_table": "account_records",
+      "referenced_column": "record_type"
+    },
+    {
+      "name": "fk_user_roles_user",
+      "table": "user_roles",
+      "column": "user_id",
+      "ordinal": 1,
+      "referenced_table": "users",
+      "referenced_column": "id"
+    }
+  ],
+  "checks": [
+    {
+      "name": "chk_deletion_request_details_v1",
+      "table": "account_records",
+      "expression": "((`record_type` <> _ascii\\'DELETION_REQUEST\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"reason\":{\"type\":\"string\",\"maxLength\":1000},\"failureCode\":{\"type\":[\"string\",\"null\"],\"maxLength\":100},\"completedAt\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"schemaVersion\",\"reason\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_device_token_details_v1",
+      "table": "account_records",
+      "expression": "((`record_type` <> _ascii\\'DEVICE_TOKEN\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"deviceName\":{\"type\":\"string\",\"maxLength\":100}},\"required\":[\"schemaVersion\",\"deviceName\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_preferences_details_v1",
+      "table": "account_records",
+      "expression": "((`record_type` <> _ascii\\'PREFERENCES\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"transactionPush\":{\"type\":\"boolean\"},\"transactionEmail\":{\"type\":\"boolean\"},\"chatPush\":{\"type\":\"boolean\"},\"recommendationPush\":{\"type\":\"boolean\"}},\"required\":[\"schemaVersion\",\"transactionPush\",\"transactionEmail\",\"chatPush\",\"recommendationPush\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_refresh_token_details_v1",
+      "table": "account_records",
+      "expression": "((`record_type` <> _ascii\\'REFRESH_TOKEN\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"deviceName\":{\"type\":\"string\",\"maxLength\":100}},\"required\":[\"schemaVersion\",\"deviceName\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "ck_account_deletion_required",
+      "table": "account_records",
+      "expression": "((`record_type` <> _ascii\\'DELETION_REQUEST\\') or ((`deletion_user_id` is not null) and (json_unquote(json_extract(`details`,_utf8mb4\\'$.reason\\')) is not null) and (`deletion_status` is not null)))"
+    },
+    {
+      "name": "ck_account_device_required",
+      "table": "account_records",
+      "expression": "((`record_type` <> _ascii\\'DEVICE_TOKEN\\') or ((`device_user_id` is not null) and (`fcm_token` is not null) and (`platform` is not null) and (json_unquote(json_extract(`details`,_utf8mb4\\'$.deviceName\\')) is not null) and (`installation_id` is not null) and (`device_active` is not null)))"
+    },
+    {
+      "name": "ck_account_kind",
+      "table": "account_records",
+      "expression": "(`record_type` in (_ascii\\'ROLE\\',_ascii\\'REFRESH_TOKEN\\',_ascii\\'ONE_TIME_TOKEN\\',_ascii\\'DEVICE_TOKEN\\',_ascii\\'PREFERENCES\\',_ascii\\'DELETION_REQUEST\\',_ascii\\'LIFECYCLE_LOCK\\'))"
+    },
+    {
+      "name": "ck_account_lifecycle_required",
+      "table": "account_records",
+      "expression": "((`record_type` <> _ascii\\'LIFECYCLE_LOCK\\') or (`lifecycle_user_id` is not null))"
+    },
+    {
+      "name": "ck_account_preference_required",
+      "table": "account_records",
+      "expression": "((`record_type` <> _ascii\\'PREFERENCES\\') or ((`preference_user_id` is not null) and (json_unquote(json_extract(`details`,_utf8mb4\\'$.transactionPush\\')) is not null) and (json_unquote(json_extract(`details`,_utf8mb4\\'$.transactionEmail\\')) is not null) and (json_unquote(json_extract(`details`,_utf8mb4\\'$.chatPush\\')) is not null) and (json_unquote(json_extract(`details`,_utf8mb4\\'$.recommendationPush\\')) is not null)))"
+    },
+    {
+      "name": "ck_account_refresh_required",
+      "table": "account_records",
+      "expression": "((`record_type` <> _ascii\\'REFRESH_TOKEN\\') or ((`token_hash` is not null) and (`user_id` is not null) and (`installation_id` is not null) and (json_unquote(json_extract(`details`,_utf8mb4\\'$.deviceName\\')) is not null) and (`expires_at` is not null) and (`revoked` is not null)))"
+    },
+    {
+      "name": "ck_account_role_required",
+      "table": "account_records",
+      "expression": "((`record_type` <> _ascii\\'ROLE\\') or (`role_name` is not null))"
+    },
+    {
+      "name": "ck_account_verify_required",
+      "table": "account_records",
+      "expression": "((`record_type` <> _ascii\\'ONE_TIME_TOKEN\\') or ((`token_hash` is not null) and (`user_id` is not null) and (`token_purpose` is not null) and (`used` is not null) and (`expires_at` is not null)))"
+    },
+    {
+      "name": "chk_audit_log_details_v1",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'AUDIT_LOG\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"detail\":{\"type\":[\"string\",\"null\"]},\"ipAddress\":{\"type\":[\"string\",\"null\"],\"maxLength\":45},\"traceId\":{\"type\":[\"string\",\"null\"],\"maxLength\":64}},\"required\":[\"schemaVersion\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_idempotency_details_v1",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'IDEMPOTENCY\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"responseContentType\":{\"type\":[\"string\",\"null\"],\"maxLength\":255},\"responseLocation\":{\"type\":[\"string\",\"null\"]},\"responseStatusCode\":{\"type\":[\"integer\",\"null\"]},\"responseBody\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"schemaVersion\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_notification_details_v1",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'NOTIFICATION\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"title\":{\"type\":\"string\",\"maxLength\":255},\"body\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"schemaVersion\",\"title\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_push_delivery_details_v1",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'PUSH_DELIVERY\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"lastError\":{\"type\":[\"string\",\"null\"],\"maxLength\":100}},\"required\":[\"schemaVersion\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_report_details_v1",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'REPORT\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"description\":{\"type\":[\"string\",\"null\"]},\"resolutionNote\":{\"type\":[\"string\",\"null\"],\"maxLength\":1000},\"resolvedAt\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"schemaVersion\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_review_details_v1",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'REVIEW\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"comment\":{\"type\":[\"string\",\"null\"]},\"hideReason\":{\"type\":[\"string\",\"null\"],\"maxLength\":500}},\"required\":[\"schemaVersion\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "ck_activity_audit_required",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'AUDIT_LOG\\') or ((`actor_type` is not null) and (`action` is not null) and (`target_type` is not null) and (`target_id` is not null)))"
+    },
+    {
+      "name": "ck_activity_delivery_device_kind",
+      "table": "activity_records",
+      "expression": "(`device_id_kind` = _ascii\\'DEVICE_TOKEN\\')"
+    },
+    {
+      "name": "ck_activity_delivery_notification_kind",
+      "table": "activity_records",
+      "expression": "(`notification_id_kind` = _ascii\\'NOTIFICATION\\')"
+    },
+    {
+      "name": "ck_activity_delivery_required",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'PUSH_DELIVERY\\') or ((`notification_id` is not null) and (`device_id` is not null) and (`delivery_status` is not null) and (`attempts` is not null) and (`next_attempt_at` is not null) and (`created_at` is not null)))"
+    },
+    {
+      "name": "ck_activity_kind",
+      "table": "activity_records",
+      "expression": "(`record_type` in (_ascii\\'NOTIFICATION\\',_ascii\\'PUSH_DELIVERY\\',_ascii\\'AUDIT_LOG\\',_ascii\\'IDEMPOTENCY\\',_ascii\\'REVIEW\\',_ascii\\'REPORT\\'))"
+    },
+    {
+      "name": "ck_activity_notification_required",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'NOTIFICATION\\') or ((`user_id` is not null) and (`notification_type` is not null) and (json_unquote(json_extract(`details`,_utf8mb4\\'$.title\\')) is not null) and (`is_read` is not null)))"
+    },
+    {
+      "name": "ck_activity_report_required",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'REPORT\\') or ((`actor_id` is not null) and (`target_type` is not null) and (`target_id` is not null) and (`reason_code` is not null) and (`report_status` is not null)))"
+    },
+    {
+      "name": "ck_activity_request_required",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'IDEMPOTENCY\\') or ((`idempotency_key` is not null) and (`request_status` is not null) and (`expires_at` is not null)))"
+    },
+    {
+      "name": "ck_activity_review_required",
+      "table": "activity_records",
+      "expression": "((`record_type` <> _ascii\\'REVIEW\\') or ((`booking_id` is not null) and (`actor_id` is not null) and (`room_id` is not null) and (`rating` is not null) and (`visible` is not null)))"
+    },
+    {
+      "name": "chk_amenity_details_v1",
+      "table": "catalog_items",
+      "expression": "((`record_type` <> _ascii\\'AMENITY\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"icon\":{\"type\":[\"string\",\"null\"],\"maxLength\":100}},\"required\":[\"schemaVersion\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_listing_fee_details_v1",
+      "table": "catalog_items",
+      "expression": "((`record_type` <> _ascii\\'LISTING_FEE\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"unitName\":{\"type\":[\"string\",\"null\"],\"maxLength\":50},\"note\":{\"type\":[\"string\",\"null\"],\"maxLength\":500}},\"required\":[\"schemaVersion\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "ck_catalog_amenity_required",
+      "table": "catalog_items",
+      "expression": "((`record_type` <> _ascii\\'AMENITY\\') or (`name` is not null))"
+    },
+    {
+      "name": "ck_catalog_fee_required",
+      "table": "catalog_items",
+      "expression": "((`record_type` <> _ascii\\'LISTING_FEE\\') or ((`listing_id` is not null) and (`fee_code` is not null) and (`fee_mode` is not null) and (`amount_vnd` is not null) and (`sort_order` is not null)))"
+    },
+    {
+      "name": "ck_catalog_kind",
+      "table": "catalog_items",
+      "expression": "(`record_type` in (_ascii\\'AMENITY\\',_ascii\\'LISTING_FEE\\',_ascii\\'WISHLIST_ITEM\\'))"
+    },
+    {
+      "name": "ck_catalog_wishlist_required",
+      "table": "catalog_items",
+      "expression": "((`record_type` <> _ascii\\'WISHLIST_ITEM\\') or ((`user_id` is not null) and (`room_id` is not null)))"
+    },
+    {
+      "name": "chk_conversation_read_bounds",
+      "table": "conversations",
+      "expression": "((`tenant_read_sequence` between 0 and `sequence`) and (`host_read_sequence` between 0 and `sequence`))"
+    },
+    {
+      "name": "ck_conversation_members",
+      "table": "conversations",
+      "expression": "(`tenant_id` <> `host_id`)"
+    },
+    {
+      "name": "ck_conversation_sequence",
+      "table": "conversations",
+      "expression": "(`sequence` >= 0)"
+    },
+    {
+      "name": "ck_message_sequence",
+      "table": "messages",
+      "expression": "(`sequence` > 0)"
+    },
+    {
+      "name": "chk_booking_case_details_v1",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'BOOKING_CASE\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"description\":{\"type\":\"string\"},\"resolutionNote\":{\"type\":[\"string\",\"null\"]},\"resolvedAt\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"schemaVersion\",\"description\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_booking_details_v1",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'BOOKING\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"desiredMoveIn\":{\"type\":[\"string\",\"null\"]},\"note\":{\"type\":[\"string\",\"null\"],\"maxLength\":1000},\"tenantTermsAcceptedAt\":{\"type\":[\"string\",\"null\"]},\"tenantHandoverConfirmedAt\":{\"type\":[\"string\",\"null\"]},\"hostHandoverConfirmedAt\":{\"type\":[\"string\",\"null\"]},\"completedAt\":{\"type\":[\"string\",\"null\"]},\"cancelledAt\":{\"type\":[\"string\",\"null\"]},\"lastReason\":{\"type\":[\"string\",\"null\"],\"maxLength\":1000}},\"required\":[\"schemaVersion\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_booking_history_details_v1",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'BOOKING_HISTORY\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"reason\":{\"type\":[\"string\",\"null\"],\"maxLength\":1000},\"traceId\":{\"type\":\"string\",\"maxLength\":64}},\"required\":[\"schemaVersion\",\"traceId\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_payment_details_v1",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'PAYMENT\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"succeededAt\":{\"type\":[\"string\",\"null\"]},\"failureCode\":{\"type\":[\"string\",\"null\"],\"maxLength\":100},\"isTest\":{\"type\":\"boolean\"}},\"required\":[\"schemaVersion\",\"isTest\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_refund_details_v1",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'REFUND\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"lastErrorCode\":{\"type\":[\"string\",\"null\"],\"maxLength\":100},\"completedAt\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"schemaVersion\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "chk_viewing_details_v1",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'VIEWING\\') or ((`details` is not null) and json_schema_valid(_utf8mb4\\'{\"type\":\"object\",\"properties\":{\"schemaVersion\":{\"type\":\"integer\",\"enum\":[1]},\"note\":{\"type\":[\"string\",\"null\"],\"maxLength\":1000},\"cancelledReason\":{\"type\":[\"string\",\"null\"],\"maxLength\":1000},\"completedAt\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"schemaVersion\"],\"additionalProperties\":false}\\',`details`)))"
+    },
+    {
+      "name": "ck_rental_booking_allocated_payment_kind",
+      "table": "rental_records",
+      "expression": "(`allocated_payment_id_kind` = _ascii\\'PAYMENT\\')"
+    },
+    {
+      "name": "ck_rental_booking_required",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'BOOKING\\') or ((`tenant_id` is not null) and (`host_id` is not null) and (`room_id` is not null) and (`listing_id` is not null) and (`booking_status` is not null) and (`occupant_count` is not null) and (`rent_vnd` is not null) and (`deposit_vnd` is not null) and (`terms_snapshot` is not null) and (`snapshot_schema_version` is not null) and (`request_expires_at` is not null)))"
+    },
+    {
+      "name": "ck_rental_case_booking_kind",
+      "table": "rental_records",
+      "expression": "(`booking_id_kind` = _ascii\\'BOOKING\\')"
+    },
+    {
+      "name": "ck_rental_case_required",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'BOOKING_CASE\\') or ((`booking_id` is not null) and (`case_type` is not null) and (json_unquote(json_extract(`details`,_utf8mb4\\'$.description\\')) is not null) and (`case_status` is not null)))"
+    },
+    {
+      "name": "ck_rental_history_required",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'BOOKING_HISTORY\\') or ((`booking_id` is not null) and (`to_status` is not null) and (`actor_type` is not null) and (json_unquote(json_extract(`details`,_utf8mb4\\'$.traceId\\')) is not null)))"
+    },
+    {
+      "name": "ck_rental_kind",
+      "table": "rental_records",
+      "expression": "(`record_type` in (_ascii\\'BOOKING\\',_ascii\\'BOOKING_CASE\\',_ascii\\'BOOKING_HISTORY\\',_ascii\\'VIEWING_SLOT\\',_ascii\\'VIEWING\\',_ascii\\'PAYMENT\\',_ascii\\'REFUND\\',_ascii\\'WEBHOOK_RECEIPT\\'))"
+    },
+    {
+      "name": "ck_rental_payment_required",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'PAYMENT\\') or ((`booking_id` is not null) and (`payer_id` is not null) and (`provider` is not null) and (`amount_vnd` is not null) and (`currency` is not null) and (`payment_status` is not null) and (`expires_at` is not null) and (json_unquote(json_extract(`details`,_utf8mb4\\'$.isTest\\')) is not null)))"
+    },
+    {
+      "name": "ck_rental_refund_payment_kind",
+      "table": "rental_records",
+      "expression": "(`refund_payment_id_kind` = _ascii\\'PAYMENT\\')"
+    },
+    {
+      "name": "ck_rental_refund_required",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'REFUND\\') or ((`refund_payment_id` is not null) and (`amount_vnd` is not null) and (`refund_status` is not null) and (`attempt_count` is not null)))"
+    },
+    {
+      "name": "ck_rental_slot_required",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'VIEWING_SLOT\\') or ((`room_id` is not null) and (`host_id` is not null) and (`start_at` is not null) and (`end_at` is not null) and (`slot_status` is not null)))"
+    },
+    {
+      "name": "ck_rental_viewing_required",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'VIEWING\\') or ((`viewing_slot_id` is not null) and (`tenant_id` is not null) and (`room_id` is not null) and (`host_id` is not null) and (`viewing_status` is not null)))"
+    },
+    {
+      "name": "ck_rental_viewing_viewing_slot_kind",
+      "table": "rental_records",
+      "expression": "(`viewing_slot_id_kind` = _ascii\\'VIEWING_SLOT\\')"
+    },
+    {
+      "name": "ck_rental_webhook_payment_kind",
+      "table": "rental_records",
+      "expression": "(`webhook_payment_id_kind` = _ascii\\'PAYMENT\\')"
+    },
+    {
+      "name": "ck_rental_webhook_required",
+      "table": "rental_records",
+      "expression": "((`record_type` <> _ascii\\'WEBHOOK_RECEIPT\\') or ((`event_provider` is not null) and (`event_id` is not null) and (`payload_hash` is not null) and (`processed_at` is not null)))"
+    },
+    {
+      "name": "ck_room_amenities_kind",
+      "table": "room_amenities",
+      "expression": "(`amenity_id_kind` = _ascii\\'AMENITY\\')"
+    },
+    {
+      "name": "ck_user_roles_kind",
+      "table": "user_roles",
+      "expression": "(`role_id_kind` = _ascii\\'ROLE\\')"
+    }
+  ],
+  "backup": "Infra\\mysql80\\.local\\before-schema22-20261011T124959-bb8ebe"
+}

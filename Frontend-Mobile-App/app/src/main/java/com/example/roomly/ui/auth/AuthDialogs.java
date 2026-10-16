@@ -17,8 +17,6 @@ import com.example.roomly.data.repository.AuthRepository;
 import com.example.roomly.ui.NavigationHelper;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import org.json.JSONObject;
-
 import java.nio.charset.StandardCharsets;
 
 final class AuthDialogs {
@@ -30,12 +28,12 @@ final class AuthDialogs {
                 .requestCode(
                         email,
                         true,
-                        response -> {
+                        () -> {
                             if (!isCurrentView(screen, owner)) {
                                 finished.run();
                                 return;
                             }
-                            showResetForm(screen, owner, email, response, finished);
+                            showResetForm(screen, owner, email, finished);
                         },
                         error -> {
                             finished.run();
@@ -56,7 +54,6 @@ final class AuthDialogs {
             Fragment screen,
             LifecycleOwner owner,
             String email,
-            JSONObject response,
             Runnable finished) {
         LinearLayout form = new LinearLayout(screen.requireContext());
         form.setOrientation(LinearLayout.VERTICAL);
@@ -71,9 +68,7 @@ final class AuthDialogs {
         password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         form.addView(code);
         form.addView(password);
-        String message = response.optString("message", "Hãy kiểm tra hộp thư của bạn.");
-        String demoCode = response.optString("demo_code", "");
-        if (!demoCode.isEmpty()) message += "\nMã thử (email mô phỏng): " + demoCode;
+        String message = "Hãy kiểm tra hộp thư của bạn.";
         AlertDialog dialog =
                 new MaterialAlertDialogBuilder(screen.requireContext())
                         .setTitle("Đặt lại mật khẩu")

@@ -26,7 +26,7 @@ public final class AuthRepository {
     }
 
     public void requestCode(
-            String email, boolean reset, Consumer<JSONObject> success, Consumer<String> failure) {
+            String email, boolean reset, Runnable success, Consumer<String> failure) {
         ApiClient.execute(
                 () ->
                         (JSONObject)
@@ -34,7 +34,13 @@ public final class AuthRepository {
                                         "POST",
                                         reset ? "auth/recovery-code" : "auth/verification-code",
                                         ApiClient.json("email", email)),
-                success,
+                response -> {
+                    if (response.has("demo_code")) {
+                        failure.accept("Máy chủ chưa bật gửi email thật. Vui lòng thử lại sau.");
+                        return;
+                    }
+                    success.run();
+                },
                 failure);
     }
 

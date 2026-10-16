@@ -1,0 +1,24 @@
+{
+  "created_at_utc": "2026-10-11T12:50:04.642548+00:00",
+  "database": "roomly_local80",
+  "mysql_version": "8.0.45",
+  "tables": {
+    "account_records": 3,
+    "activity_records": 0,
+    "catalog_items": 15,
+    "conversations": 0,
+    "flyway_schema_history": 21,
+    "listings": 0,
+    "media": 0,
+    "messages": 0,
+    "rental_records": 0,
+    "room_amenities": 0,
+    "rooms": 0,
+    "user_roles": 0,
+    "users": 0
+  },
+  "source_files": 566,
+  "database_sql_sha256": "138b433aa086a21dcd1fdae374d23e22868bf1ef71ddd6888f7a53b311d7852a",
+  "sources_zip_sha256": "5c68e01fa4151c322032a3c4ada228bf7de6226c56091df6a0b8f8505fd5edfa",
+  "pass": true
+}

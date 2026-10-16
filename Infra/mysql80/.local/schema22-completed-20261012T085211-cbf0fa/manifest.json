@@ -1,0 +1,24 @@
+{
+  "created_at_utc": "2026-10-12T08:52:11.543351+00:00",
+  "database": "roomly_local80",
+  "physical_tables": 32,
+  "migration_version": 22,
+  "source_files": 555,
+  "backend_jar_sha256": "b53172deb0b3a094e9b6de9da7d067d2529bf7c51569e53d657182c69774c3e9",
+  "files_sha256": {
+    "normalize-20261011T201134-14dc6f.json": "97cc01cf672a17cce02fce06828698a0fed8d55f6868ff3a93b743e202b8f86d",
+    "schema-20261012T084918-beda3d.sql": "1a656f658b126a91c965c66993241eb8a58350857c679f76bffcf0fa05e894e5",
+    "schema22-audit.json": "71375daa84d16b0278951eece8d926a2d097989e16986933963d6288a0cbf35b",
+    "schema22-before.json": "2c7caee92c681994c1be32fdc12192957bb3631949cc17e33d28db726d2697ca",
+    "schema22-data-before.json": "26e81796c90ecdf22d8d22b71468dbc4b181681ec7ed7159d383c11248b3d38e",
+    "schema22-http-before.json": "eb3478a67b89b4504694b4516b3c1939182a7a1a4c354d1272955f91d4abd9bf",
+    "schema22-map.json": "8d14246b1c4abd446c973e50a4e8f7855b899629e70ac8e138ad23f3ba5aa025",
+    "schema22-openapi-after.json": "5c87c8a5f421e9d53820e93f59a83e38900a7806d45d79b97c8a42d2a3b854d0",
+    "schema22-openapi-before.json": "0849d0e9fb9fed978eff4272a57a4f0f90a880092f892ea7e4a61a43efb7275c",
+    "schema22-runtime-20261012T084745-a5907c.json": "9a1079e3aae95866da4d5db7befdd5dc2dd4dc5e2e15cb7eaafe7c2eedec37a9",
+    "schema22-tests-20261011T201116-b230c8.json": "8904737017b40b745722d0ad84cd70af2010e676d543531bb5cba9635f759f7a",
+    "schema22-tool-tests.json": "ba103fa0f96821b56d57636932b4c364d8c382bc2b2d4dd8197ddf9f5d16ae8c",
+    "sources-schema22.zip": "6b3eb6488d6ebd0ecec6cfd6c4cbd144f71935903a8f993392eee3304a232cdb"
+  },
+  "pass": true
+}

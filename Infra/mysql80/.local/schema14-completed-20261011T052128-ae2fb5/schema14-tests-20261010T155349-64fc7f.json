@@ -1,0 +1,31 @@
+{
+  "completed_at_utc": "2026-10-10T15:53:48.921284+00:00",
+  "isolated_mysql_port": 13307,
+  "mysql_version": "8.0.45",
+  "application_mysql_service_untouched": true,
+  "tests": {
+    "tests": 273,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "tables": [
+    "account_records",
+    "activity_records",
+    "catalog_items",
+    "conversations",
+    "flyway_schema_history",
+    "listings",
+    "media",
+    "messages",
+    "read_markers",
+    "rental_records",
+    "room_amenities",
+    "rooms",
+    "user_roles",
+    "users"
+  ],
+  "migration_sha256": "c7530068bc4db3a857f1501b6c350ad7930d820390cae9cb434b4fb5bf60f009",
+  "backend_jar_sha256": "e5e16cd379dcf9baffcf50c1db5ad5a9d5368b5cdcde994eec7249ad41e2e4a9",
+  "pass": true
+}

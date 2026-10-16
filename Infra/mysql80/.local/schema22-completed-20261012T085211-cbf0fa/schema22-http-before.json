@@ -1,0 +1,207 @@
+{
+  "/api/v1/amenities": {
+    "status": 200,
+    "content_type": "application/json",
+    "body": {
+      "statusCode": 200,
+      "message": "OK",
+      "data": [
+        {
+          "id": 1,
+          "name": "WiFi",
+          "category": "connectivity",
+          "icon": "wifi"
+        },
+        {
+          "id": 2,
+          "name": "Air Conditioning",
+          "category": "comfort",
+          "icon": "ac_unit"
+        },
+        {
+          "id": 3,
+          "name": "Washing Machine",
+          "category": "appliance",
+          "icon": "local_laundry_service"
+        },
+        {
+          "id": 4,
+          "name": "Refrigerator",
+          "category": "appliance",
+          "icon": "kitchen"
+        },
+        {
+          "id": 5,
+          "name": "Water Heater",
+          "category": "comfort",
+          "icon": "hot_tub"
+        },
+        {
+          "id": 6,
+          "name": "Parking",
+          "category": "facility",
+          "icon": "local_parking"
+        },
+        {
+          "id": 7,
+          "name": "Security Camera",
+          "category": "security",
+          "icon": "videocam"
+        },
+        {
+          "id": 8,
+          "name": "Balcony",
+          "category": "feature",
+          "icon": "balcony"
+        },
+        {
+          "id": 9,
+          "name": "Kitchen",
+          "category": "feature",
+          "icon": "restaurant"
+        },
+        {
+          "id": 10,
+          "name": "Private Bathroom",
+          "category": "feature",
+          "icon": "bathtub"
+        },
+        {
+          "id": 11,
+          "name": "Pet Allowed",
+          "category": "policy",
+          "icon": "pets"
+        },
+        {
+          "id": 12,
+          "name": "Furnished",
+          "category": "feature",
+          "icon": "chair"
+        },
+        {
+          "id": 13,
+          "name": "Elevator",
+          "category": "facility",
+          "icon": "elevator"
+        },
+        {
+          "id": 14,
+          "name": "Gym",
+          "category": "facility",
+          "icon": "fitness_center"
+        },
+        {
+          "id": 15,
+          "name": "Swimming Pool",
+          "category": "facility",
+          "icon": "pool"
+        }
+      ]
+    }
+  },
+  "/api/v1/amenities/1": {
+    "status": 200,
+    "content_type": "application/json",
+    "body": {
+      "statusCode": 200,
+      "message": "OK",
+      "data": {
+        "id": 1,
+        "name": "WiFi",
+        "category": "connectivity",
+        "icon": "wifi"
+      }
+    }
+  },
+  "/api/v1/listings?page=0&size=20": {
+    "status": 200,
+    "content_type": "application/json",
+    "body": {
+      "statusCode": 200,
+      "message": "OK",
+      "data": {
+        "data": [],
+        "total_elements": 0,
+        "total_pages": 0,
+        "current_page": 0,
+        "page_size": 20
+      }
+    }
+  },
+  "/api/v1/listings/999999": {
+    "status": 404,
+    "content_type": "application/json",
+    "body": {
+      "statusCode": 404,
+      "message": "Resource not found",
+      "data": {
+        "type": "urn:problem:resource-not-found",
+        "title": "Not Found",
+        "status": 404,
+        "detail": "Resource not found",
+        "instance": "/api/v1/listings/999999",
+        "code": "RESOURCE_NOT_FOUND",
+        "timestamp": "2026-10-11T19:16:47.190165600Z",
+        "field_errors": [],
+        "trace_id": "19fb5488-237a-4d0b-a3bf-3c325de91cfe"
+      }
+    }
+  },
+  "/api/v1/profile": {
+    "status": 401,
+    "content_type": "application/json",
+    "body": {
+      "statusCode": 401,
+      "message": "Authentication is required",
+      "data": {
+        "type": "urn:problem:authentication-required",
+        "title": "Unauthorized",
+        "status": 401,
+        "detail": "Authentication is required",
+        "instance": "/api/v1/profile",
+        "code": "AUTHENTICATION_REQUIRED",
+        "timestamp": "2026-10-11T19:16:47.219161800Z",
+        "field_errors": [],
+        "trace_id": "035d459f-b8a8-4f89-86b9-fdeed2ddad6f"
+      }
+    }
+  },
+  "/api/v1/notifications": {
+    "status": 401,
+    "content_type": "application/json",
+    "body": {
+      "statusCode": 401,
+      "message": "Authentication is required",
+      "data": {
+        "type": "urn:problem:authentication-required",
+        "title": "Unauthorized",
+        "status": 401,
+        "detail": "Authentication is required",
+        "instance": "/api/v1/notifications",
+        "code": "AUTHENTICATION_REQUIRED",
+        "timestamp": "2026-10-11T19:16:47.223163100Z",
+        "field_errors": [],
+        "trace_id": "7989f481-9cdb-48a2-b03d-7e8ad438a41d"
+      }
+    }
+  },
+  "/api/v1/viewing-slots/999999": {
+    "status": 404,
+    "content_type": "application/json",
+    "body": {
+      "statusCode": 404,
+      "message": "Resource not found",
+      "data": {
+        "type": "urn:problem:resource-not-found",
+        "title": "Not Found",
+        "status": 404,
+        "detail": "Resource not found",
+        "instance": "/api/v1/viewing-slots/999999",
+        "code": "RESOURCE_NOT_FOUND",
+        "timestamp": "2026-10-11T19:16:47.244167300Z",
+        "field_errors": [],
+        "trace_id": "57e73215-10b1-49a4-ac87-728886c852f9"
+      }
+    }
+  }
+}
